@@ -1,0 +1,105 @@
+/* --- MANAGED FONT IMPORTS START (do not edit manually) --- */
+/* INTERNAL USE NAME: Heading @weight:700 */
+/* INTERNAL USE NAME: Body */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* --- MANAGED FONT IMPORTS END --- */
+
+/* @import url() FONT IMPORTS MUST ALWAYS BE AT THE VERY TOP OF THIS FILE, ABOVE THE TAILWIND IMPORTS — DO NOT DELETE THIS COMMENT */
+
+/* CRITICAL: THE FOLLOWING TAILWIND IMPORTS MUST NEVER BE DELETED OR REORDERED — DO NOT DELETE THIS COMMENT */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* END TAILWIND IMPORTS — ALL OTHER CSS MUST GO BELOW THIS LINE */
+
+:root {
+  --color-primary: #030F35;
+  --color-secondary: #FB5535;
+  --color-background: #FFFFFF;
+  --color-surface: #F6F6FB;
+  --color-surface-2: #FFFFFF;
+  --color-surface-navy: #030F35;
+  --color-text-primary: #111118;
+  --color-text-secondary: #2E2E42;
+  --color-text-muted: #5F607F;
+  --color-text-disabled: #8385A1;
+  --color-border-subtle: #EEEFF6;
+  --color-border-default: #D8D9E6;
+  --color-border-strong: #B0B2C8;
+  --color-success: #16A34A;
+  --color-success-surface: #DCFCE7;
+  --color-success-text: #15803D;
+  --color-warning: #D97706;
+  --color-warning-surface: #FEF3C7;
+  --color-warning-text: #B45309;
+  --color-danger: #DC2626;
+  --color-danger-surface: #FEE2E2;
+  --color-danger-text: #B91C1C;
+  --color-info: #2563EB;
+  --color-info-surface: #DBEAFE;
+  --color-info-text: #1D4ED8;
+  --color-navy-50: #F3F5FD;
+  --color-navy-100: #E8EDFB;
+  --color-navy-200: #B5C5F7;
+  --color-orange-50: #FFF5F2;
+  --color-orange-100: #FDE5DF;
+  --color-orange-600: #F24C2A;
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, "SF Mono", monospace;
+  --radius-card: 12px;
+  --radius-modal: 12px;
+  --radius-button: 8px;
+  --radius-input: 8px;
+  --radius-pill: 9999px;
+  --space-grid: 8px;
+  --space-card: 24px;
+  --shadow-sm: 0 1px 2px rgba(3,15,53,0.05), 0 1px 3px rgba(3,15,53,0.08);
+  --shadow-md: 0 4px 6px rgba(3,15,53,0.07), 0 2px 4px rgba(3,15,53,0.06);
+  --shadow-lg: 0 10px 15px rgba(3,15,53,0.10), 0 4px 6px rgba(3,15,53,0.07);
+  --shadow-xl: 0 20px 25px rgba(3,15,53,0.15), 0 10px 10px rgba(3,15,53,0.04);
+  --focus-ring-orange: 0 0 0 3px rgba(251,85,53,0.30);
+  --focus-ring-navy: 0 0 0 3px rgba(3,15,53,0.18);
+  /* Required by shadcn/ui components if used */
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+  --primary: 222.2 47.4% 11.2%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 222.2 84% 4.9%;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+@layer base {
+  * {
+    @apply border-border outline-ring;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+    color: var(--color-text-primary);
+    background-color: var(--color-background);
+  }
+}
