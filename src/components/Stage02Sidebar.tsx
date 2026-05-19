@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   BookOpen,
   CheckSquare,
@@ -42,17 +42,19 @@ interface Stage02SidebarProps {
 
 export function Stage02Sidebar({ collapsed, onCollapsedChange }: Stage02SidebarProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const { activeRole, activeSegment } = useWorkspaceRole();
   const visibleItems = useMemo(
     () => navigationItems.filter((item) => item.allowedSegments.includes(activeRole) && hasAnyPermission(activeRole, item.requiredPermissions)),
     [activeRole]
   );
   const activeItem = visibleItems.find((item) => location.pathname === item.route || (item.route !== '/' && location.pathname.startsWith(`${item.route}/`)));
+  const activeSectionId = activeItem?.section || (location.pathname === '/workspace' || location.pathname.startsWith('/workspace/') ? 'workspace' : undefined);
   const [expandedSection, setExpandedSection] = useState(() => localStorage.getItem('dws-expanded-section') || activeItem?.section || 'workspace');
 
   useEffect(() => {
-    if (activeItem?.section) setExpandedSection(activeItem.section);
-  }, [activeItem?.section]);
+    if (activeSectionId) setExpandedSection(activeSectionId);
+  }, [activeSectionId]);
 
   useEffect(() => {
     localStorage.setItem('dws-expanded-section', expandedSection);
@@ -72,13 +74,20 @@ export function Stage02Sidebar({ collapsed, onCollapsedChange }: Stage02SidebarP
             const sectionItems = visibleItems.filter((item) => item.section === section.id);
             if (sectionItems.length === 0) return null;
             const Icon = iconMap[section.icon];
-            const isActiveSection = activeItem?.section === section.id;
+            const isActiveSection = activeSectionId === section.id;
             const isOpen = !collapsed && expandedSection === section.id;
             const sectionBadge = sectionItems.reduce((sum, item) => sum + (item.badgeCountKey ? badgeCounts[item.badgeCountKey] || 0 : 0), 0);
             return (
               <div key={section.id} className="border-b border-border-subtle py-1 last:border-b-0">
                 <button
-                  onClick={() => setExpandedSection((current) => current === section.id ? '' : section.id)}
+                  onClick={() => {
+                    if (section.id === 'workspace') {
+                      setExpandedSection('workspace');
+                      navigate('/workspace');
+                    } else {
+                      setExpandedSection((current) => current === section.id ? '' : section.id);
+                    }
+                  }}
                   title={collapsed ? section.label : undefined}
                   className={`flex h-11 w-full items-center gap-3 rounded-lg px-3 text-sm font-bold transition-colors ${isActiveSection ? 'bg-navy-50 text-primary' : 'text-text-secondary hover:bg-surface hover:text-primary'} ${collapsed ? 'justify-center' : ''}`}>
                   <Icon size={18} strokeWidth={1.8} />

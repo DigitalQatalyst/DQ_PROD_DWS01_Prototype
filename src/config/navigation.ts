@@ -69,7 +69,7 @@ const item = (
 };
 
 export const navigationItems: NavItemConfig[] = [
-  item('workspace', 'workspace-my-work', 'My Work', '/workspace/my-work', ['workspace:personal'], all, 'Personal execution cockpit across tasks, workflows, requests, approvals, blockers, and updates.', 'myWork'),
+  item('workspace', 'workspace-my-work', 'My Work', '/workspace/my-work', ['workspace:personal'], all, 'Personal execution cockpit across tasks, requests, approvals, blockers, tracker updates, and working-session follow-ups.', 'myWork'),
   item('workspace', 'workspace-my-requests', 'My Requests', '/workspace/my-requests', ['services:personal'], all, 'Personal service and support requests.', 'requests'),
   item('workspace', 'workspace-working-sessions', 'Working Sessions', '/workspace/working-sessions', ['workspace:personal'], all, 'Active working sessions, decisions, and follow-up actions.'),
   item('workspace', 'workspace-notifications', 'Notifications', '/workspace/notifications', ['workspace:personal'], all, 'Workspace notifications requiring review.', 'notifications'),
@@ -183,6 +183,5 @@ export function getNavigationItem(route: string) {
 }
 
 export function getDefaultRouteForRole(role: WorkspaceRole) {
-  const firstVisible = navigationItems.find((navItem) => navItem.allowedSegments.includes(role));
-  return firstVisible?.route || '/workspace/my-work';
+  return navigationItems.some((navItem) => navItem.section === 'workspace' && navItem.allowedSegments.includes(role)) ? '/workspace' : '/workspace/my-work';
 }

@@ -124,10 +124,12 @@ import { TaskSectionBuilderPage } from './pages/TaskSectionBuilderPage';
 import { TaskPermissionRulesPage } from './pages/TaskPermissionRulesPage';
 import { TaskTemplateGovernancePage } from './pages/TaskTemplateGovernancePage';
 import { StrategyLinkedTasksPage } from './pages/StrategyLinkedTasksPage';
+import { Stage02WorkspacePage } from './pages/Stage02WorkspacePage';
 import { Stage02SectionPage } from './pages/Stage02SectionPage';
 import { Stage02PerformancePage } from './pages/Stage02PerformancePage';
 import { DwsSectionPage } from './pages/DwsSectionPage';
 import { AccessRestrictedPage } from './pages/AccessRestrictedPage';
+import { WorkspaceMyRequestsPage, WorkspaceMyWorkPage, WorkspaceNotificationsPage, WorkspaceWorkingSessionsPage } from './pages/WorkspaceSectionPages';
 // A wrapper to handle route guards
 function RouteGuard({ children }: {children: React.ReactNode;}) {
   const { activePersona, hasRouteAccess } = usePersona();
@@ -156,6 +158,10 @@ function DwsRouteGuard({ route, children }: { route: string; children: React.Rea
 }
 
 function renderDwsRoute(route: string) {
+  if (route === '/workspace/my-work') return <WorkspaceMyWorkPage />;
+  if (route === '/workspace/my-requests') return <WorkspaceMyRequestsPage />;
+  if (route === '/workspace/working-sessions') return <WorkspaceWorkingSessionsPage />;
+  if (route === '/workspace/notifications') return <WorkspaceNotificationsPage />;
   if (route === '/performance/overview') return <Stage02PerformancePage section="overview" />;
   if (route === '/performance/goals') return <Stage02PerformancePage section="goals" />;
   if (route === '/performance/evaluation') return <Stage02PerformancePage section="evaluation" />;
@@ -252,7 +258,8 @@ function AppRoutes() {
 
       {/* Stage 02 Workspace Routes */}
       <Route element={<Stage02Layout />}>
-        <Route path="/stage02/workspace" element={<Navigate to="/workspace/my-work" replace />} />
+        <Route path="/workspace" element={<Stage02WorkspacePage />} />
+        <Route path="/stage02/workspace" element={<Navigate to="/workspace" replace />} />
         <Route path="/stage02/tasks" element={<Stage02SectionPage section="tasks" />} />
         <Route path="/stage02/workflows" element={<Stage02SectionPage section="workflows" />} />
         <Route path="/stage02/trackers" element={<Stage02SectionPage section="trackers" />} />
