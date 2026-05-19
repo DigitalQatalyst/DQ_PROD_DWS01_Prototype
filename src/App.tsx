@@ -10,6 +10,9 @@ import { Toaster } from 'sonner';
 import { PersonaProvider, usePersona } from './context/PersonaContext';
 import { ViewingModeProvider } from './context/ViewingModeContext';
 import { WorkspaceRoleProvider } from './context/WorkspaceRoleContext';
+import { useWorkspaceRole } from './context/WorkspaceRoleContext';
+import { navigationItems, getNavigationItem } from './config/navigation';
+import { hasAnyPermission } from './config/permissions';
 import { PortalLayout } from './layouts/PortalLayout';
 import { AppLayout } from './layouts/AppLayout';
 import { Stage02Layout } from './layouts/Stage02Layout';
@@ -121,9 +124,10 @@ import { TaskSectionBuilderPage } from './pages/TaskSectionBuilderPage';
 import { TaskPermissionRulesPage } from './pages/TaskPermissionRulesPage';
 import { TaskTemplateGovernancePage } from './pages/TaskTemplateGovernancePage';
 import { StrategyLinkedTasksPage } from './pages/StrategyLinkedTasksPage';
-import { Stage02WorkspacePage } from './pages/Stage02WorkspacePage';
 import { Stage02SectionPage } from './pages/Stage02SectionPage';
 import { Stage02PerformancePage } from './pages/Stage02PerformancePage';
+import { DwsSectionPage } from './pages/DwsSectionPage';
+import { AccessRestrictedPage } from './pages/AccessRestrictedPage';
 // A wrapper to handle route guards
 function RouteGuard({ children }: {children: React.ReactNode;}) {
   const { activePersona, hasRouteAccess } = usePersona();
@@ -141,6 +145,27 @@ function RouteGuard({ children }: {children: React.ReactNode;}) {
   }
   return <>{children}</>;
 }
+
+function DwsRouteGuard({ route, children }: { route: string; children: React.ReactNode }) {
+  const { activeRole } = useWorkspaceRole();
+  const navItem = getNavigationItem(route);
+  if (navItem && (!navItem.allowedSegments.includes(activeRole) || !hasAnyPermission(activeRole, navItem.requiredPermissions))) {
+    return <AccessRestrictedPage />;
+  }
+  return <>{children}</>;
+}
+
+function renderDwsRoute(route: string) {
+  if (route === '/performance/overview') return <Stage02PerformancePage section="overview" />;
+  if (route === '/performance/goals') return <Stage02PerformancePage section="goals" />;
+  if (route === '/performance/evaluation') return <Stage02PerformancePage section="evaluation" />;
+  if (route === '/performance/feedback') return <Stage02PerformancePage section="feedback" />;
+  if (route === '/performance/learning-progress') return <Stage02PerformancePage section="learning" />;
+  if (route === '/performance/contribution-history') return <Stage02PerformancePage section="contribution-history" />;
+  if (route === '/performance/role') return <Stage02PerformancePage section="role-performance" />;
+  return <DwsSectionPage route={route} />;
+}
+
 function AppRoutes() {
   return (
     <Routes>
@@ -227,22 +252,33 @@ function AppRoutes() {
 
       {/* Stage 02 Workspace Routes */}
       <Route element={<Stage02Layout />}>
-        <Route path="/stage02/workspace" element={<Stage02WorkspacePage />} />
+        <Route path="/stage02/workspace" element={<Navigate to="/workspace/my-work" replace />} />
         <Route path="/stage02/tasks" element={<Stage02SectionPage section="tasks" />} />
         <Route path="/stage02/workflows" element={<Stage02SectionPage section="workflows" />} />
         <Route path="/stage02/trackers" element={<Stage02SectionPage section="trackers" />} />
-        <Route path="/stage02/performance" element={<Stage02PerformancePage section="overview" />} />
-        <Route path="/stage02/performance/overview" element={<Stage02PerformancePage section="overview" />} />
-        <Route path="/stage02/performance/goals" element={<Stage02PerformancePage section="goals" />} />
-        <Route path="/stage02/performance/evaluation" element={<Stage02PerformancePage section="evaluation" />} />
-        <Route path="/stage02/performance/feedback" element={<Stage02PerformancePage section="feedback" />} />
-        <Route path="/stage02/performance/learning" element={<Stage02PerformancePage section="learning" />} />
-        <Route path="/stage02/performance/contribution-history" element={<Stage02PerformancePage section="contribution-history" />} />
-        <Route path="/stage02/performance/role-performance" element={<Stage02PerformancePage section="role-performance" />} />
+        <Route path="/stage02/performance" element={<Navigate to="/performance/overview" replace />} />
+        <Route path="/stage02/performance/overview" element={<Navigate to="/performance/overview" replace />} />
+        <Route path="/stage02/performance/goals" element={<Navigate to="/performance/goals" replace />} />
+        <Route path="/stage02/performance/evaluation" element={<Navigate to="/performance/evaluation" replace />} />
+        <Route path="/stage02/performance/feedback" element={<Navigate to="/performance/feedback" replace />} />
+        <Route path="/stage02/performance/learning" element={<Navigate to="/performance/learning-progress" replace />} />
+        <Route path="/stage02/performance/contribution-history" element={<Navigate to="/performance/contribution-history" replace />} />
+        <Route path="/stage02/performance/role-performance" element={<Navigate to="/performance/role" replace />} />
         <Route path="/stage02/governance" element={<Stage02SectionPage section="governance" />} />
         <Route path="/stage02/knowledge" element={<Stage02SectionPage section="knowledge" />} />
         <Route path="/stage02/people" element={<Stage02SectionPage section="people" />} />
         <Route path="/stage02/reports" element={<Stage02SectionPage section="reports" />} />
+        {navigationItems.map((item) => (
+          <Route
+            key={item.id}
+            path={item.route}
+            element={
+              <DwsRouteGuard route={item.route}>
+                {renderDwsRoute(item.route)}
+              </DwsRouteGuard>
+            }
+          />
+        ))}
       </Route>
 
       {/* App Layout Routes */}

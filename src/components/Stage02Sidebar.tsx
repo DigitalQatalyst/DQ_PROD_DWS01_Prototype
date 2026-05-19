@@ -1,126 +1,122 @@
-import React from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import {
-  BarChart3,
   BookOpen,
   CheckSquare,
-  FileText,
+  ChevronsLeft,
+  ChevronsRight,
+  Cloud,
+  Database,
   Gauge,
   GitBranch,
   Home,
-  LineChart,
+  PieChart,
   Settings,
   ShieldCheck,
-  Star,
   Users,
   type LucideIcon
 } from 'lucide-react';
-import { toast } from 'sonner';
-import { useViewingMode } from '../context/ViewingModeContext';
+import { navSections, navigationItems, type NavIcon } from '../config/navigation';
+import { hasAnyPermission } from '../config/permissions';
 import { useWorkspaceRole } from '../context/WorkspaceRoleContext';
+import { badgeCounts } from '../mocks/dwsEntities.mock';
 
-const primaryItems: Array<{ label: string; route: string; icon: LucideIcon; badge?: string }> = [
-  { label: 'Workspace', route: '/stage02/workspace', icon: Home },
-  { label: 'Tasks', route: '/stage02/tasks', icon: CheckSquare, badge: '8' },
-  { label: 'Workflows', route: '/stage02/workflows', icon: GitBranch, badge: '5' },
-  { label: 'Trackers', route: '/stage02/trackers', icon: LineChart },
-  { label: 'Performance', route: '/stage02/performance', icon: Gauge },
-  { label: 'Governance', route: '/stage02/governance', icon: ShieldCheck },
-  { label: 'Knowledge', route: '/stage02/knowledge', icon: BookOpen },
-  { label: 'People', route: '/stage02/people', icon: Users },
-  { label: 'Reports', route: '/stage02/reports', icon: FileText }
-];
-
-const favouriteMap: Record<string, string[]> = {
-  Associate: ['My Tasks', 'Learning Progress', 'Contribution History', 'Knowledge Center'],
-  'Manager / Lead': ['Team Blockers', 'Pending Approvals', 'Review Completion', 'My Tasks'],
-  'Governance Lead': ['Governance Reviews', 'Control Library', 'Risk Register', 'Escalations'],
-  'Product / Admin': ['Prototype Backlog', 'Feature Tracker', 'Template Configuration', 'Open Feedback']
+const iconMap: Record<NavIcon, LucideIcon> = {
+  home: Home,
+  checkSquare: CheckSquare,
+  gitBranch: GitBranch,
+  database: Database,
+  gauge: Gauge,
+  shield: ShieldCheck,
+  book: BookOpen,
+  cloud: Cloud,
+  users: Users,
+  pie: PieChart,
+  settings: Settings
 };
 
-const favouriteRoutes: Record<string, string> = {
-  'My Tasks': '/stage02/tasks',
-  'Learning Progress': '/stage02/performance/learning',
-  'Contribution History': '/stage02/performance/contribution-history',
-  'Knowledge Center': '/stage02/knowledge',
-  'Team Blockers': '/stage02/tasks',
-  'Pending Approvals': '/stage02/governance',
-  'Review Completion': '/stage02/performance/evaluation',
-  'Governance Reviews': '/stage02/governance',
-  'Control Library': '/stage02/governance',
-  'Risk Register': '/stage02/trackers',
-  Escalations: '/stage02/governance',
-  'Prototype Backlog': '/stage02/trackers',
-  'Feature Tracker': '/stage02/trackers',
-  'Template Configuration': '/stage02/workflows',
-  'Open Feedback': '/stage02/reports'
-};
+interface Stage02SidebarProps {
+  collapsed: boolean;
+  onCollapsedChange: (collapsed: boolean) => void;
+}
 
-export function Stage02Sidebar() {
-  const navigate = useNavigate();
+export function Stage02Sidebar({ collapsed, onCollapsedChange }: Stage02SidebarProps) {
   const location = useLocation();
-  const { mode } = useViewingMode();
-  const { activeRole } = useWorkspaceRole();
-  const favourites = favouriteMap[activeRole];
+  const { activeRole, activeSegment } = useWorkspaceRole();
+  const visibleItems = useMemo(
+    () => navigationItems.filter((item) => item.allowedSegments.includes(activeRole) && hasAnyPermission(activeRole, item.requiredPermissions)),
+    [activeRole]
+  );
+  const activeItem = visibleItems.find((item) => location.pathname === item.route || (item.route !== '/' && location.pathname.startsWith(`${item.route}/`)));
+  const [expandedSection, setExpandedSection] = useState(() => localStorage.getItem('dws-expanded-section') || activeItem?.section || 'workspace');
+
+  useEffect(() => {
+    if (activeItem?.section) setExpandedSection(activeItem.section);
+  }, [activeItem?.section]);
+
+  useEffect(() => {
+    localStorage.setItem('dws-expanded-section', expandedSection);
+  }, [expandedSection]);
 
   return (
-    <aside className="fixed left-0 top-16 z-40 hidden h-[calc(100vh-64px)] w-[280px] overflow-y-auto border-r border-border-subtle bg-white pb-6 lg:block">
-      <div className="px-5 py-5">
-        <div className="mb-5 rounded-2xl border border-border-subtle bg-surface px-4 py-3">
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-text-muted">Stage 02 Workspace</div>
-          <div className="mt-1 text-sm font-bold text-primary">{activeRole}</div>
-          <div className="mt-1 text-xs text-text-muted">{mode === 'first-time' ? 'New Joiner view' : 'Returning User view'}</div>
+    <aside className={`fixed left-0 top-16 z-40 hidden h-[calc(100vh-64px)] overflow-y-auto border-r border-border-subtle bg-white pb-4 transition-all duration-200 lg:block ${collapsed ? 'w-[88px]' : 'w-[280px]'}`}>
+      <div className="flex min-h-full flex-col px-4 py-5">
+        <div className={`mb-5 rounded-2xl border border-border-subtle bg-surface p-4 ${collapsed ? 'text-center' : ''}`}>
+          <div className="text-[10px] font-bold uppercase tracking-wider text-text-muted">{collapsed ? 'DWS' : 'Active role'}</div>
+          <div className="mt-1 truncate text-sm font-bold text-primary" title={activeRole}>{collapsed ? activeSegment.initials : activeRole}</div>
+          {!collapsed && <div className="mt-1 truncate text-xs text-text-muted">{activeSegment.subtitle}</div>}
         </div>
 
-        <nav aria-label="Stage 02 navigation" className="space-y-1">
-          {primaryItems.map((item) => {
-            const Icon = item.icon;
-            const isPerformanceRoute = item.route === '/stage02/performance' && location.pathname.startsWith('/stage02/performance');
+        <nav aria-label="DWS workspace navigation" className="flex-1 space-y-1">
+          {navSections.map((section) => {
+            const sectionItems = visibleItems.filter((item) => item.section === section.id);
+            if (sectionItems.length === 0) return null;
+            const Icon = iconMap[section.icon];
+            const isActiveSection = activeItem?.section === section.id;
+            const isOpen = !collapsed && expandedSection === section.id;
+            const sectionBadge = sectionItems.reduce((sum, item) => sum + (item.badgeCountKey ? badgeCounts[item.badgeCountKey] || 0 : 0), 0);
             return (
-              <NavLink
-                key={item.route}
-                to={item.route}
-                className={({ isActive }) =>
-                  `flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-semibold transition-colors ${
-                    isActive || isPerformanceRoute ? 'bg-navy-50 text-primary' : 'text-text-secondary hover:bg-surface hover:text-primary'
-                  }`
-                }>
-                <Icon size={17} strokeWidth={1.7} />
-                <span className="flex-1 truncate">{item.label}</span>
-                {item.badge && <span className="rounded-pill bg-primary px-2 py-0.5 text-[10px] font-bold text-white">{item.badge}</span>}
-              </NavLink>
+              <div key={section.id} className="border-b border-border-subtle py-1 last:border-b-0">
+                <button
+                  onClick={() => setExpandedSection((current) => current === section.id ? '' : section.id)}
+                  title={collapsed ? section.label : undefined}
+                  className={`flex h-11 w-full items-center gap-3 rounded-lg px-3 text-sm font-bold transition-colors ${isActiveSection ? 'bg-navy-50 text-primary' : 'text-text-secondary hover:bg-surface hover:text-primary'} ${collapsed ? 'justify-center' : ''}`}>
+                  <Icon size={18} strokeWidth={1.8} />
+                  {!collapsed && <span className="flex-1 truncate text-left">{section.label}</span>}
+                  {!collapsed && sectionBadge > 0 && <span className="rounded-pill bg-primary px-2 py-0.5 text-[10px] font-bold text-white">{sectionBadge > 99 ? '99+' : sectionBadge}</span>}
+                  {!collapsed && <span className="text-text-muted">{isOpen ? '−' : '+'}</span>}
+                </button>
+                {isOpen && (
+                  <div className="mt-1 space-y-1 pl-4">
+                    {sectionItems.map((item) => (
+                      <NavLink
+                        key={item.id}
+                        to={item.route}
+                        title={item.description}
+                        className={({ isActive }) =>
+                          `flex min-h-9 items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+                            isActive ? 'bg-primary text-white shadow-sm' : 'text-text-secondary hover:bg-surface hover:text-primary'
+                          }`
+                        }>
+                        <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
+                        <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                        {item.badgeCountKey && badgeCounts[item.badgeCountKey] ? <span className="rounded-pill bg-navy-100 px-2 py-0.5 text-[10px] font-bold text-primary">{badgeCounts[item.badgeCountKey]}</span> : null}
+                      </NavLink>
+                    ))}
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>
 
-        <div className="mt-7 border-t border-border-subtle pt-5">
-          <div className="mb-2 flex items-center justify-between">
-            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-text-muted">Favourites</h3>
-            <button onClick={() => toast.info('Favourite editing is available in workspace preferences.')} className="text-xs font-semibold text-text-muted hover:text-primary">Edit</button>
-          </div>
-          <div className="space-y-1">
-            {favourites.map((label) => (
-              <button
-                key={label}
-                onClick={() => navigate(favouriteRoutes[label] || '/stage02/workspace')}
-                className="flex h-9 w-full items-center gap-3 rounded-lg px-3 text-left text-sm font-medium text-text-secondary transition-colors hover:bg-surface hover:text-primary">
-                <Star size={16} strokeWidth={1.6} />
-                <span className="truncate">{label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-20 border-t border-border-subtle pt-5">
-          <button onClick={() => navigate('/stage02/workspace')} className="flex h-10 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium text-text-secondary hover:bg-surface hover:text-primary">
-            <Settings size={17} />
-            Settings
-          </button>
-          <button onClick={() => navigate('/stage02/reports')} className="mt-1 flex h-10 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium text-text-secondary hover:bg-surface hover:text-primary">
-            <BarChart3 size={17} />
-            Workspace Health
-          </button>
-        </div>
+        <button
+          onClick={() => onCollapsedChange(!collapsed)}
+          className={`mt-5 flex h-10 w-full items-center gap-3 rounded-lg px-3 text-sm font-bold text-text-secondary hover:bg-surface hover:text-primary ${collapsed ? 'justify-center' : ''}`}
+          title={collapsed ? 'Expand sidebar' : 'Collapse Sidebar'}>
+          {collapsed ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}
+          {!collapsed && <span>Collapse Sidebar</span>}
+        </button>
       </div>
     </aside>
   );

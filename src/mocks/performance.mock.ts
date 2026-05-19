@@ -1,5 +1,5 @@
 import type { ViewingMode } from '../context/ViewingModeContext';
-import type { WorkspaceRole } from '../context/WorkspaceRoleContext';
+import { getRoleFamily, type RoleFamily, type WorkspaceRole } from '../config/segments';
 
 export type PerformanceSection =
   | 'overview'
@@ -401,7 +401,7 @@ const contributions: ContributionRecord[] = [
   }
 ];
 
-const roleMetrics: Record<WorkspaceRole, RoleMetric[]> = {
+const roleMetrics: Record<RoleFamily, RoleMetric[]> = {
   Associate: [
     { id: 'ROLE-ASSOC-1', label: 'Delivery Quality', value: '82%', status: 'On Track', impact: 'High Impact', description: 'Quality of assigned task outcomes and supporting evidence.', nextAction: 'Attach final evidence to open delivery items.' },
     { id: 'ROLE-ASSOC-2', label: 'Task Completion', value: '84%', status: 'On Track', impact: 'High Impact', description: 'Completion rate for assigned work in the active cycle.', nextAction: 'Close overdue tasks before the weekly review.' },
@@ -436,6 +436,7 @@ const roleMetrics: Record<WorkspaceRole, RoleMetric[]> = {
 };
 
 export function getPerformanceDataset(mode: ViewingMode, role: WorkspaceRole): PerformanceDataset {
+  const family = getRoleFamily(role);
   const newJoiner = mode === 'first-time';
   const goals = newJoiner ? newJoinerGoals : baseGoals;
   const kpis: PerformanceKpi[] = newJoiner
@@ -517,7 +518,7 @@ export function getPerformanceDataset(mode: ViewingMode, role: WorkspaceRole): P
     feedback: newJoiner ? feedback.slice(0, 2) : feedback,
     learning: newJoiner ? learning.map((module) => module.title === 'DQ Ways of Working' ? { ...module, progress: 45, status: 'In Progress' } : module) : learning,
     contributions: newJoiner ? contributions.slice(0, 3) : contributions,
-    roleMetrics: roleMetrics[role],
+    roleMetrics: roleMetrics[family],
     aiInsights,
     events,
     drivers: [

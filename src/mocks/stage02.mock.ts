@@ -1,5 +1,5 @@
 import type { ViewingMode } from '../context/ViewingModeContext';
-import type { WorkspaceRole } from '../context/WorkspaceRoleContext';
+import { getRoleFamily, type RoleFamily, type WorkspaceRole } from '../config/segments';
 
 export type Stage02Tab = 'Tasks' | 'Workflows' | 'Trackers' | 'Reviews' | 'Performance';
 export type Stage02Section = 'tasks' | 'workflows' | 'trackers' | 'performance' | 'governance' | 'knowledge' | 'people' | 'reports';
@@ -93,7 +93,7 @@ function item(partial: Partial<WorkItem> & Pick<WorkItem, 'id' | 'title' | 'type
   };
 }
 
-const roleRows: Record<WorkspaceRole, WorkItem[]> = {
+const roleRows: Record<RoleFamily, WorkItem[]> = {
   Associate: [
     item({ id: 'TSK-2041', title: 'Complete Role-based Learning Path', subtitle: 'Learning Center', type: 'Task', status: 'Not Started', priority: 'Medium', dueDate: '24 May 2026' }),
     item({ id: 'TRK-118', title: 'Update Contribution History', subtitle: 'Personal tracker', type: 'Tracker', status: 'In Progress', priority: 'Low', dueDate: '27 May 2026' })
@@ -129,31 +129,34 @@ const returningTasks: WorkItem[] = [
 ];
 
 function workflowRows(role: WorkspaceRole): WorkItem[] {
+  const family = getRoleFamily(role);
   return [
     item({ id: 'WF-301', title: 'Access Request Fulfilment', type: 'Workflow', status: 'Awaiting Input', stage: 'Owner review', owner: 'Amina Hassan', dueDate: '20 May 2026', nextAction: 'Provide access justification and attach manager approval.' }),
     item({ id: 'WF-208', title: 'Quarterly Governance Review', type: 'Workflow', status: 'In Progress', stage: 'Evidence collection', owner: 'Ian Karanja', dueDate: '24 May 2026' }),
-    item({ id: 'WF-412', title: role === 'Manager / Lead' ? 'Team Workload Review' : 'Personal Contribution Review', type: 'Workflow', status: 'On Track', stage: 'Review', owner: 'Amina Hassan', dueDate: '27 May 2026' })
+    item({ id: 'WF-412', title: family === 'Manager / Lead' ? 'Team Workload Review' : 'Personal Contribution Review', type: 'Workflow', status: 'On Track', stage: 'Review', owner: 'Amina Hassan', dueDate: '27 May 2026' })
   ];
 }
 
 function trackerRows(role: WorkspaceRole): WorkItem[] {
+  const family = getRoleFamily(role);
   return [
     item({ id: 'TRK-101', title: 'My Delivery Tracker', type: 'Tracker Record', status: 'Needs Update', priority: 'Medium', meta: 'Last updated 2 days ago', dueDate: '20 May 2026' }),
-    item({ id: 'TRK-118', title: role === 'Product / Admin' ? 'Feature Tracker Update' : 'Learning Progress Tracker', type: 'Tracker Record', status: 'In Progress', priority: 'Low', meta: 'Update health: Watch', dueDate: '23 May 2026' }),
-    item({ id: 'TRK-129', title: role === 'Governance Lead' ? 'Control Actions Tracker' : 'Feedback Follow-up Tracker', type: 'Tracker Record', status: 'On Track', priority: 'Medium', meta: 'Last updated today', dueDate: '26 May 2026' })
+    item({ id: 'TRK-118', title: family === 'Product / Admin' ? 'Feature Tracker Update' : 'Learning Progress Tracker', type: 'Tracker Record', status: 'In Progress', priority: 'Low', meta: 'Update health: Watch', dueDate: '23 May 2026' }),
+    item({ id: 'TRK-129', title: family === 'Governance Lead' ? 'Control Actions Tracker' : 'Feedback Follow-up Tracker', type: 'Tracker Record', status: 'On Track', priority: 'Medium', meta: 'Last updated today', dueDate: '26 May 2026' })
   ];
 }
 
 function reviewRows(role: WorkspaceRole): WorkItem[] {
+  const family = getRoleFamily(role);
   return [
     item({ id: 'REV-101', title: 'Feedback Review', type: 'Review', status: 'In Progress', owner: 'Bilal Waqar', dueDate: '20 May 2026', nextAction: 'Review feedback notes and acknowledge next development action.' }),
-    item({ id: 'REV-140', title: role === 'Governance Lead' ? 'Compliance Action Review' : 'Manager Check-in Review', type: 'Review', status: 'Due Today', priority: 'High', owner: 'Sreya Lakshmi', dueDate: '19 May 2026' }),
-    item({ id: 'APP-305', title: role === 'Manager / Lead' ? 'Pending Team Approval' : 'Governance Check Acknowledgement', type: 'Approval', status: 'Awaiting Input', priority: 'Medium', owner: 'Amina Hassan', dueDate: '22 May 2026' })
+    item({ id: 'REV-140', title: family === 'Governance Lead' ? 'Compliance Action Review' : 'Manager Check-in Review', type: 'Review', status: 'Due Today', priority: 'High', owner: 'Sreya Lakshmi', dueDate: '19 May 2026' }),
+    item({ id: 'APP-305', title: family === 'Manager / Lead' ? 'Pending Team Approval' : 'Governance Check Acknowledgement', type: 'Approval', status: 'Awaiting Input', priority: 'Medium', owner: 'Amina Hassan', dueDate: '22 May 2026' })
   ];
 }
 
 function buildTabs(mode: ViewingMode, role: WorkspaceRole): Record<Stage02Tab, WorkItem[]> {
-  const tasks = [...(mode === 'first-time' ? newJoinerTasks : returningTasks), ...roleRows[role]];
+  const tasks = [...(mode === 'first-time' ? newJoinerTasks : returningTasks), ...roleRows[getRoleFamily(role)]];
   return {
     Tasks: tasks,
     Workflows: workflowRows(role),
@@ -176,12 +179,13 @@ function activity(id: string, title: string, subtitle: string): ActivityItem {
 }
 
 export function getStage02Dataset(mode: ViewingMode, role: WorkspaceRole): Stage02Dataset {
+  const family = getRoleFamily(role);
   const isNew = mode === 'first-time';
   const tabs = buildTabs(mode, role);
   const roleSignal =
-    role === 'Manager / Lead' ? 'Team blockers and pending approvals included' :
-    role === 'Governance Lead' ? 'Governance reviews and control checks included' :
-    role === 'Product / Admin' ? 'Feature tracker and platform feedback included' :
+    family === 'Manager / Lead' ? 'Team blockers and pending approvals included' :
+    family === 'Governance Lead' ? 'Governance reviews and control checks included' :
+    family === 'Product / Admin' ? 'Feature tracker and platform feedback included' :
     'Personal tasks, learning, feedback, and contributions included';
 
   const kpis: KpiItem[] = isNew ? [
