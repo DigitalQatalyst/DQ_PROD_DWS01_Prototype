@@ -130,6 +130,7 @@ import { Stage02PerformancePage } from './pages/Stage02PerformancePage';
 import { DwsSectionPage } from './pages/DwsSectionPage';
 import { AccessRestrictedPage } from './pages/AccessRestrictedPage';
 import { WorkspaceMyRequestsPage, WorkspaceMyWorkPage, WorkspaceNotificationsPage, WorkspaceWorkingSessionsPage } from './pages/WorkspaceSectionPages';
+import { TasksAllPage, TasksBlockedPage, TasksClosureQualityPage, TasksCreatePage, TasksEvidencePage, TasksMyTasksPage, TasksReviewPage, TasksTemplatesPage } from './pages/TasksSectionPages';
 // A wrapper to handle route guards
 function RouteGuard({ children }: {children: React.ReactNode;}) {
   const { activePersona, hasRouteAccess } = usePersona();
@@ -162,6 +163,14 @@ function renderDwsRoute(route: string) {
   if (route === '/workspace/my-requests') return <WorkspaceMyRequestsPage />;
   if (route === '/workspace/working-sessions') return <WorkspaceWorkingSessionsPage />;
   if (route === '/workspace/notifications') return <WorkspaceNotificationsPage />;
+  if (route === '/tasks/my-tasks') return <TasksMyTasksPage />;
+  if (route === '/tasks/all') return <TasksAllPage />;
+  if (route === '/tasks/create') return <TasksCreatePage />;
+  if (route === '/tasks/templates') return <TasksTemplatesPage />;
+  if (route === '/tasks/review') return <TasksReviewPage />;
+  if (route === '/tasks/blocked') return <TasksBlockedPage />;
+  if (route === '/tasks/closure-quality') return <TasksClosureQualityPage />;
+  if (route === '/tasks/evidence') return <TasksEvidencePage />;
   if (route === '/performance/overview') return <Stage02PerformancePage section="overview" />;
   if (route === '/performance/goals') return <Stage02PerformancePage section="goals" />;
   if (route === '/performance/evaluation') return <Stage02PerformancePage section="evaluation" />;
