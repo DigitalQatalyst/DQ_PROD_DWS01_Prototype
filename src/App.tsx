@@ -11,6 +11,7 @@ import { PersonaProvider, usePersona } from './context/PersonaContext';
 import { ViewingModeProvider } from './context/ViewingModeContext';
 import { WorkspaceRoleProvider } from './context/WorkspaceRoleContext';
 import { useWorkspaceRole } from './context/WorkspaceRoleContext';
+import { ServiceLifecycleProvider } from './context/ServiceLifecycleContext';
 import { navigationItems, getNavigationItem } from './config/navigation';
 import { hasAnyPermission } from './config/permissions';
 import { PortalLayout } from './layouts/PortalLayout';
@@ -124,6 +125,8 @@ import { TaskSectionBuilderPage } from './pages/TaskSectionBuilderPage';
 import { TaskPermissionRulesPage } from './pages/TaskPermissionRulesPage';
 import { TaskTemplateGovernancePage } from './pages/TaskTemplateGovernancePage';
 import { StrategyLinkedTasksPage } from './pages/StrategyLinkedTasksPage';
+import { ServiceDetailPage } from './pages/ServiceDetailPage';
+import { RequestWorkflowPage } from './pages/RequestWorkflowPage';
 import { Stage02WorkspacePage } from './pages/Stage02WorkspacePage';
 import { Stage02SectionPage } from './pages/Stage02SectionPage';
 import { Stage02PerformancePage } from './pages/Stage02PerformancePage';
@@ -220,6 +223,33 @@ function AppRoutes() {
           element={
           <RouteGuard>
               <ServicesMarketplacePage />
+            </RouteGuard>
+          } />
+        
+        <Route
+          path="/marketplaces/services/:serviceId"
+          element={
+          <RouteGuard>
+              <ServiceDetailPage />
+            </RouteGuard>
+          } />
+        
+        <Route
+          path="/requests/start/:serviceId"
+          element={
+          <RouteGuard>
+              <RequestWorkflowPage />
+            </RouteGuard>
+          } />
+        
+        <Route
+          path="/requests/:requestId/status"
+          element={
+          <RouteGuard>
+              <PlaceholderPage
+                title="Associate Request Status View"
+                description="The request status tracking view will be built in Prompt 4."
+                phase="Prompt 4" />
             </RouteGuard>
           } />
         
@@ -364,7 +394,7 @@ function AppRoutes() {
           } />
         
         <Route
-          path="/workspace/request-status"
+          path="/requests/:requestId/status"
           element={
           <RouteGuard>
               <RequestStatusPage />
@@ -1132,6 +1162,41 @@ function AppRoutes() {
           } />
         
 
+        {/* Service Lifecycle downstream routes (Prompt 5 & 6) */}
+        <Route
+          path="/service-owner/requests"
+          element={
+          <RouteGuard>
+              <PlaceholderPage
+                title="Service Owner Queue"
+                description="The service owner routed requests queue will be built in Prompt 5."
+                phase="Prompt 5" />
+            </RouteGuard>
+          } />
+        
+        <Route
+          path="/workflow/approvals"
+          element={
+          <RouteGuard>
+              <PlaceholderPage
+                title="Approver / Reviewer Queue"
+                description="The approval queue will be built in Prompt 5."
+                phase="Prompt 5" />
+            </RouteGuard>
+          } />
+        
+        <Route
+          path="/intelligence/service-signals"
+          element={
+          <RouteGuard>
+              <PlaceholderPage
+                title="Executive Service Signal View"
+                description="The executive service signal dashboard will be built in Prompt 6."
+                phase="Prompt 6" />
+            </RouteGuard>
+          } />
+        
+
         {/* Catch-all for unbuilt routes */}
         <Route
           path="*"
@@ -1154,8 +1219,10 @@ export function App() {
       <PersonaProvider>
         <WorkspaceRoleProvider>
           <ViewingModeProvider>
-            <AppRoutes />
-            <Toaster position="top-right" richColors />
+            <ServiceLifecycleProvider>
+              <AppRoutes />
+              <Toaster position="top-right" richColors />
+            </ServiceLifecycleProvider>
           </ViewingModeProvider>
         </WorkspaceRoleProvider>
       </PersonaProvider>
