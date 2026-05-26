@@ -249,11 +249,7 @@ function AppRoutes() {
         
         <Route
           path="/marketplaces/analytics"
-          element={
-          <RouteGuard>
-              <AnalyticsMarketplacePage />
-            </RouteGuard>
-          } />
+          element={<AnalyticsMarketplacePage />} />
         
         <Route
           path="/marketplaces/feedback"
