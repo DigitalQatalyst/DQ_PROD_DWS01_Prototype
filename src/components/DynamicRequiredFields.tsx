@@ -31,14 +31,13 @@ export function DynamicRequiredFields({ requiredInputs, values, onChange, showVa
               type="text"
               value={val}
               onChange={(e) => onChange(input, e.target.value)}
-              className={`w-full p-2.5 bg-white border rounded-button focus:outline-none focus:ring-2 focus:ring-secondary/20 transition-all ${
-                isError ? 'border-danger' : 'border-border-strong hover:border-text-muted'
-              }`}
+              className={`w-full p-2.5 bg-white border rounded-button focus:outline-none focus:ring-2 focus:ring-secondary/20 transition-all ${isError ? 'border-danger' : 'border-border-strong hover:border-text-muted'
+                }`}
               placeholder={`Enter ${input.toLowerCase()}...`}
             />
             {isError && (
               <p className="text-xs text-danger mt-1.5 font-medium">
-                Required to route this request.
+                Required.
               </p>
             )}
           </div>

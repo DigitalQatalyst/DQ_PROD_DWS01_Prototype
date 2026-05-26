@@ -127,6 +127,9 @@ import { TaskTemplateGovernancePage } from './pages/TaskTemplateGovernancePage';
 import { StrategyLinkedTasksPage } from './pages/StrategyLinkedTasksPage';
 import { ServiceDetailPage } from './pages/ServiceDetailPage';
 import { RequestWorkflowPage } from './pages/RequestWorkflowPage';
+import { ServiceOwnerQueuePage } from './pages/ServiceOwnerQueuePage';
+import { ApproverQueuePage } from './pages/ApproverQueuePage';
+import { ExecutiveSignalPage } from './pages/ExecutiveSignalPage';
 import { Stage02WorkspacePage } from './pages/Stage02WorkspacePage';
 import { Stage02SectionPage } from './pages/Stage02SectionPage';
 import { Stage02PerformancePage } from './pages/Stage02PerformancePage';
@@ -181,6 +184,9 @@ function renderDwsRoute(route: string) {
   if (route === '/performance/learning-progress') return <Stage02PerformancePage section="learning" />;
   if (route === '/performance/contribution-history') return <Stage02PerformancePage section="contribution-history" />;
   if (route === '/performance/role') return <Stage02PerformancePage section="role-performance" />;
+  if (route === '/service-owner/requests') return <ServiceOwnerQueuePage />;
+  if (route === '/workflow/approvals') return <ApproverQueuePage />;
+  if (route === '/intelligence/service-signals') return <ExecutiveSignalPage />;
   return <DwsSectionPage route={route} />;
 }
 
@@ -242,16 +248,7 @@ function AppRoutes() {
             </RouteGuard>
           } />
         
-        <Route
-          path="/requests/:requestId/status"
-          element={
-          <RouteGuard>
-              <PlaceholderPage
-                title="Associate Request Status View"
-                description="The request status tracking view will be built in Prompt 4."
-                phase="Prompt 4" />
-            </RouteGuard>
-          } />
+        {/* Route moved to line ~400 — handled by RequestStatusPage */}
         
         <Route
           path="/marketplaces/task-templates"
@@ -1167,10 +1164,7 @@ function AppRoutes() {
           path="/service-owner/requests"
           element={
           <RouteGuard>
-              <PlaceholderPage
-                title="Service Owner Queue"
-                description="The service owner routed requests queue will be built in Prompt 5."
-                phase="Prompt 5" />
+              <ServiceOwnerQueuePage />
             </RouteGuard>
           } />
         
@@ -1178,10 +1172,7 @@ function AppRoutes() {
           path="/workflow/approvals"
           element={
           <RouteGuard>
-              <PlaceholderPage
-                title="Approver / Reviewer Queue"
-                description="The approval queue will be built in Prompt 5."
-                phase="Prompt 5" />
+              <ApproverQueuePage />
             </RouteGuard>
           } />
         
@@ -1189,10 +1180,7 @@ function AppRoutes() {
           path="/intelligence/service-signals"
           element={
           <RouteGuard>
-              <PlaceholderPage
-                title="Executive Service Signal View"
-                description="The executive service signal dashboard will be built in Prompt 6."
-                phase="Prompt 6" />
+              <ExecutiveSignalPage />
             </RouteGuard>
           } />
         

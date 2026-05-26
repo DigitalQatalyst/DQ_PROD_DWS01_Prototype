@@ -9,6 +9,8 @@ import type {
   ServiceCategory,
   ServiceRequestStatus,
   ApprovalDecisionState,
+  CategoryDemand,
+  ServiceOwnerPerformance,
 } from '../types/serviceLifecycle';
 import {
   services as mockServices,
@@ -18,6 +20,8 @@ import {
   serviceQueueItems as mockQueueItems,
   executiveSignals as mockSignals,
   serviceCategories as mockCategories,
+  categoryDemand as mockCategoryDemand,
+  serviceOwnerPerformance as mockServiceOwnerPerformance,
 } from '../mocks/serviceLifecycle.mock';
 
 // ─── Context Shape ────────────────────────────────────────────────────
@@ -31,6 +35,8 @@ interface ServiceLifecycleContextType {
   approvals: ServiceApproval[];
   queueItems: ServiceQueueItem[];
   signals: ExecutiveSignal[];
+  categoryDemand: CategoryDemand[];
+  serviceOwnerPerformance: ServiceOwnerPerformance[];
 
   // Lookups
   getServiceById: (id: string) => Service | undefined;
@@ -60,6 +66,8 @@ export function ServiceLifecycleProvider({ children }: { children: React.ReactNo
   const [approvals, setApprovals] = useState<ServiceApproval[]>(mockApprovals);
   const [queueItems] = useState<ServiceQueueItem[]>(mockQueueItems);
   const [signals] = useState<ExecutiveSignal[]>(mockSignals);
+  const [categoryDemand] = useState<CategoryDemand[]>(mockCategoryDemand);
+  const [serviceOwnerPerformance] = useState<ServiceOwnerPerformance[]>(mockServiceOwnerPerformance);
 
   // ── Lookups ──────────────────────────────────────────────────────
 
@@ -243,6 +251,8 @@ export function ServiceLifecycleProvider({ children }: { children: React.ReactNo
     approvals,
     queueItems,
     signals,
+    categoryDemand,
+    serviceOwnerPerformance,
     getServiceById,
     getServiceDetailByServiceId,
     getRequestById,
