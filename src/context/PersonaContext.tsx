@@ -33,6 +33,8 @@ export function PersonaProvider({ children }: {children: ReactNode;}) {
     if (universalRoutes.has(route)) return true;
     const accessMap: Record<string, PersonaId[]> = {
       '/marketplaces/services': ['associate', 'hra', 'admin', 'support'],
+      '/marketplaces/services/:serviceId': ['associate', 'hra', 'admin', 'support'],
+      '/requests/start/:serviceId': ['associate', 'hra', 'admin', 'support'],
       '/marketplaces/task-templates': [
       'associate',
       'scrum-master',
@@ -95,7 +97,10 @@ export function PersonaProvider({ children }: {children: ReactNode;}) {
       'ceo'],
 
       '/executive/enterprise-execution': ['ceo'],
-      '/admin/audit-log': ['admin', 'ceo']
+      '/admin/audit-log': ['admin', 'ceo'],
+      '/service-owner/requests': ['support', 'hra', 'admin'],
+      '/workflow/approvals': ['scrum-master', 'team-lead', 'unit-lead', 'hra', 'admin', 'support', 'ceo'],
+      '/intelligence/service-signals': ['ceo'],
     };
     // Persona-scoped subtree restrictions — routes inside these prefixes
     // are only reachable for the listed personas. Anything else falls
@@ -135,6 +140,17 @@ export function PersonaProvider({ children }: {children: ReactNode;}) {
 
     if (accessMap[route]) {
       return accessMap[route].includes(persona.id);
+    }
+    // Dynamic lifecycle routes — match by prefix for parameterised paths
+    const lifecyclePrefixes: { prefix: string; allowed: PersonaId[] }[] = [
+      { prefix: '/marketplaces/services/', allowed: ['associate', 'hra', 'admin', 'support'] },
+      { prefix: '/requests/start/', allowed: ['associate', 'hra', 'admin', 'support'] },
+      { prefix: '/requests/', allowed: ['associate', 'hra', 'admin', 'support'] },
+    ];
+    for (const { prefix, allowed } of lifecyclePrefixes) {
+      if (route.startsWith(prefix)) {
+        return allowed.includes(persona.id);
+      }
     }
     for (const { prefix, allowed } of scopedPrefixes) {
       if (route.startsWith(prefix)) {
