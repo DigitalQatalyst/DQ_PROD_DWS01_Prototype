@@ -553,8 +553,8 @@ function TaskDetailDrawer({ task, route, onClose, onUpdate, onModal }: { task: D
                 <EditableSelect label="Escalation Status" value={current.escalationStatus} options={['N/A', 'Escalation pending', 'Escalated', 'Resolved']} readOnly={!isEditing || !permissions.lead} onChange={(value) => updateDraft('escalationStatus', value)} />
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
-                {permissions.own && <button onClick={() => updateDraft('blockerState', 'Resolved blocker')} className="rounded-button border border-border-default px-3 py-2 text-xs font-bold text-primary hover:bg-surface">Resolve Blocker</button>}
-                {permissions.lead && <button onClick={() => onModal('Escalate Blocker')} className="rounded-button border border-border-default px-3 py-2 text-xs font-bold text-primary hover:bg-surface">Escalate Blocker</button>}
+                {permissions.own && <button onClick={() => handleDrawerAction('Resolve Blocker', current, permissions, updateDraft, onUpdate, onModal, restricted)} className="rounded-button border border-border-default px-3 py-2 text-xs font-bold text-primary hover:bg-surface">Resolve Blocker</button>}
+                {permissions.lead && <button onClick={() => handleDrawerAction('Escalate', current, permissions, updateDraft, onUpdate, onModal, restricted)} className="rounded-button border border-border-default px-3 py-2 text-xs font-bold text-primary hover:bg-surface">Escalate Blocker</button>}
               </div>
             </DrawerCard>
 
@@ -614,7 +614,7 @@ function TaskDetailDrawer({ task, route, onClose, onUpdate, onModal }: { task: D
           </div>
         </div>
 
-        <div className="sticky bottom-0 border-t border-border-subtle bg-white px-6 py-4">
+        <div className="flex-shrink-0 border-t border-border-subtle bg-white px-6 py-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="text-xs font-semibold text-text-muted">{dirty ? 'Unsaved changes' : 'All changes saved locally'}</div>
             <div className="flex gap-2">
@@ -789,6 +789,9 @@ function handleDrawerAction(
     updateDraft('status', next.status);
     updateDraft('escalationStatus', next.escalationStatus);
     updateDraft('blockerReason', next.blockerReason);
+    updateDraft('activityHistory', next.activityHistory);
+    updateDraft('closureScore', next.closureScore);
+    updateDraft('missingItems', next.missingItems);
     onUpdate(next);
     toast.success('Blocker resolved locally.');
     return;

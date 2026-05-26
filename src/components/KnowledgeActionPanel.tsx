@@ -46,7 +46,7 @@ export function KnowledgeActionPanel({
     });
   };
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-navy-900/40 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[250] flex justify-end bg-navy-900/40 backdrop-blur-sm">
       <div className="w-full max-w-[440px] bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
         {/* Header */}
         <div className="p-6 border-b border-border-default bg-surface shrink-0">
