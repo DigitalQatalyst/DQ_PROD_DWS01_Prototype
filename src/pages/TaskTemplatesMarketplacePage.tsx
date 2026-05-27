@@ -5,9 +5,9 @@ import { FileText, CheckSquare, Shield, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { DetailPanel } from '../components/DetailPanel';
 import {
-  MarketplaceFilterPanel,
-  FilterGroup } from
-'../components/MarketplaceFilterPanel';
+  MarketplaceTopFilterBar,
+} from '../components/MarketplaceTopFilterBar';
+import type { FilterGroup } from '../components/MarketplaceFilterPanel';
 import { usePersona } from '../context/PersonaContext';
 import { MarketplaceActionRouter } from '../components/MarketplaceActionRouter';
 export function TaskTemplatesMarketplacePage() {
@@ -341,10 +341,8 @@ export function TaskTemplatesMarketplacePage() {
 
       <FilterBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        <MarketplaceFilterPanel
-          title="Refine task templates"
-          helperText="Filter this marketplace by role, status, owner, SLA, and relevance."
+      <div className="mt-4">
+        <MarketplaceTopFilterBar
           searchPlaceholder="Search templates, checklist rules, evidence, or closure criteria"
           searchValue={search}
           onSearchChange={setSearch}
@@ -353,81 +351,76 @@ export function TaskTemplatesMarketplacePage() {
           onChange={handleFilterChange}
           recommendedActive={recommendedActive}
           onRecommendedChange={setRecommendedActive}
-          totalCount={templates.length}
-          visibleCount={filteredTemplates.length}
           onClearAll={handleClearAll}
-          persona={activePersona.role} />
-        
-
-        <div className="flex-1">
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {filteredTemplates.map((template) =>
-            <div
-              key={template.id}
-              onClick={() => setSelectedTemplate(template)}
-              className="flex flex-col bg-white rounded-card border border-border-default p-6 hover:shadow-md hover:border-border-strong transition-all cursor-pointer group">
-              
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-10 h-10 rounded-full bg-navy-50 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
-                    <FileText size={20} />
-                  </div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted bg-surface px-2 py-1 rounded">
-                    {template.category}
-                  </span>
-                </div>
-
-                <h3 className="text-lg font-semibold text-primary mb-2">
-                  {template.title}
-                </h3>
-                <p className="text-sm text-text-secondary mb-6 flex-1">
-                  {template.desc}
-                </p>
-
-                <div className="space-y-2 mb-6 p-3 bg-surface rounded border border-border-subtle">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-text-muted flex items-center gap-1">
-                      <CheckSquare size={12} /> Checklist Items
-                    </span>
-                    <span className="font-medium text-primary">
-                      {template.checklist}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-text-muted flex items-center gap-1">
-                      <Shield size={12} /> Evidence Required
-                    </span>
-                    <span className="font-medium text-primary">
-                      {template.evidence ? 'Yes' : 'No'}
-                    </span>
-                  </div>
-                </div>
-
-                <button
-                onClick={(e) => handleUseTemplate(e, template)}
-                className="w-full py-2.5 bg-surface text-primary font-semibold text-sm rounded-button group-hover:bg-primary group-hover:text-white transition-colors flex items-center justify-center gap-2">
-                
-                  Use Template
-                  <ArrowRight size={16} />
-                </button>
-              </div>
-            )}
-          </div>
-
-          {filteredTemplates.length === 0 &&
-          <div className="text-center py-16 bg-white rounded-card border border-border-default">
-              <p className="text-text-muted mb-4">
-                No marketplace items match your filters.
-              </p>
-              <button
-              onClick={handleClearAll}
-              className="px-4 py-2 bg-surface text-primary font-semibold text-sm rounded-button hover:bg-navy-50 transition-colors">
-              
-                Clear filters
-              </button>
-            </div>
-          }
-        </div>
+        />
       </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {filteredTemplates.map((template) =>
+        <div
+          key={template.id}
+          onClick={() => setSelectedTemplate(template)}
+          className="flex flex-col bg-white rounded-card border border-border-default p-6 hover:shadow-md hover:border-border-strong transition-all cursor-pointer group">
+          
+            <div className="flex items-start justify-between mb-4">
+              <div className="w-10 h-10 rounded-full bg-navy-50 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                <FileText size={20} />
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted bg-surface px-2 py-1 rounded">
+                {template.category}
+              </span>
+            </div>
+
+            <h3 className="text-lg font-semibold text-primary mb-2">
+              {template.title}
+            </h3>
+            <p className="text-sm text-text-secondary mb-6 flex-1">
+              {template.desc}
+            </p>
+
+            <div className="space-y-2 mb-6 p-3 bg-surface rounded border border-border-subtle">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-text-muted flex items-center gap-1">
+                  <CheckSquare size={12} /> Checklist Items
+                </span>
+                <span className="font-medium text-primary">
+                  {template.checklist}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-text-muted flex items-center gap-1">
+                  <Shield size={12} /> Evidence Required
+                </span>
+                <span className="font-medium text-primary">
+                  {template.evidence ? 'Yes' : 'No'}
+                </span>
+              </div>
+            </div>
+
+            <button
+            onClick={(e) => handleUseTemplate(e, template)}
+            className="w-full py-2.5 bg-surface text-primary font-semibold text-sm rounded-button group-hover:bg-primary group-hover:text-white transition-colors flex items-center justify-center gap-2">
+            
+              Use Template
+              <ArrowRight size={16} />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {filteredTemplates.length === 0 &&
+      <div className="text-center py-16 bg-white rounded-card border border-border-default">
+          <p className="text-text-muted mb-4">
+            No marketplace items match your filters.
+          </p>
+          <button
+          onClick={handleClearAll}
+          className="px-4 py-2 bg-surface text-primary font-semibold text-sm rounded-button hover:bg-navy-50 transition-colors">
+          
+            Clear filters
+          </button>
+        </div>
+      }
 
       {selectedTemplate &&
       <DetailPanel

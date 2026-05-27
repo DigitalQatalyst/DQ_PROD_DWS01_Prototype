@@ -5,9 +5,9 @@ import { StatusPill } from '../components/StatusPill';
 import { MessageSquare, Send } from 'lucide-react';
 import { FilterBar } from '../components/FilterBar';
 import {
-  MarketplaceFilterPanel,
-  FilterGroup } from
-'../components/MarketplaceFilterPanel';
+  MarketplaceTopFilterBar,
+} from '../components/MarketplaceTopFilterBar';
+import type { FilterGroup } from '../components/MarketplaceFilterPanel';
 import { usePersona } from '../context/PersonaContext';
 import { MarketplaceActionRouter } from '../components/MarketplaceActionRouter';
 export function MarketplaceFeedbackPage() {
@@ -286,72 +286,67 @@ export function MarketplaceFeedbackPage() {
 
       <FilterBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        <MarketplaceFilterPanel
-          title="Refine feedback"
-          helperText="Filter this marketplace by role, status, owner, SLA, and relevance."
+      <div className="mt-4 mb-6">
+        <MarketplaceTopFilterBar
           searchPlaceholder="Search feedback, affected items, owners, or statuses"
           searchValue={search}
           onSearchChange={setSearch}
           groups={filterGroups}
           values={filterValues}
           onChange={handleFilterChange}
-          totalCount={recentFeedback.length}
-          visibleCount={filteredFeedback.length}
           onClearAll={handleClearAll}
-          persona={activePersona.role} />
-        
+        />
+      </div>
 
-        <div className="flex-1 space-y-8">
-          <div className="bg-white rounded-card border border-border-default p-6 shadow-sm">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-navy-50 flex items-center justify-center text-primary">
-                <MessageSquare size={20} />
-              </div>
-              <div>
-                <h2 className="text-lg font-semibold text-primary">
-                  Submit Feedback
-                </h2>
-                <p className="text-sm text-text-secondary">
-                  Open the feedback flow to route your suggestions to the
-                  correct owner.
-                </p>
-              </div>
+      <div className="space-y-8">
+        <div className="bg-white rounded-card border border-border-default p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-full bg-navy-50 flex items-center justify-center text-primary">
+              <MessageSquare size={20} />
             </div>
-
-            <button
-              onClick={() => setIsFlowOpen(true)}
-              className="w-full md:w-auto px-6 py-2.5 bg-primary text-white font-semibold text-sm rounded-button hover:bg-navy-800 transition-colors flex items-center justify-center gap-2">
-              
-              Start Feedback Flow
-              <Send size={16} />
-            </button>
-          </div>
-
-          <div className="bg-white rounded-card border border-border-default shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-border-subtle">
+            <div>
               <h2 className="text-lg font-semibold text-primary">
-                Feedback Records
+                Submit Feedback
               </h2>
+              <p className="text-sm text-text-secondary">
+                Open the feedback flow to route your suggestions to the
+                correct owner.
+              </p>
             </div>
-            {filteredFeedback.length > 0 ?
-            <div className="p-6">
-                <DataTable columns={columns} rows={filteredFeedback} />
-              </div> :
-
-            <div className="text-center py-16">
-                <p className="text-text-muted mb-4">
-                  No marketplace items match your filters.
-                </p>
-                <button
-                onClick={handleClearAll}
-                className="px-4 py-2 bg-surface text-primary font-semibold text-sm rounded-button hover:bg-navy-50 transition-colors">
-                
-                  Clear filters
-                </button>
-              </div>
-            }
           </div>
+
+          <button
+            onClick={() => setIsFlowOpen(true)}
+            className="w-full md:w-auto px-6 py-2.5 bg-primary text-white font-semibold text-sm rounded-button hover:bg-navy-800 transition-colors flex items-center justify-center gap-2">
+            
+            Start Feedback Flow
+            <Send size={16} />
+          </button>
+        </div>
+
+        <div className="bg-white rounded-card border border-border-default shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-border-subtle">
+            <h2 className="text-lg font-semibold text-primary">
+              Feedback Records
+            </h2>
+          </div>
+          {filteredFeedback.length > 0 ?
+          <div className="p-6">
+              <DataTable columns={columns} rows={filteredFeedback} />
+            </div> :
+
+          <div className="text-center py-16">
+              <p className="text-text-muted mb-4">
+                No marketplace items match your filters.
+              </p>
+              <button
+              onClick={handleClearAll}
+              className="px-4 py-2 bg-surface text-primary font-semibold text-sm rounded-button hover:bg-navy-50 transition-colors">
+              
+                Clear filters
+              </button>
+            </div>
+          }
         </div>
       </div>
 

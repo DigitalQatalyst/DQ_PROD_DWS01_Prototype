@@ -17,6 +17,7 @@ import { hasAnyPermission } from './config/permissions';
 import { PortalLayout } from './layouts/PortalLayout';
 import { AppLayout } from './layouts/AppLayout';
 import { Stage02Layout } from './layouts/Stage02Layout';
+import { MarketplaceLayout } from './layouts/MarketplaceLayout';
 import { PlaceholderPage } from './components/PlaceholderPage';
 import { Stage0OrientationPage } from './pages/Stage0OrientationPage';
 import { OperatingGuidePage } from './pages/OperatingGuidePage';
@@ -225,6 +226,19 @@ function AppRoutes() {
           } />
         
         <Route
+          path="/requests/start/:serviceId"
+          element={
+          <RouteGuard>
+              <RequestWorkflowPage />
+            </RouteGuard>
+          } />
+        
+      </Route>
+
+
+      {/* Marketplace Layout Routes */}
+      <Route element={<MarketplaceLayout />}>
+        <Route
           path="/marketplaces/services"
           element={
           <RouteGuard>
@@ -239,16 +253,6 @@ function AppRoutes() {
               <ServiceDetailPage />
             </RouteGuard>
           } />
-        
-        <Route
-          path="/requests/start/:serviceId"
-          element={
-          <RouteGuard>
-              <RequestWorkflowPage />
-            </RouteGuard>
-          } />
-        
-        {/* Route moved to line ~400 — handled by RequestStatusPage */}
         
         <Route
           path="/marketplaces/task-templates"
@@ -289,10 +293,7 @@ function AppRoutes() {
               <MarketplaceFeedbackPage />
             </RouteGuard>
           } />
-        
       </Route>
-
-      {/* Stage 02 Workspace Routes */}
       <Route element={<Stage02Layout />}>
         <Route path="/workspace" element={<Stage02WorkspacePage />} />
         <Route path="/stage02/workspace" element={<Navigate to="/workspace" replace />} />

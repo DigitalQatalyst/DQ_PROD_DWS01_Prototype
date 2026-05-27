@@ -8,9 +8,9 @@ import { StatusPill } from '../components/StatusPill';
 import { getKnowledgeAssets } from '../services/platform.service';
 import type { KnowledgeAsset } from '../types/platform';
 import {
-  MarketplaceFilterPanel,
-  FilterGroup } from
-'../components/MarketplaceFilterPanel';
+  MarketplaceTopFilterBar,
+} from '../components/MarketplaceTopFilterBar';
+import type { FilterGroup } from '../components/MarketplaceFilterPanel';
 import { usePersona } from '../context/PersonaContext';
 import { MarketplaceActionRouter } from '../components/MarketplaceActionRouter';
 import { RequestIntakeWizard } from '../components/RequestIntakeWizard';
@@ -337,10 +337,8 @@ export function KnowledgeMarketplacePage() {
 
       <FilterBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        <MarketplaceFilterPanel
-          title="Refine knowledge"
-          helperText="Filter this marketplace by role, status, owner, SLA, and relevance."
+      <div className="mt-4">
+        <MarketplaceTopFilterBar
           searchPlaceholder="Search GHC, 6xD, playbooks, templates, or guides"
           searchValue={search}
           onSearchChange={setSearch}
@@ -349,35 +347,30 @@ export function KnowledgeMarketplacePage() {
           onChange={handleFilterChange}
           recommendedActive={recommendedActive}
           onRecommendedChange={setRecommendedActive}
-          totalCount={assets.length}
-          visibleCount={filteredAssets.length}
           onClearAll={handleClearAll}
-          persona={activePersona.role} />
-        
+        />
+      </div>
 
-        <div className="flex-1">
-          <div className="bg-white rounded-card border border-border-default shadow-sm overflow-hidden">
-            {filteredAssets.length > 0 ?
-            <DataTable
-              columns={columns}
-              rows={filteredAssets}
-              onRowClick={setSelectedAsset} /> :
+      <div className="bg-white rounded-card border border-border-default shadow-sm overflow-hidden">
+        {filteredAssets.length > 0 ?
+        <DataTable
+          columns={columns}
+          rows={filteredAssets}
+          onRowClick={setSelectedAsset} /> :
 
 
-            <div className="text-center py-16">
-                <p className="text-text-muted mb-4">
-                  No marketplace items match your filters.
-                </p>
-                <button
-                onClick={handleClearAll}
-                className="px-4 py-2 bg-surface text-primary font-semibold text-sm rounded-button hover:bg-navy-50 transition-colors">
-                
-                  Clear filters
-                </button>
-              </div>
-            }
+        <div className="text-center py-16">
+            <p className="text-text-muted mb-4">
+              No marketplace items match your filters.
+            </p>
+            <button
+            onClick={handleClearAll}
+            className="px-4 py-2 bg-surface text-primary font-semibold text-sm rounded-button hover:bg-navy-50 transition-colors">
+            
+              Clear filters
+            </button>
           </div>
-        </div>
+        }
       </div>
 
       {selectedAsset &&
