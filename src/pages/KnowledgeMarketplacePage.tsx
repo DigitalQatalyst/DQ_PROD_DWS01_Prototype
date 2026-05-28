@@ -1,345 +1,104 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { FilterBar } from '../components/FilterBar';
-import { KpiTile } from '../components/KpiTile';
-import { DataTable } from '../components/DataTable';
-import { DetailPanel } from '../components/DetailPanel';
-import { MonoId } from '../components/MonoId';
-import { StatusPill } from '../components/StatusPill';
-import { getKnowledgeAssets } from '../services/platform.service';
-import type { KnowledgeAsset } from '../types/platform';
-import {
-  MarketplaceTopFilterBar,
-} from '../components/MarketplaceTopFilterBar';
+import { MarketplaceTopFilterBar } from '../components/MarketplaceTopFilterBar';
+import { useKnowledgeLifecycle } from '../context/KnowledgeLifecycleContext';
+import { KnowledgeCard } from '../components/KnowledgeCard';
 import type { FilterGroup } from '../components/MarketplaceFilterPanel';
-import { usePersona } from '../context/PersonaContext';
-import { MarketplaceActionRouter } from '../components/MarketplaceActionRouter';
-import { RequestIntakeWizard } from '../components/RequestIntakeWizard';
-import { TaskFromTemplateWizard } from '../components/TaskFromTemplateWizard';
+import { BookOpen } from 'lucide-react';
+
 export function KnowledgeMarketplacePage() {
-  const { activePersona } = usePersona();
+  const { assets, isLoading } = useKnowledgeLifecycle();
+  
   const [activeTab, setActiveTab] = useState('All');
   const [search, setSearch] = useState('');
-  const [assets, setAssets] = useState<KnowledgeAsset[]>([]);
-  const [selectedAsset, setSelectedAsset] = useState<KnowledgeAsset | null>(
-    null
-  );
-  // Filter state
   const [filterValues, setFilterValues] = useState<Record<string, string[]>>({});
   const [recommendedActive, setRecommendedActive] = useState(false);
+
   const tabs = [
-  'All',
-  'GHC',
-  '6xD',
-  'Playbooks',
-  'Templates',
-  'Learning',
-  'Workspace Guides'];
+    'All',
+    'GHC Reference',
+    '6xD Reference',
+    'Playbooks',
+    'Templates',
+    'Learning',
+    'Workspace Guides'
+  ];
 
   const filterGroups: FilterGroup[] = [
-  {
-    id: 'type',
-    label: 'Knowledge Type',
-    options: [
     {
-      value: 'GHC Reference',
-      label: 'GHC'
+      id: 'type',
+      label: 'Knowledge Type',
+      options: [
+        { value: 'GHC Reference', label: 'GHC' },
+        { value: '6xD Reference', label: '6xD' },
+        { value: 'Guideline', label: 'Guidelines' },
+        { value: 'Playbook', label: 'Playbooks' },
+        { value: 'Template', label: 'Templates' },
+        { value: 'Operating Standard', label: 'Operating Standards' }
+      ]
     },
     {
-      value: '6xD Reference',
-      label: '6xD'
-    },
-    {
-      value: 'Policy',
-      label: 'Policies'
-    },
-    {
-      value: 'Playbook',
-      label: 'Playbooks'
-    },
-    {
-      value: 'Template',
-      label: 'Templates'
-    },
-    {
-      value: 'Learning',
-      label: 'Learning'
-    },
-    {
-      value: 'Workspace Guide',
-      label: 'Workspace Guides'
-    },
-    {
-      value: 'Execution Standard',
-      label: 'Execution Standards'
-    }]
+      id: 'status',
+      label: 'Review Status',
+      options: [
+        { value: 'Effective', label: 'Effective' },
+        { value: 'Under Review', label: 'Under Review' },
+        { value: 'Needs Update', label: 'Needs Update' }
+      ]
+    }
+  ];
 
-  },
-  {
-    id: 'status',
-    label: 'Review Status',
-    options: [
-    {
-      value: 'Effective',
-      label: 'Effective'
-    },
-    {
-      value: 'Under Review',
-      label: 'Under Review'
-    },
-    {
-      value: 'Needs Update',
-      label: 'Needs Update'
-    }]
-
-  },
-  {
-    id: 'context',
-    label: 'Usage Context',
-    options: [
-    {
-      value: 'Tasks',
-      label: 'Tasks'
-    },
-    {
-      value: 'Requests',
-      label: 'Requests'
-    },
-    {
-      value: 'Approvals',
-      label: 'Approvals'
-    },
-    {
-      value: 'Onboarding',
-      label: 'Onboarding'
-    },
-    {
-      value: 'Support',
-      label: 'Support'
-    },
-    {
-      value: 'Governance',
-      label: 'Governance'
-    }]
-
-  },
-  {
-    id: 'readTime',
-    label: 'Read Time',
-    options: [
-    {
-      value: 'Under 5 min',
-      label: 'Under 5 min'
-    },
-    {
-      value: '5–10 min',
-      label: '5–10 min'
-    },
-    {
-      value: '10+ min',
-      label: '10+ min'
-    }]
-
-  },
-  {
-    id: 'owner',
-    label: 'Owner',
-    options: [
-    {
-      value: 'Knowledge Content Owner',
-      label: 'Knowledge Content Owner'
-    },
-    {
-      value: 'HRA',
-      label: 'HRA'
-    },
-    {
-      value: 'Platform Governance',
-      label: 'Platform Governance'
-    },
-    {
-      value: 'Support Operations',
-      label: 'Support Operations'
-    },
-    {
-      value: 'Task Model Owner',
-      label: 'Task Model Owner'
-    }]
-
-  },
-  {
-    id: 'feedback',
-    label: 'Feedback',
-    options: [
-    {
-      value: 'Recently flagged',
-      label: 'Recently flagged'
-    },
-    {
-      value: 'Frequently used',
-      label: 'Frequently used'
-    },
-    {
-      value: 'Recommended for role',
-      label: 'Recommended for role'
-    }]
-
-  }];
-
-  useEffect(() => {
-    getKnowledgeAssets().then(setAssets);
-  }, []);
   const handleFilterChange = (groupId: string, values: string[]) => {
-    setFilterValues((prev) => ({
-      ...prev,
-      [groupId]: values
-    }));
+    setFilterValues(prev => ({ ...prev, [groupId]: values }));
   };
+
   const handleClearAll = () => {
     setFilterValues({});
     setSearch('');
     setRecommendedActive(false);
   };
-  const filteredAssets = assets.filter((a) => {
-    const matchesTab =
-    activeTab === 'All' ||
-    a.type.includes(activeTab) ||
-    activeTab === 'GHC' && a.type === 'GHC Reference' ||
-    activeTab === '6xD' && a.type === '6xD Reference';
-    const matchesSearch =
-    a.title.toLowerCase().includes(search.toLowerCase()) ||
-    a.tags.some((t) => t.toLowerCase().includes(search.toLowerCase()));
-    const matchesType =
-    !filterValues.type?.length || filterValues.type.includes(a.type);
-    const matchesStatus =
-    !filterValues.status?.length || filterValues.status.includes(a.status);
-    // Mocking context/readTime/owner/feedback matching since they aren't fully in the mock data
-    const matchesContext = !filterValues.context?.length || true;
-    const matchesReadTime = !filterValues.readTime?.length || true;
-    const matchesOwner = !filterValues.owner?.length || true;
-    const matchesFeedback = !filterValues.feedback?.length || true;
-    // Mock recommended logic
-    const matchesRecommended = !recommendedActive || true;
-    return (
-      matchesTab &&
-      matchesSearch &&
-      matchesType &&
-      matchesStatus &&
-      matchesContext &&
-      matchesReadTime &&
-      matchesOwner &&
-      matchesFeedback &&
-      matchesRecommended);
 
+  const filteredAssets = assets.filter(a => {
+    const matchesTab = activeTab === 'All' || 
+      a.type === activeTab || 
+      (activeTab === 'Playbooks' && a.type === 'Playbook') ||
+      (activeTab === 'Templates' && a.type === 'Template');
+
+    const matchesSearch = search === '' || 
+      a.title.toLowerCase().includes(search.toLowerCase()) ||
+      a.tags.some(t => t.toLowerCase().includes(search.toLowerCase()));
+
+    const matchesType = !filterValues.type?.length || filterValues.type.includes(a.type);
+    const matchesStatus = !filterValues.status?.length || filterValues.status.includes(a.status);
+    
+    // Mock recommendation logic: just an example filter
+    const matchesRecommended = !recommendedActive || a.linkedWorkCount > 10;
+
+    return matchesTab && matchesSearch && matchesType && matchesStatus && matchesRecommended;
   });
-  const effectiveCount = assets.filter((a) => a.status === 'Effective').length;
-  const reviewCount = assets.filter((a) => a.status === 'Under Review').length;
-  const linkedCount = assets.filter((a) => a.linkedTaskIds.length > 0).length;
-  const [actionItem, setActionItem] = useState<KnowledgeAsset | null>(null);
-  const [nestedAction, setNestedAction] = useState<{
-    type: 'task' | 'request';
-    guide: any;
-  } | null>(null);
-  const handleOpenAction = (e: React.MouseEvent, row: KnowledgeAsset) => {
-    e.stopPropagation();
-    setActionItem(row);
-  };
-  const columns = [
-  {
-    header: 'ID',
-    accessor: (row: KnowledgeAsset) => <MonoId value={row.id} />
-  },
-  {
-    header: 'Title',
-    accessor: (row: KnowledgeAsset) =>
-    <span className="font-medium">{row.title}</span>
-
-  },
-  {
-    header: 'Type',
-    accessor: (row: KnowledgeAsset) =>
-    <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted bg-surface px-2 py-1 rounded">
-          {row.type}
-        </span>
-
-  },
-  {
-    header: 'Status',
-    accessor: (row: KnowledgeAsset) => <StatusPill status={row.status} />
-  },
-  {
-    header: 'Tags',
-    accessor: (row: KnowledgeAsset) =>
-    <div className="flex flex-wrap gap-1">
-          {row.tags.map((tag) =>
-      <span
-        key={tag}
-        className="text-[10px] bg-navy-50 text-primary px-1.5 py-0.5 rounded border border-border-subtle">
-        
-              {tag}
-            </span>
-      )}
-        </div>
-
-  },
-  {
-    header: 'Linked Tasks',
-    accessor: (row: KnowledgeAsset) =>
-    <span className="text-sm text-text-muted">
-          {row.linkedTaskIds.length}
-        </span>
-
-  },
-  {
-    header: 'Action',
-    accessor: (row: KnowledgeAsset) =>
-    <button
-      onClick={(e) => handleOpenAction(e, row)}
-      className="text-secondary hover:underline text-sm font-medium">
-      
-          Open
-        </button>
-
-  }];
 
   return (
-    <div className="max-w-[1280px] mx-auto px-6 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-primary mb-2">
-          Knowledge Discovery
-        </h1>
-        <p className="text-text-secondary">
-          Find references, playbooks, and guides to support your work.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <KpiTile
-          label="Knowledge Assets"
-          value={assets.length.toString()}
-          status="info" />
-        
-        <KpiTile
-          label="Effective References"
-          value={effectiveCount.toString()}
-          status="success" />
-        
-        <KpiTile
-          label="Under Review"
-          value={reviewCount.toString()}
-          status="warning" />
-        
-        <KpiTile
-          label="Linked to Work"
-          value={linkedCount.toString()}
-          status="success" />
-        
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      {/* Header section */}
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight text-primary">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
+              <BookOpen size={24} />
+            </div>
+            Knowledge Discovery
+          </h1>
+          <p className="mt-2 text-base text-text-secondary">
+            Find GHC references, 6xD playbooks, templates, and learning guides to support your work.
+          </p>
+        </div>
       </div>
 
       <FilterBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
       <div className="mt-4">
         <MarketplaceTopFilterBar
-          searchPlaceholder="Search GHC, 6xD, playbooks, templates, or guides"
+          searchPlaceholder="Search GHC, 6xD, playbooks, templates..."
           searchValue={search}
           onSearchChange={setSearch}
           groups={filterGroups}
@@ -351,85 +110,31 @@ export function KnowledgeMarketplacePage() {
         />
       </div>
 
-      <div className="bg-white rounded-card border border-border-default shadow-sm overflow-hidden">
-        {filteredAssets.length > 0 ?
-        <DataTable
-          columns={columns}
-          rows={filteredAssets}
-          onRowClick={setSelectedAsset} /> :
-
-
-        <div className="text-center py-16">
-            <p className="text-text-muted mb-4">
-              No marketplace items match your filters.
-            </p>
-            <button
+      {isLoading ? (
+        <div className="flex h-64 items-center justify-center text-text-muted">
+          Loading knowledge assets...
+        </div>
+      ) : filteredAssets.length > 0 ? (
+        <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {filteredAssets.map(asset => (
+            <KnowledgeCard key={asset.id} asset={asset} />
+          ))}
+        </div>
+      ) : (
+        <div className="mt-8 flex flex-col items-center justify-center rounded-xl border border-dashed border-border-default bg-surface py-16 text-center">
+          <BookOpen size={48} className="mb-4 text-text-muted opacity-50" />
+          <h3 className="mb-2 text-lg font-bold text-text-primary">No references found</h3>
+          <p className="mb-6 max-w-md text-sm text-text-secondary">
+            We couldn't find any knowledge assets matching your current filters.
+          </p>
+          <button
             onClick={handleClearAll}
-            className="px-4 py-2 bg-surface text-primary font-semibold text-sm rounded-button hover:bg-navy-50 transition-colors">
-            
-              Clear filters
-            </button>
-          </div>
-        }
-      </div>
-
-      {selectedAsset &&
-      <DetailPanel
-        entity={selectedAsset}
-        type="knowledge"
-        onClose={() => setSelectedAsset(null)} />
-
-      }
-
-      <MarketplaceActionRouter
-        marketplaceType={actionItem ? 'knowledge' : null}
-        item={actionItem}
-        activePersona={activePersona}
-        onClose={() => setActionItem(null)}
-        onStartTaskFromGuide={(guide) => {
-          setActionItem(null);
-          setNestedAction({
-            type: 'task',
-            guide
-          });
-        }}
-        onRequestUpdate={(guide) => {
-          setActionItem(null);
-          setNestedAction({
-            type: 'request',
-            guide
-          });
-        }} />
-      
-
-      {nestedAction?.type === 'task' &&
-      <TaskFromTemplateWizard
-        template={{
-          title: 'Knowledge Implementation Task',
-          category: 'Execution',
-          checklist: 3,
-          evidence: true
-        }}
-        activePersona={activePersona}
-        onClose={() => setNestedAction(null)}
-        preLinkedKnowledge={nestedAction.guide} />
-
-      }
-
-      {nestedAction?.type === 'request' &&
-      <RequestIntakeWizard
-        service={{
-          title: 'Update Playbook',
-          category: 'Knowledge / Content Requests',
-          ownerType: 'Content Governance'
-        }}
-        activePersona={activePersona}
-        onClose={() => setNestedAction(null)}
-        preFilledContext={{
-          affectedGuide: nestedAction.guide.title
-        }} />
-
-      }
-    </div>);
-
+            className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm ring-1 ring-inset ring-border-subtle hover:bg-surface"
+          >
+            Clear all filters
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }

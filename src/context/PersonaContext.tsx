@@ -41,6 +41,29 @@ export function PersonaProvider({ children }: {children: ReactNode;}) {
       'team-lead',
       'unit-lead',
       'admin'],
+      
+      '/marketplaces/task-templates/:templateId': [
+      'associate',
+      'scrum-master',
+      'team-lead',
+      'unit-lead',
+      'admin'],
+      
+      '/marketplaces/task-review': [
+      'scrum-master',
+      'team-lead',
+      'unit-lead',
+      'admin'],
+      
+      '/marketplaces/task-closure-quality': [
+      'scrum-master',
+      'team-lead',
+      'unit-lead',
+      'admin'],
+      
+      '/marketplaces/task-signals': [
+      'admin',
+      'ceo'],
 
       '/marketplaces/knowledge': [
       'associate',
@@ -50,6 +73,23 @@ export function PersonaProvider({ children }: {children: ReactNode;}) {
       'hra',
       'admin',
       'support'],
+      
+      '/marketplaces/knowledge/:knowledgeId': [
+      'associate',
+      'scrum-master',
+      'team-lead',
+      'unit-lead',
+      'hra',
+      'admin',
+      'support'],
+      
+      '/marketplaces/knowledge-review': [
+      'hra',
+      'admin'],
+      
+      '/marketplaces/knowledge-signals': [
+      'admin',
+      'ceo'],
 
       '/marketplaces/work-directory': [
       'associate',
