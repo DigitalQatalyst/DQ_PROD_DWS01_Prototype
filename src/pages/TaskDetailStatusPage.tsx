@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTaskLifecycle } from '../context/TaskLifecycleContext';
 import { ArrowLeft, CheckCircle2, AlertCircle, Clock, ShieldCheck, PlayCircle } from 'lucide-react';
 import { StatusPill } from '../components/StatusPill';
+import { WorkItemLinkedKnowledgeCard } from '../components/WorkItemLinkedKnowledgeCard';
 
 export function TaskDetailStatusPage() {
   const { taskId } = useParams();
@@ -108,6 +109,9 @@ export function TaskDetailStatusPage() {
               ))}
             </ul>
           </div>
+
+          {/* Linked Knowledge */}
+          {taskId && <WorkItemLinkedKnowledgeCard workItemId={taskId} />}
         </div>
 
         {/* Right Column - Actions */}

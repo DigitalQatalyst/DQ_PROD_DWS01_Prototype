@@ -36,7 +36,9 @@ import {
   knowledgeFeedbackRecords,
   knowledgeReviewQueue,
   knowledgeExecutiveSignals,
-  suggestedTasksFromGuide
+  suggestedTasksFromGuide,
+  applicabilityRecords,
+  acknowledgementRecords
 } from '../mocks/knowledgeDiscovery.mock';
 
 export const getKnowledgeAssetsFull = async () => knowledgeAssetsFull;
@@ -45,6 +47,10 @@ export const getKnowledgeFeedback = async () => knowledgeFeedbackRecords;
 export const getKnowledgeReviewQueue = async () => knowledgeReviewQueue;
 export const getKnowledgeSignals = async () => knowledgeExecutiveSignals;
 export const getSuggestedTasksFromGuide = async () => suggestedTasksFromGuide;
+export const getApplicabilityRecords = async () => applicabilityRecords;
+export const getLinkedWorkRecords = async () => linkedWorkRecords;
+export const getRelatedKnowledgeRecords = async () => relatedKnowledgeRecords;
+export const getAcknowledgementRecords = async () => acknowledgementRecords;
 
 // --- Task Library ---
 import {

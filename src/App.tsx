@@ -332,20 +332,26 @@ function AppRoutes() {
           } />
           
         <Route
-          path="/marketplaces/knowledge-review"
+          path="/knowledge/review"
           element={
           <RouteGuard>
               <KnowledgeReviewQueuePage />
             </RouteGuard>
           } />
+        
+        {/* Legacy redirect */}
+        <Route path="/marketplaces/knowledge-review" element={<Navigate to="/knowledge/review" replace />} />
           
         <Route
-          path="/marketplaces/knowledge-signals"
+          path="/intelligence/knowledge-signals"
           element={
           <RouteGuard>
               <ExecutiveKnowledgeSignalPage />
             </RouteGuard>
           } />
+        
+        {/* Legacy redirect */}
+        <Route path="/marketplaces/knowledge-signals" element={<Navigate to="/intelligence/knowledge-signals" replace />} />
         
         <Route
           path="/marketplaces/work-directory"

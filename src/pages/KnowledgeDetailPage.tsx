@@ -1,173 +1,197 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useKnowledgeLifecycle } from '../context/KnowledgeLifecycleContext';
-import { KnowledgeTypeBadge } from '../components/KnowledgeTypeBadge';
-import { ArrowLeft, Clock, Calendar, User, Link as LinkIcon, MessageSquare, AlertTriangle, FileText, Share, CheckCircle2, CheckSquare } from 'lucide-react';
+import { KnowledgeDetailRecord } from '../types/knowledgeDiscovery';
+import { KnowledgeDetailHero } from '../components/KnowledgeDetailHero';
+import { KnowledgeActionRail } from '../components/KnowledgeActionRail';
+import { ApplicabilityCard } from '../components/ApplicabilityCard';
+import { CoreGuidancePreview } from '../components/CoreGuidancePreview';
+import { EvidenceExpectationCard } from '../components/EvidenceExpectationCard';
+import { LinkedWorkPanel } from '../components/LinkedWorkPanel';
+import { RelatedKnowledgeGrid } from '../components/RelatedKnowledgeGrid';
+import { KnowledgeFeedbackPanel } from '../components/KnowledgeFeedbackPanel';
+import { VersionHistoryList } from '../components/VersionHistoryList';
+import { AlertCircle } from 'lucide-react';
 
 export function KnowledgeDetailPage() {
   const { knowledgeId } = useParams();
   const navigate = useNavigate();
-  const { assets, isLoading } = useKnowledgeLifecycle();
-  const [showToast, setShowToast] = useState(false);
+  const {
+    assets,
+    isLoading,
+    getAssetDetail,
+    getApplicabilityForAsset,
+    getLinkedWorkForAsset,
+    getRelatedKnowledgeForAsset
+  } = useKnowledgeLifecycle();
+
+  const [detail, setDetail] = useState<KnowledgeDetailRecord | undefined>(undefined);
+  const [detailLoading, setDetailLoading] = useState(true);
 
   const asset = assets.find(a => a.id === knowledgeId);
 
-  if (isLoading) return <div className="p-8">Loading...</div>;
-  if (!asset) return <div className="p-8 text-danger">Asset not found.</div>;
+  useEffect(() => {
+    if (knowledgeId) {
+      setDetailLoading(true);
+      getAssetDetail(knowledgeId).then(data => {
+        setDetail(data);
+        setDetailLoading(false);
+      });
+    }
+  }, [knowledgeId, getAssetDetail]);
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
-  };
+  if (isLoading || detailLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-surface">
+        <div className="text-sm text-text-muted">Loading knowledge asset...</div>
+      </div>
+    );
+  }
+
+  if (!asset) {
+    return (
+      <div className="mx-auto max-w-3xl px-6 py-16 text-center">
+        <AlertCircle size={48} className="mx-auto mb-4 text-warning" />
+        <h2 className="mb-2 text-2xl font-bold text-text-primary">Asset Not Found</h2>
+        <p className="mb-6 text-text-secondary">The knowledge asset you are looking for could not be found.</p>
+        <button
+          onClick={() => navigate('/marketplaces/knowledge')}
+          className="rounded-lg bg-primary px-5 py-2.5 font-bold text-white hover:bg-navy-700"
+        >
+          Return to Knowledge Hub
+        </button>
+      </div>
+    );
+  }
+
+  const applicability = getApplicabilityForAsset(asset.id);
+  const linkedWork = getLinkedWorkForAsset(asset.id);
+  const relatedKnowledge = getRelatedKnowledgeForAsset(asset.id);
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-8 pb-32">
-      <button 
-        onClick={() => navigate('/marketplaces/knowledge')}
-        className="mb-6 flex items-center gap-2 text-sm font-semibold text-text-muted hover:text-primary"
-      >
-        <ArrowLeft size={16} />
-        Back to Knowledge Marketplace
-      </button>
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      {/* Hero */}
+      <KnowledgeDetailHero asset={asset} />
 
-      {/* Header */}
-      <div className="mb-8 rounded-2xl bg-white p-8 shadow-sm ring-1 ring-border-subtle">
-        <div className="mb-4 flex items-center justify-between">
-          <KnowledgeTypeBadge type={asset.type} size="md" />
-          <div className="flex items-center gap-3">
-            {asset.status === 'Effective' && (
-              <span className="flex items-center gap-1.5 rounded-full bg-success/10 px-3 py-1 text-sm font-bold text-success">
-                <CheckCircle2 size={16} />
-                Effective
-              </span>
-            )}
-            {asset.status === 'Needs Update' && (
-              <span className="flex items-center gap-1.5 rounded-full bg-warning/10 px-3 py-1 text-sm font-bold text-warning">
-                <AlertTriangle size={16} />
-                Needs Update
-              </span>
-            )}
-          </div>
-        </div>
-
-        <h1 className="mb-4 text-3xl font-bold text-text-primary">{asset.title}</h1>
-        <p className="mb-6 text-lg text-text-secondary">{asset.summary}</p>
-
-        <div className="flex flex-wrap items-center gap-x-8 gap-y-4 rounded-xl bg-surface p-4 text-sm font-medium text-text-secondary">
-          <div className="flex items-center gap-2">
-            <User size={16} className="text-text-muted" />
-            <span className="text-text-muted">Owner:</span> {asset.owner}
-          </div>
-          <div className="flex items-center gap-2">
-            <Clock size={16} className="text-text-muted" />
-            <span className="text-text-muted">Read Time:</span> {asset.readTime}
-          </div>
-          <div className="flex items-center gap-2">
-            <Calendar size={16} className="text-text-muted" />
-            <span className="text-text-muted">Last Reviewed:</span> {asset.lastReviewed}
-          </div>
-          <div className="flex items-center gap-2">
-            <LinkIcon size={16} className="text-text-muted" />
-            <span className="text-text-muted">Uses:</span> {asset.linkedWorkCount}
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content Grid */}
+      {/* Content + Rail */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        
-        {/* Left Column - Details */}
-        <div className="space-y-8 lg:col-span-2">
-          
-          {/* Purpose & Applicability */}
+
+        {/* Main Content — Left 2/3 */}
+        <div className="space-y-6 lg:col-span-2">
+
+          {/* 1. Purpose & Scope */}
           <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-border-subtle">
             <h2 className="mb-4 text-lg font-bold text-text-primary">Purpose & Scope</h2>
-            <p className="mb-6 text-text-secondary">{asset.purpose}</p>
-            
-            <div className="grid grid-cols-2 gap-6">
+            <p className="mb-6 text-text-secondary leading-relaxed">{asset.purpose}</p>
+
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <div>
-                <h3 className="mb-2 text-sm font-bold text-text-primary">When to Use</h3>
-                <ul className="list-inside list-disc space-y-1 text-sm text-text-secondary">
-                  {asset.whenToUse.map((item, i) => <li key={i}>{item}</li>)}
+                <h3 className="mb-3 text-sm font-bold text-text-primary">When to Use</h3>
+                <ul className="space-y-2">
+                  {asset.whenToUse.map((item, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-text-secondary">
+                      <span className="mt-2 h-1.5 w-1.5 rounded-full bg-success shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                  {asset.whenToUse.length === 0 && (
+                    <li className="text-sm text-text-muted">No specific guidance provided.</li>
+                  )}
                 </ul>
               </div>
               <div>
-                <h3 className="mb-2 text-sm font-bold text-text-primary">When NOT to Use</h3>
-                <ul className="list-inside list-disc space-y-1 text-sm text-text-secondary">
-                  {asset.whenNotToUse.map((item, i) => <li key={i}>{item}</li>)}
-                  {asset.whenNotToUse.length === 0 && <li>No specific exclusions.</li>}
+                <h3 className="mb-3 text-sm font-bold text-text-primary">When NOT to Use</h3>
+                <ul className="space-y-2">
+                  {asset.whenNotToUse.map((item, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-text-secondary">
+                      <span className="mt-2 h-1.5 w-1.5 rounded-full bg-danger shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                  {asset.whenNotToUse.length === 0 && (
+                    <li className="text-sm text-text-muted">No specific exclusions.</li>
+                  )}
                 </ul>
               </div>
             </div>
           </div>
 
-          {/* Core Guidance Preview (Mocked) */}
-          <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-border-subtle">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-text-primary">Content Preview</h2>
-              <button 
-                onClick={() => navigate(`/knowledge/${asset.id}/reference`)}
-                className="flex items-center gap-1 text-sm font-bold text-primary hover:underline"
-              >
-                Read Full Reference &rarr;
-              </button>
+          {/* 2. Applicability */}
+          {applicability && <ApplicabilityCard record={applicability} />}
+
+          {/* 3. Core Guidance */}
+          <CoreGuidancePreview asset={asset} />
+
+          {/* 4. Full Detail Sections */}
+          {detail && detail.sections.length > 0 && (
+            <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-border-subtle">
+              <h2 className="mb-5 text-lg font-bold text-text-primary">Reference Content</h2>
+              {detail.content && (
+                <p className="mb-6 text-text-secondary leading-relaxed">{detail.content}</p>
+              )}
+              <div className="space-y-6">
+                {detail.sections.map(section => (
+                  <div key={section.id}>
+                    <h3 className="mb-3 text-sm font-bold text-text-primary">{section.title}</h3>
+                    <div className="rounded-lg bg-surface px-5 py-4 ring-1 ring-border-subtle">
+                      <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-secondary">{section.body}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="rounded-lg bg-surface p-4">
-              <p className="mb-2 text-sm font-medium text-text-primary">Key Principle:</p>
-              <p className="text-sm text-text-secondary italic">
-                "{asset.coreGuidance?.principles[0] || 'Follow the established operating model patterns to ensure consistent delivery.'}"
-              </p>
+          )}
+
+          {/* 5. Evidence Expectations */}
+          <EvidenceExpectationCard asset={asset} />
+
+          {/* 6. Work Application */}
+          {detail?.workApplication && (
+            <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-border-subtle">
+              <h2 className="mb-4 text-lg font-bold text-text-primary">How This Applies to Work</h2>
+              <p className="text-sm leading-relaxed text-text-secondary">{detail.workApplication}</p>
             </div>
-          </div>
+          )}
+
+          {/* 7. Review & Acknowledgement Expectations */}
+          {(detail?.reviewExpectation || detail?.acknowledgementExpectation) && (
+            <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-border-subtle">
+              <h2 className="mb-5 text-lg font-bold text-text-primary">Review & Acknowledgement</h2>
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                {detail.reviewExpectation && (
+                  <div>
+                    <h3 className="mb-2 text-sm font-bold text-text-primary">Review Expectation</h3>
+                    <p className="text-sm text-text-secondary">{detail.reviewExpectation}</p>
+                  </div>
+                )}
+                {detail.acknowledgementExpectation && (
+                  <div>
+                    <h3 className="mb-2 text-sm font-bold text-text-primary">Acknowledgement Expectation</h3>
+                    <p className="text-sm text-text-secondary">{detail.acknowledgementExpectation}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 8. Linked Work */}
+          <LinkedWorkPanel records={linkedWork} />
+
+          {/* 9. Related Knowledge */}
+          <RelatedKnowledgeGrid records={relatedKnowledge} allAssets={assets} />
+
+          {/* 10. Version History */}
+          {detail && <VersionHistoryList detail={detail} />}
+
+          {/* 11. Feedback */}
+          <KnowledgeFeedbackPanel assetId={asset.id} />
         </div>
 
-        {/* Right Column - Actions */}
-        <div className="space-y-6">
-          <div className="flex flex-col gap-3 rounded-xl bg-white p-6 shadow-sm ring-1 ring-border-subtle">
-            <h3 className="mb-2 text-sm font-bold uppercase tracking-wider text-text-muted">Actions</h3>
-            
-            <button 
-              onClick={() => navigate(`/knowledge/${asset.id}/reference`)}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-navy-700"
-            >
-              <FileText size={18} />
-              Read Full Reference
-            </button>
-            
-            <button 
-              onClick={() => navigate(`/tasks/create/from-knowledge/${asset.id}`)}
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-primary bg-navy-50 px-4 py-2.5 text-sm font-bold text-primary hover:bg-navy-100"
-            >
-              <CheckSquare size={18} />
-              Start Task from Guide
-            </button>
-            
-            <button 
-              onClick={handleCopyLink}
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-border-default bg-white px-4 py-2.5 text-sm font-bold text-text-secondary hover:bg-surface"
-            >
-              <Share size={18} />
-              Copy Link
-            </button>
-
-            <div className="my-2 h-px bg-border-subtle" />
-            
-            <button className="flex w-full items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-bold text-text-secondary hover:bg-surface">
-              <MessageSquare size={18} />
-              Provide Feedback
-            </button>
-          </div>
+        {/* Sticky Right Rail — 1/3 */}
+        <div className="lg:col-span-1">
+          <KnowledgeActionRail asset={asset} />
         </div>
       </div>
-
-      {showToast && (
-        <div className="fixed bottom-6 right-6 z-50 rounded-lg bg-slate-800 px-4 py-3 text-sm font-medium text-white shadow-lg">
-          Link copied to clipboard
-        </div>
-      )}
     </div>
   );
 }
-
-// Ensure CheckSquare is imported from lucide-react in the final code.

@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { StatusPill } from '../components/StatusPill';
+import { WorkItemLinkedKnowledgeCard } from '../components/WorkItemLinkedKnowledgeCard';
 import { useViewingMode } from '../context/ViewingModeContext';
 import { useWorkspaceRole } from '../context/WorkspaceRoleContext';
 import type { WorkspaceRole } from '../config/segments';
@@ -165,7 +166,7 @@ const roleOwners: Record<WorkspaceRole, string[]> = {
   CEO: ['Mariam Said', 'Executive Office', 'DWS Leadership']
 };
 
-function buildWorkspaceRecords(route: WorkspaceRoute, role: WorkspaceRole, mode: string): WorkspaceRecord[] {
+export function buildWorkspaceRecords(route: WorkspaceRoute, role: WorkspaceRole, mode: string): WorkspaceRecord[] {
   const titles = mode === 'first-time' && route === 'my-work'
     ? ['Complete onboarding profile', 'Submit laptop and DQ access update', 'Join DQ Ways of Working session', 'Review first manager feedback', 'Update onboarding tracker item', 'Confirm learning path progress']
     : mode === 'first-time' && route === 'my-requests'
@@ -317,6 +318,9 @@ function DetailDrawer({ record, route, onClose, onUpdate }: { record: WorkspaceR
             <p className="mt-2 text-sm leading-6 text-text-secondary">{record.description}</p>
           </div>
           <InfoList title="Related work items" values={record.related} />
+          
+          <WorkItemLinkedKnowledgeCard workItemId={record.id} />
+          
           <div className="rounded-card border border-border-subtle bg-surface p-4">
             <h3 className="text-sm font-bold text-primary">Recommended next action</h3>
             <p className="mt-2 text-sm leading-6 text-text-secondary">{record.nextAction}</p>
