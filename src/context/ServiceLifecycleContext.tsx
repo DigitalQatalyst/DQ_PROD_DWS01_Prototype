@@ -143,6 +143,14 @@ export function ServiceLifecycleProvider({ children }: { children: React.ReactNo
         ...formData,
       };
 
+      try {
+        const localRequests = JSON.parse(localStorage.getItem('local_my_requests') || '[]');
+        localStorage.setItem('local_my_requests', JSON.stringify([newRequest, ...localRequests]));
+        window.dispatchEvent(new Event('local_requests_updated'));
+      } catch (e) {
+        console.error('Failed to save request to local storage in context', e);
+      }
+
       setRequests((prev) => [newRequest, ...prev]);
       return newRequest;
     },
@@ -179,6 +187,14 @@ export function ServiceLifecycleProvider({ children }: { children: React.ReactNo
         ],
         ...formData,
       };
+
+      try {
+        const localRequests = JSON.parse(localStorage.getItem('local_my_requests') || '[]');
+        localStorage.setItem('local_my_requests', JSON.stringify([draftRequest, ...localRequests]));
+        window.dispatchEvent(new Event('local_requests_updated'));
+      } catch (e) {
+        console.error('Failed to save draft to local storage in context', e);
+      }
 
       setRequests((prev) => [draftRequest, ...prev]);
       return draftRequest;

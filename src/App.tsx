@@ -376,6 +376,14 @@ function AppRoutes() {
               <MarketplaceFeedbackPage />
             </RouteGuard>
           } />
+
+        <Route
+          path="/requests/:requestId/status"
+          element={
+          <RouteGuard>
+              <RequestStatusPage />
+            </RouteGuard>
+          } />
       </Route>
       <Route element={<Stage02Layout />}>
         <Route path="/workspace" element={<Stage02WorkspacePage />} />
@@ -471,14 +479,6 @@ function AppRoutes() {
           element={
           <RouteGuard>
               <AssignedWorkPage />
-            </RouteGuard>
-          } />
-        
-        <Route
-          path="/requests/:requestId/status"
-          element={
-          <RouteGuard>
-              <RequestStatusPage />
             </RouteGuard>
           } />
         
