@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
+  Briefcase,
   BookOpen,
   CheckSquare,
   ChevronsLeft,
@@ -23,6 +24,7 @@ import { badgeCounts } from '../mocks/dwsEntities.mock';
 
 const iconMap: Record<NavIcon, LucideIcon> = {
   home: Home,
+  briefcase: Briefcase,
   checkSquare: CheckSquare,
   gitBranch: GitBranch,
   database: Database,
@@ -32,7 +34,11 @@ const iconMap: Record<NavIcon, LucideIcon> = {
   cloud: Cloud,
   users: Users,
   pie: PieChart,
-  settings: Settings
+  settings: Settings,
+  fileText: BookOpen,
+  bookOpen: BookOpen,
+  barChart2: PieChart,
+  messageSquare: BookOpen,
 };
 
 interface Stage02SidebarProps {
@@ -70,7 +76,55 @@ export function Stage02Sidebar({ collapsed, onCollapsedChange }: Stage02SidebarP
         </div>
 
         <nav aria-label="DWS workspace navigation" className="flex-1 space-y-1">
-          {navSections.map((section) => {
+          {/* ── Marketplace section (above Workspace) ── */}
+          {(() => {
+            const marketplaceSection = navSections.find((s) => s.id === 'marketplace')!;
+            if (!marketplaceSection) return null;
+            const MarketIcon = iconMap[marketplaceSection.icon];
+            const isActiveSection = location.pathname.startsWith('/marketplaces');
+            const isOpen = !collapsed && expandedSection === 'marketplace';
+            const marketplaceItems = navigationItems.filter((item) => item.section === 'marketplace');
+            return (
+              <div className="border-b border-border-subtle py-1">
+                <button
+                  onClick={() => {
+                    setExpandedSection((cur) => cur === 'marketplace' ? '' : 'marketplace');
+                    navigate('/marketplaces/services');
+                  }}
+                  title={collapsed ? marketplaceSection.label : undefined}
+                  className={`flex h-11 w-full items-center gap-3 rounded-lg px-3 text-sm font-bold transition-colors ${
+                    isActiveSection ? 'bg-navy-50 text-primary' : 'text-text-secondary hover:bg-surface hover:text-primary'
+                  } ${collapsed ? 'justify-center' : ''}`}
+                >
+                  <MarketIcon size={18} strokeWidth={1.8} />
+                  {!collapsed && <span className="flex-1 truncate text-left">{marketplaceSection.label}</span>}
+                  {!collapsed && <span className="text-text-muted">{isOpen ? '−' : '+'}</span>}
+                </button>
+                {isOpen && (
+                  <div className="mt-1 space-y-1 pl-4">
+                    {marketplaceItems.map((item) => (
+                      <NavLink
+                        key={item.id}
+                        to={item.route}
+                        title={item.description}
+                        className={({ isActive }) =>
+                          `flex min-h-9 items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+                            isActive ? 'bg-primary text-white shadow-sm' : 'text-text-secondary hover:bg-surface hover:text-primary'
+                          }`
+                        }
+                      >
+                        <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
+                        <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                      </NavLink>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* ── Workspace sections ── */}
+          {navSections.filter((s) => s.id !== 'marketplace').map((section) => {
             const sectionItems = visibleItems.filter((item) => item.section === section.id);
             if (sectionItems.length === 0) return null;
             const Icon = iconMap[section.icon];

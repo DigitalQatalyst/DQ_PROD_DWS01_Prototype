@@ -5,7 +5,8 @@ import { DetailPanel } from '../components/DetailPanel';
 import { OwnerBadge } from '../components/OwnerBadge';
 import { getUsers, getUnits, getTeams, getQueues } from '../services/platform.service';
 import { Users, Building, Inbox, User } from 'lucide-react';
-import { MarketplaceFilterPanel, FilterGroup } from '../components/MarketplaceFilterPanel';
+import { MarketplaceTopFilterBar } from '../components/MarketplaceTopFilterBar';
+import type { FilterGroup } from '../components/MarketplaceFilterPanel';
 import { usePersona } from '../context/PersonaContext';
 export function WorkDirectoryMarketplacePage() {
   const {
@@ -243,24 +244,30 @@ export function WorkDirectoryMarketplacePage() {
 
       <FilterBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        <MarketplaceFilterPanel title="Refine directory" helperText="Filter this marketplace by role, status, owner, SLA, and relevance." searchPlaceholder="Search owners, teams, queues, units, or expertise" searchValue={search} onSearchChange={setSearch} groups={filterGroups} values={filterValues} onChange={handleFilterChange} totalCount={totalCount} visibleCount={visibleCount} onClearAll={handleClearAll} persona={activePersona.role} />
-
-        <div className="flex-1">
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {content}
-          </div>
-
-          {!content && <div className="text-center py-16 bg-white rounded-card border border-border-default">
-              <p className="text-text-muted mb-4">
-                No marketplace items match your filters.
-              </p>
-              <button onClick={handleClearAll} className="px-4 py-2 bg-surface text-primary font-semibold text-sm rounded-button hover:bg-navy-50 transition-colors">
-                Clear filters
-              </button>
-            </div>}
-        </div>
+      <div className="mt-4">
+        <MarketplaceTopFilterBar
+          searchPlaceholder="Search owners, teams, queues, units, or expertise"
+          searchValue={search}
+          onSearchChange={setSearch}
+          groups={filterGroups}
+          values={filterValues}
+          onChange={handleFilterChange}
+          onClearAll={handleClearAll}
+        />
       </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {content}
+      </div>
+
+      {!content && <div className="text-center py-16 bg-white rounded-card border border-border-default">
+          <p className="text-text-muted mb-4">
+            No marketplace items match your filters.
+          </p>
+          <button onClick={handleClearAll} className="px-4 py-2 bg-surface text-primary font-semibold text-sm rounded-button hover:bg-navy-50 transition-colors">
+            Clear filters
+          </button>
+        </div>}
 
       {selectedEntity && <DetailPanel entity={selectedEntity} type="kpi" onClose={() => setSelectedEntity(null)} />}
     </div>;

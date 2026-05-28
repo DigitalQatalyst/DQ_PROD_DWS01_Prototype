@@ -11,15 +11,34 @@ import { PersonaProvider, usePersona } from './context/PersonaContext';
 import { ViewingModeProvider } from './context/ViewingModeContext';
 import { WorkspaceRoleProvider } from './context/WorkspaceRoleContext';
 import { useWorkspaceRole } from './context/WorkspaceRoleContext';
+import { ServiceLifecycleProvider } from './context/ServiceLifecycleContext';
+import { TaskLifecycleProvider } from './context/TaskLifecycleContext';
+import { KnowledgeLifecycleProvider } from './context/KnowledgeLifecycleContext';
 import { navigationItems, getNavigationItem } from './config/navigation';
 import { hasAnyPermission } from './config/permissions';
 import { PortalLayout } from './layouts/PortalLayout';
 import { AppLayout } from './layouts/AppLayout';
 import { Stage02Layout } from './layouts/Stage02Layout';
+import { MarketplaceLayout } from './layouts/MarketplaceLayout';
 import { PlaceholderPage } from './components/PlaceholderPage';
 import { Stage0OrientationPage } from './pages/Stage0OrientationPage';
 import { OperatingGuidePage } from './pages/OperatingGuidePage';
 import { OnboardingPage } from './pages/OnboardingPage';
+
+// New Knowledge Pages
+import { KnowledgeDetailPage } from './pages/KnowledgeDetailPage';
+import { KnowledgeReferencePage } from './pages/KnowledgeReferencePage';
+import { KnowledgeStartTaskPage } from './pages/KnowledgeStartTaskPage';
+import { KnowledgeReviewQueuePage } from './pages/KnowledgeReviewQueuePage';
+import { ExecutiveKnowledgeSignalPage } from './pages/ExecutiveKnowledgeSignalPage';
+
+// New Task Pages
+import { TaskTemplateDetailPage } from './pages/TaskTemplateDetailPage';
+import { TaskCreationWorkflowPage } from './pages/TaskCreationWorkflowPage';
+import { TaskDetailStatusPage } from './pages/TaskDetailStatusPage';
+import { TaskReviewQueuePage } from './pages/TaskReviewQueuePage';
+import { TaskClosureQualityPage } from './pages/TaskClosureQualityPage';
+import { ExecutiveTaskSignalPage } from './pages/ExecutiveTaskSignalPage';
 import { ServicesMarketplacePage } from './pages/ServicesMarketplacePage';
 import { TaskTemplatesMarketplacePage } from './pages/TaskTemplatesMarketplacePage';
 import { KnowledgeMarketplacePage } from './pages/KnowledgeMarketplacePage';
@@ -124,6 +143,11 @@ import { TaskSectionBuilderPage } from './pages/TaskSectionBuilderPage';
 import { TaskPermissionRulesPage } from './pages/TaskPermissionRulesPage';
 import { TaskTemplateGovernancePage } from './pages/TaskTemplateGovernancePage';
 import { StrategyLinkedTasksPage } from './pages/StrategyLinkedTasksPage';
+import { ServiceDetailPage } from './pages/ServiceDetailPage';
+import { RequestWorkflowPage } from './pages/RequestWorkflowPage';
+import { ServiceOwnerQueuePage } from './pages/ServiceOwnerQueuePage';
+import { ApproverQueuePage } from './pages/ApproverQueuePage';
+import { ExecutiveSignalPage } from './pages/ExecutiveSignalPage';
 import { Stage02WorkspacePage } from './pages/Stage02WorkspacePage';
 import { Stage02SectionPage } from './pages/Stage02SectionPage';
 import { Stage02PerformancePage } from './pages/Stage02PerformancePage';
@@ -178,6 +202,9 @@ function renderDwsRoute(route: string) {
   if (route === '/performance/learning-progress') return <Stage02PerformancePage section="learning" />;
   if (route === '/performance/contribution-history') return <Stage02PerformancePage section="contribution-history" />;
   if (route === '/performance/role') return <Stage02PerformancePage section="role-performance" />;
+  if (route === '/service-owner/requests') return <ServiceOwnerQueuePage />;
+  if (route === '/workflow/approvals') return <ApproverQueuePage />;
+  if (route === '/intelligence/service-signals') return <ExecutiveSignalPage />;
   return <DwsSectionPage route={route} />;
 }
 
@@ -188,6 +215,10 @@ function AppRoutes() {
         path="/"
         element={<Navigate to="/stage-0/orientation" replace />} />
       
+      {/* Full Page Routes (No Layout) */}
+      <Route path="/knowledge/:knowledgeId/reference" element={<RouteGuard><KnowledgeReferencePage /></RouteGuard>} />
+      <Route path="/tasks/create/:templateId" element={<RouteGuard><TaskCreationWorkflowPage /></RouteGuard>} />
+      <Route path="/tasks/create/from-knowledge/:knowledgeId" element={<RouteGuard><KnowledgeStartTaskPage /></RouteGuard>} />
 
       {/* Portal Layout Routes */}
       <Route element={<PortalLayout />}>
@@ -216,10 +247,31 @@ function AppRoutes() {
           } />
         
         <Route
+          path="/requests/start/:serviceId"
+          element={
+          <RouteGuard>
+              <RequestWorkflowPage />
+            </RouteGuard>
+          } />
+        
+      </Route>
+
+
+      {/* Marketplace Layout Routes */}
+      <Route element={<MarketplaceLayout />}>
+        <Route
           path="/marketplaces/services"
           element={
           <RouteGuard>
               <ServicesMarketplacePage />
+            </RouteGuard>
+          } />
+        
+        <Route
+          path="/marketplaces/services/:serviceId"
+          element={
+          <RouteGuard>
+              <ServiceDetailPage />
             </RouteGuard>
           } />
         
@@ -230,6 +282,38 @@ function AppRoutes() {
               <TaskTemplatesMarketplacePage />
             </RouteGuard>
           } />
+          
+        <Route
+          path="/marketplaces/task-templates/:templateId"
+          element={
+          <RouteGuard>
+              <TaskTemplateDetailPage />
+            </RouteGuard>
+          } />
+          
+        <Route
+          path="/marketplaces/task-review"
+          element={
+          <RouteGuard>
+              <TaskReviewQueuePage />
+            </RouteGuard>
+          } />
+          
+        <Route
+          path="/marketplaces/task-closure-quality"
+          element={
+          <RouteGuard>
+              <TaskClosureQualityPage />
+            </RouteGuard>
+          } />
+          
+        <Route
+          path="/marketplaces/task-signals"
+          element={
+          <RouteGuard>
+              <ExecutiveTaskSignalPage />
+            </RouteGuard>
+          } />
         
         <Route
           path="/marketplaces/knowledge"
@@ -238,6 +322,36 @@ function AppRoutes() {
               <KnowledgeMarketplacePage />
             </RouteGuard>
           } />
+          
+        <Route
+          path="/marketplaces/knowledge/:knowledgeId"
+          element={
+          <RouteGuard>
+              <KnowledgeDetailPage />
+            </RouteGuard>
+          } />
+          
+        <Route
+          path="/knowledge/review"
+          element={
+          <RouteGuard>
+              <KnowledgeReviewQueuePage />
+            </RouteGuard>
+          } />
+        
+        {/* Legacy redirect */}
+        <Route path="/marketplaces/knowledge-review" element={<Navigate to="/knowledge/review" replace />} />
+          
+        <Route
+          path="/intelligence/knowledge-signals"
+          element={
+          <RouteGuard>
+              <ExecutiveKnowledgeSignalPage />
+            </RouteGuard>
+          } />
+        
+        {/* Legacy redirect */}
+        <Route path="/marketplaces/knowledge-signals" element={<Navigate to="/intelligence/knowledge-signals" replace />} />
         
         <Route
           path="/marketplaces/work-directory"
@@ -262,10 +376,15 @@ function AppRoutes() {
               <MarketplaceFeedbackPage />
             </RouteGuard>
           } />
-        
-      </Route>
 
-      {/* Stage 02 Workspace Routes */}
+        <Route
+          path="/requests/:requestId/status"
+          element={
+          <RouteGuard>
+              <RequestStatusPage />
+            </RouteGuard>
+          } />
+      </Route>
       <Route element={<Stage02Layout />}>
         <Route path="/workspace" element={<Stage02WorkspacePage />} />
         <Route path="/stage02/workspace" element={<Navigate to="/workspace" replace />} />
@@ -364,14 +483,6 @@ function AppRoutes() {
           } />
         
         <Route
-          path="/workspace/request-status"
-          element={
-          <RouteGuard>
-              <RequestStatusPage />
-            </RouteGuard>
-          } />
-        
-        <Route
           path="/workspace/evidence-queue"
           element={
           <RouteGuard>
@@ -392,6 +503,14 @@ function AppRoutes() {
           element={
           <RouteGuard>
               <ObjectiveLinkedTasksPage />
+            </RouteGuard>
+          } />
+          
+        <Route
+          path="/tasks/:taskId"
+          element={
+          <RouteGuard>
+              <TaskDetailStatusPage />
             </RouteGuard>
           } />
         
@@ -1132,6 +1251,32 @@ function AppRoutes() {
           } />
         
 
+        {/* Service Lifecycle downstream routes (Prompt 5 & 6) */}
+        <Route
+          path="/service-owner/requests"
+          element={
+          <RouteGuard>
+              <ServiceOwnerQueuePage />
+            </RouteGuard>
+          } />
+        
+        <Route
+          path="/workflow/approvals"
+          element={
+          <RouteGuard>
+              <ApproverQueuePage />
+            </RouteGuard>
+          } />
+        
+        <Route
+          path="/intelligence/service-signals"
+          element={
+          <RouteGuard>
+              <ExecutiveSignalPage />
+            </RouteGuard>
+          } />
+        
+
         {/* Catch-all for unbuilt routes */}
         <Route
           path="*"
@@ -1154,8 +1299,14 @@ export function App() {
       <PersonaProvider>
         <WorkspaceRoleProvider>
           <ViewingModeProvider>
-            <AppRoutes />
-            <Toaster position="top-right" richColors />
+            <ServiceLifecycleProvider>
+              <TaskLifecycleProvider>
+                <KnowledgeLifecycleProvider>
+                  <AppRoutes />
+                  <Toaster position="top-right" richColors />
+                </KnowledgeLifecycleProvider>
+              </TaskLifecycleProvider>
+            </ServiceLifecycleProvider>
           </ViewingModeProvider>
         </WorkspaceRoleProvider>
       </PersonaProvider>

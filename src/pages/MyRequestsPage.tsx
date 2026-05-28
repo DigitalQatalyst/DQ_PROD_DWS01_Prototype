@@ -26,14 +26,39 @@ export function MyRequestsPage() {
   const navigate = useNavigate();
   const tabs = ['Submitted', 'Drafts', 'Pending Info', 'In Review', 'Closed'];
   useEffect(() => {
-    getRequests().then((allRequests) => {
-      // Filter for requests where user is requester or owner (if HRA)
-      let visible = allRequests.filter((r) => r.requesterUserId === 'USR-001');
-      if (activePersona.id === 'hra') {
-        visible = allRequests.filter((r) => r.requesterUserId === 'USR-001' || r.ownerUserId === 'USR-005');
-      }
-      setRequests(visible);
-    });
+    const fetchRequests = () => {
+      getRequests().then((allRequests) => {
+        let visible = allRequests.filter((r) => r.requesterUserId === 'USR-001');
+        if (activePersona.id === 'hra') {
+          visible = allRequests.filter((r) => r.requesterUserId === 'USR-001' || r.ownerUserId === 'USR-005');
+        }
+        
+        try {
+          const localRequests = JSON.parse(localStorage.getItem('local_my_requests') || '[]');
+          const formattedLocalRequests = localRequests.map((r: any) => ({
+            ...r,
+            title: r.title || r.service || 'Unknown Request',
+            type: r.type || 'Request',
+            dueDate: r.dueDate || 'Pending',
+            priority: r.priority || r.urgency || 'Normal',
+            status: r.status || 'Submitted',
+            slaState: r.sla === 'At Risk' ? 'At Risk' : r.sla === 'Breached' ? 'Breached' : 'On Track',
+            requesterUserId: 'USR-001',
+            ownerUserId: 'USR-002' // default fallback
+          }));
+          console.log("Loaded local requests:", formattedLocalRequests.length);
+          setRequests([...formattedLocalRequests, ...visible]);
+        } catch (e) {
+          console.error("Error parsing local requests", e);
+          setRequests(visible);
+        }
+      });
+    };
+    
+    fetchRequests();
+    
+    window.addEventListener('local_requests_updated', fetchRequests);
+    return () => window.removeEventListener('local_requests_updated', fetchRequests);
   }, [activePersona]);
   const filteredRequests = requests.filter((r) => {
     if (activeTab === 'Submitted') return r.status !== 'Draft' && r.status !== 'Closed';
@@ -42,7 +67,7 @@ export function MyRequestsPage() {
     if (activeTab === 'In Review') return r.status === 'In Review';
     if (activeTab === 'Closed') return r.status === 'Closed';
     return true;
-  }).filter((r) => r.title.toLowerCase().includes(search.toLowerCase()) || r.id.toLowerCase().includes(search.toLowerCase()));
+  }).filter((r) => (r.title || '').toLowerCase().includes(search.toLowerCase()) || (r.id || '').toLowerCase().includes(search.toLowerCase()));
   const submitted = requests.filter((r) => r.status !== 'Draft' && r.status !== 'Closed').length;
   const pendingInfo = requests.filter((r) => r.status === 'Pending Info').length;
   const atRisk = requests.filter((r) => r.slaState === 'At Risk').length;

@@ -1,62 +1,130 @@
-import React, { useEffect, useState } from 'react';
-import { RolePageScaffold } from '../components/RolePageScaffold';
-import { DataTable } from '../components/DataTable';
-import { EntityDrawer } from '../components/EntityDrawer';
-import { MonoId } from '../components/MonoId';
-import { StatusPill } from '../components/StatusPill';
-import { SlaBadge } from '../components/SlaBadge';
-import { OwnerBadge } from '../components/OwnerBadge';
-const mockRequests = [{
-  id: 'REQ-2001',
-  title: 'Task / Workflow Support',
-  category: 'Platform Support',
-  status: 'Pending Info',
-  slaState: 'At Risk',
-  ownerUserId: 'USR-007'
-}, {
-  id: 'REQ-2003',
-  title: 'IT & Access Request',
-  category: 'IT & Access',
-  status: 'New',
-  slaState: 'On Track',
-  ownerUserId: 'USR-007'
-}];
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import { toast } from 'sonner';
+import { useServiceLifecycle } from '../context/ServiceLifecycleContext';
+import { RequestHeaderCard } from '../components/RequestHeaderCard';
+import { RequestStatusTimeline } from '../components/RequestStatusTimeline';
+import { ApprovalStateCard } from '../components/ApprovalStateCard';
+import { FulfilmentNotesCard } from '../components/FulfilmentNotesCard';
+import { PendingInformationCard } from '../components/PendingInformationCard';
+import { ClosureOutcomeCard } from '../components/ClosureOutcomeCard';
+import { AuditTrailCue } from '../components/AuditTrailCue';
+import { ServiceEmptyState } from '../components/ServiceEmptyState';
+import { WorkItemLinkedKnowledgeCard } from '../components/WorkItemLinkedKnowledgeCard';
+
 export function RequestStatusPage() {
+  const { requestId } = useParams<{ requestId: string }>();
+  const navigate = useNavigate();
+  const { getRequestById, updateRequestStatus } = useServiceLifecycle();
+
   const [loading, setLoading] = useState(true);
-  const [selectedRequest, setSelectedRequest] = useState<any>(null);
+
+  const request = requestId ? getRequestById(requestId) : undefined;
+
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 400);
+    setLoading(true);
+    const timer = setTimeout(() => setLoading(false), 600);
     return () => clearTimeout(timer);
-  }, []);
-  const columns = [{
-    header: 'ID',
-    accessor: (row: any) => <MonoId value={row.id} />
-  }, {
-    header: 'Title',
-    accessor: (row: any) => <span className="font-medium text-[#111118]">{row.title}</span>
-  }, {
-    header: 'Category',
-    accessor: (row: any) => <span className="text-sm text-[#5F607F]">{row.category}</span>
-  }, {
-    header: 'Status',
-    accessor: (row: any) => <StatusPill status={row.status} />
-  }, {
-    header: 'SLA',
-    accessor: (row: any) => <SlaBadge state={row.slaState} />
-  }, {
-    header: 'Owner',
-    accessor: (row: any) => <OwnerBadge userId={row.ownerUserId} />
-  }];
+  }, [requestId]);
+
+  const handleBackToMyRequests = () => {
+    toast.info('My Requests opened in prototype state');
+    // For navigation if we wanted: navigate('/workspace/my-requests');
+  };
+
+  const handleInfoSubmit = (response: string) => {
+    if (requestId) {
+      updateRequestStatus(requestId, 'In Review');
+      toast.success('Information submitted');
+    }
+  };
+
   if (loading) {
-    return <div className="p-8 animate-pulse space-y-4">
-        <div className="h-8 bg-surface rounded w-1/4"></div>
-        <div className="h-64 bg-surface rounded w-full"></div>
-      </div>;
-  }
-  return <RolePageScaffold eyebrow="Workspace" title="Request Status" purpose="Track the status of requests you have submitted to other teams.">
-      <div className="bg-white rounded-[12px] border border-[#D8D9E6] shadow-sm overflow-hidden">
-        <DataTable columns={columns} rows={mockRequests} onRowClick={setSelectedRequest} />
+    return (
+      <div className="bg-[#F6F6FB] min-h-screen py-8">
+        <div className="max-w-[1440px] mx-auto px-6 lg:px-8">
+          <div className="w-32 h-8 bg-border-default animate-pulse rounded mb-6" />
+          <div className="bg-white rounded-card h-48 animate-pulse border border-border-default mb-8" />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-8 bg-white rounded-card h-96 animate-pulse border border-border-default" />
+            <div className="lg:col-span-4 space-y-4">
+              <div className="bg-white rounded-card h-32 animate-pulse border border-border-default" />
+              <div className="bg-white rounded-card h-32 animate-pulse border border-border-default" />
+            </div>
+          </div>
+        </div>
       </div>
-      {selectedRequest && <EntityDrawer type="request" data={selectedRequest} onClose={() => setSelectedRequest(null)} />}
-    </RolePageScaffold>;
+    );
+  }
+
+  if (!request) {
+    return (
+      <div className="bg-[#F6F6FB] min-h-screen py-20 px-6">
+        <div className="max-w-3xl mx-auto">
+          <ServiceEmptyState 
+            title="Request not found" 
+            message={`We couldn't find a request matching the ID "${requestId}".`}
+            ctaLabel="Back to My Requests"
+            onCtaClick={handleBackToMyRequests}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-[#F6F6FB] min-h-screen pb-12">
+      <div className="max-w-[1440px] mx-auto px-6 lg:px-8 pt-8">
+        
+        <button 
+          onClick={handleBackToMyRequests}
+          className="flex items-center gap-2 text-sm font-semibold text-text-secondary hover:text-primary transition-colors mb-6"
+        >
+          <ArrowLeft size={16} />
+          Back to My Requests
+        </button>
+
+        <div className="mb-8">
+          <RequestHeaderCard request={request} />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* Main Content (8 cols) */}
+          <div className="lg:col-span-8">
+            <RequestStatusTimeline timeline={request.timeline} />
+          </div>
+          
+          {/* Right Rail (4 cols) */}
+          <div className="lg:col-span-4 space-y-6">
+            
+            <ApprovalStateCard approvalState={request.approval} />
+
+            {request.status === 'Returned for Information' && request.pendingInfo && (
+              <PendingInformationCard 
+                pendingInfo={request.pendingInfo} 
+                onSubmit={handleInfoSubmit} 
+              />
+            )}
+
+            {request.fulfilmentNotes && (
+              <FulfilmentNotesCard notes={request.fulfilmentNotes} />
+            )}
+
+            {request.status === 'Closed' && request.closureOutcome && (
+              <ClosureOutcomeCard outcome={request.closureOutcome} />
+            )}
+
+            <AuditTrailCue />
+
+            {/* Linked Knowledge */}
+            {requestId && <WorkItemLinkedKnowledgeCard workItemId={requestId} />}
+            
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  );
 }
