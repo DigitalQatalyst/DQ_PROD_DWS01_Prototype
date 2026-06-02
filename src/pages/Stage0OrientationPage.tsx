@@ -54,22 +54,26 @@ const supportCards = [
   {
     title: 'Need Help?',
     description: 'Find answers, FAQs, and common workspace guidance.',
-    icon: CircleHelp
+    icon: CircleHelp,
+    message: 'Help and support options opened.'
   },
   {
     title: 'IT & Access Support',
     description: 'Get help with access, tools, and technical issues.',
-    icon: Headphones
+    icon: Headphones,
+    message: 'IT and access support options opened for this prototype.'
   },
   {
     title: 'HR & Onboarding',
     description: 'Questions about onboarding, policies, and benefits.',
-    icon: Users
+    icon: Users,
+    message: 'HRA and onboarding support options opened for this prototype.'
   },
   {
     title: 'Platform Help',
     description: 'Guides, how-tos, and platform support resources.',
-    icon: Compass
+    icon: Compass,
+    message: 'Platform help options opened for this prototype.'
   }
 ];
 
@@ -280,7 +284,7 @@ function SupportSection() {
           return (
             <button
               key={card.title}
-              onClick={() => toast.info(`${card.title} placeholder`)}
+              onClick={() => toast.info(card.message)}
               className="rounded-2xl border border-border-subtle bg-white p-5 text-left shadow-sm transition-colors hover:border-border-default hover:bg-surface">
               <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-navy-50 text-primary">
                 <Icon size={19} />

@@ -19,6 +19,7 @@ import { hasAnyPermission } from './config/permissions';
 import { PortalLayout } from './layouts/PortalLayout';
 import { AppLayout } from './layouts/AppLayout';
 import { Stage02Layout } from './layouts/Stage02Layout';
+import { Stage0ShellLayout } from './layouts/Stage0ShellLayout';
 import { MarketplaceLayout } from './layouts/MarketplaceLayout';
 import { PlaceholderPage } from './components/PlaceholderPage';
 import { Stage0OrientationPage } from './pages/Stage0OrientationPage';
@@ -220,8 +221,8 @@ function AppRoutes() {
       <Route path="/tasks/create/:templateId" element={<RouteGuard><TaskCreationWorkflowPage /></RouteGuard>} />
       <Route path="/tasks/create/from-knowledge/:knowledgeId" element={<RouteGuard><KnowledgeStartTaskPage /></RouteGuard>} />
 
-      {/* Portal Layout Routes */}
-      <Route element={<PortalLayout />}>
+      {/* Stage 0 Orientation Shell Routes */}
+      <Route element={<Stage0ShellLayout />}>
         <Route
           path="/stage-0/orientation"
           element={
@@ -245,6 +246,10 @@ function AppRoutes() {
               <OnboardingPage />
             </RouteGuard>
           } />
+      </Route>
+
+      {/* Portal Layout Routes */}
+      <Route element={<PortalLayout />}>
         
         <Route
           path="/requests/start/:serviceId"

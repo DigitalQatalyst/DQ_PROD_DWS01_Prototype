@@ -6,7 +6,7 @@ export function ViewingModeSwitch() {
     mode,
     setMode
   } = useViewingMode();
-  return <div className="flex items-center h-10 rounded-pill bg-surface border border-border-subtle p-0.5" role="group" aria-label="Viewing mode">
+  return <div className="flex items-center h-10 rounded-pill bg-surface border border-border-subtle p-0.5" role="group" aria-label="Prototype view switcher for validation only" title="Prototype view switcher for validation only">
       <button onClick={() => setMode('first-time')} aria-pressed={mode === 'first-time'} title="Show orientation and onboarding content" className={`flex items-center gap-1.5 h-full px-3 rounded-pill text-xs font-semibold transition-all ${mode === 'first-time' ? 'bg-primary text-white shadow-sm' : 'text-text-secondary hover:text-primary'}`}>
         <Sparkles size={13} />
         New Joiner
