@@ -67,7 +67,11 @@ const dailyWorkAll: NavItem[] = [
 {
   label: 'My Tasks',
   route: '/workspace/my-tasks',
-  icon: CheckSquare
+  icon: CheckSquare,
+  badge: {
+    value: '18',
+    tone: 'accent'
+  }
 },
 {
   label: 'My Updates',
@@ -85,9 +89,9 @@ const dailyWorkAll: NavItem[] = [
   icon: Inbox
 },
 {
-  label: 'Notifications',
-  route: '/workspace/notifications',
-  icon: Bell,
+  label: 'Activity',
+  route: '/workspace/activity',
+  icon: Activity,
   badge: {
     value: '4',
     tone: 'accent'
@@ -117,7 +121,7 @@ const sidebarConfig: Record<PersonaId, NavGroup[]> = {
     items: [
     {
       label: 'Personal Execution Workspace',
-      route: '/workspace/my-work',
+      route: '/workspace',
       icon: Briefcase
     },
     {

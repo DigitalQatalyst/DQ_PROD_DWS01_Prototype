@@ -131,6 +131,49 @@ export function Stage02Sidebar({ collapsed, onCollapsedChange }: Stage02SidebarP
             const isActiveSection = activeSectionId === section.id;
             const isOpen = !collapsed && expandedSection === section.id;
             const sectionBadge = sectionItems.reduce((sum, item) => sum + (item.badgeCountKey ? badgeCounts[item.badgeCountKey] || 0 : 0), 0);
+            if (section.id === 'workspace') {
+              return (
+                <div key={section.id} className="border-b border-border-subtle py-1 last:border-b-0">
+                  <div className={`flex h-11 w-full items-center gap-2 rounded-lg px-3 text-sm font-bold transition-colors ${isActiveSection ? 'bg-navy-50 text-primary' : 'text-text-secondary hover:bg-surface hover:text-primary'} ${collapsed ? 'justify-center' : ''}`}>
+                    <button
+                      onClick={() => navigate('/workspace')}
+                      title={collapsed ? section.label : undefined}
+                      className={`flex min-w-0 flex-1 items-center gap-3 text-left ${collapsed ? 'justify-center' : ''}`}>
+                      <Icon size={18} strokeWidth={1.8} />
+                      {!collapsed && <span className="flex-1 truncate">{section.label}</span>}
+                    </button>
+                    {!collapsed && sectionBadge > 0 && <span className="rounded-pill bg-primary px-2 py-0.5 text-[10px] font-bold text-white">{sectionBadge > 99 ? '99+' : sectionBadge}</span>}
+                    {!collapsed && (
+                      <button
+                        onClick={() => setExpandedSection((current) => current === section.id ? '' : section.id)}
+                        aria-label={isOpen ? 'Collapse Workspace section' : 'Expand Workspace section'}
+                        className="rounded px-1 text-text-muted hover:bg-white hover:text-primary">
+                        {isOpen ? '−' : '+'}
+                      </button>
+                    )}
+                  </div>
+                  {isOpen && (
+                    <div className="mt-1 space-y-1 pl-4">
+                      {sectionItems.map((item) => (
+                        <NavLink
+                          key={item.id}
+                          to={item.route}
+                          title={item.description}
+                          className={({ isActive }) =>
+                            `flex min-h-9 items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+                              isActive ? 'bg-primary text-white shadow-sm' : 'text-text-secondary hover:bg-surface hover:text-primary'
+                            }`
+                          }>
+                          <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
+                          <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                          {item.badgeCountKey && badgeCounts[item.badgeCountKey] ? <span className="rounded-pill bg-navy-100 px-2 py-0.5 text-[10px] font-bold text-primary">{badgeCounts[item.badgeCountKey]}</span> : null}
+                        </NavLink>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            }
             return (
               <div key={section.id} className="border-b border-border-subtle py-1 last:border-b-0">
                 <button

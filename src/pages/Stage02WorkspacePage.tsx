@@ -56,20 +56,19 @@ const toneDot = {
 };
 
 const kpiRoutes: Record<string, string> = {
-  'My Work': '/workspace/my-work',
-  'My Tasks': '/tasks/my-tasks',
-  'Assigned work': '/workspace/my-work',
-  'Pending Actions': '/workspace/my-work',
+  'My Tasks': '/workspace/my-tasks',
+  'Assigned work': '/workspace',
+  'Pending Actions': '/workspace',
   'Blocked Items': '/tasks/blocked',
   'My Requests': '/workspace/my-requests',
-  'Notifications': '/workspace/notifications',
-  'Configuration work': '/workspace/my-work',
+  Activity: '/workspace/activity',
+  'Configuration work': '/workspace',
   'Support requests': '/workspace/my-requests',
   'Workflow rule reviews': '/admin/workflow-approval-rules',
   'Audit items': '/admin/audit-logs',
-  'Platform notifications': '/workspace/notifications',
+  'Platform activity': '/workspace/activity',
   'SLA At Risk': '/reports/sla-dashboard',
-  'Onboarding Tasks': '/tasks/my-tasks',
+  'Onboarding Tasks': '/workspace/my-tasks',
   'Access Requests': '/workspace/my-requests',
   'Learning Progress': '/performance/learning-progress',
   'First Sessions': '/workspace/working-sessions',
@@ -90,7 +89,7 @@ const roleFocus: Record<WorkspaceRole, string> = {
 function workspaceKpis(mode: string, role: WorkspaceRole): KpiItem[] {
   if (mode === 'first-time') {
     return [
-      { label: 'Onboarding Tasks', value: role === 'HRA' ? '14' : '6', subtitle: '2 due this week', tone: 'warning', route: '/tasks/my-tasks' },
+      { label: 'Onboarding Tasks', value: role === 'HRA' ? '14' : '6', subtitle: '2 due this week', tone: 'warning', route: '/workspace/my-tasks' },
       { label: 'Access Requests', value: '3', subtitle: '1 awaiting approval', tone: 'info', route: '/workspace/my-requests' },
       { label: 'Learning Progress', value: '42%', subtitle: '3 modules remaining', tone: 'warning', route: '/performance/learning-progress' },
       { label: 'First Sessions', value: '2', subtitle: '1 scheduled this week', tone: 'info', route: '/workspace/working-sessions' },
@@ -99,21 +98,21 @@ function workspaceKpis(mode: string, role: WorkspaceRole): KpiItem[] {
   }
   if (role === 'Admin') {
     return [
-      { label: 'Configuration work', value: '18', subtitle: '5 overdue', tone: 'danger', route: '/workspace/my-work' },
+      { label: 'Configuration work', value: '18', subtitle: '5 overdue', tone: 'danger', route: '/workspace' },
       { label: 'Support requests', value: '7', subtitle: '2 awaiting update', tone: 'info', route: '/workspace/my-requests' },
       { label: 'Workflow rule reviews', value: '6', subtitle: '3 pending approval', tone: 'warning', route: '/admin/workflow-approval-rules' },
       { label: 'Audit items', value: '5', subtitle: '2 need review', tone: 'danger', route: '/admin/audit-logs' },
-      { label: 'Platform notifications', value: '9', subtitle: '4 unread', tone: 'info', route: '/workspace/notifications' }
+      { label: 'Platform activity', value: '9', subtitle: '4 unread', tone: 'info', route: '/workspace/activity' }
     ];
   }
   const roleShift = role === 'CEO' || role === 'Unit Lead' ? ['24', '11', '7', '9', '6'] : role === 'Support' ? ['15', '8', '6', '18', '9'] : ['12', '6', '4', '5', '3'];
   if (role === 'HRA') {
     return [
       { label: 'HRA requests', value: '11', subtitle: '4 awaiting confirmation', tone: 'warning', route: '/workspace/my-requests' },
-      { label: 'Onboarding items', value: '9', subtitle: '3 due this week', tone: 'info', route: '/workspace/my-work' },
-      { label: 'Role transitions', value: '5', subtitle: '2 need evidence', tone: 'warning', route: '/workspace/my-work' },
-      { label: 'Pending Actions', value: '6', subtitle: 'Confirm owner updates', tone: 'danger', route: '/workspace/my-work' },
-      { label: 'Notifications', value: '8', subtitle: '3 unread', tone: 'info', route: '/workspace/notifications' }
+      { label: 'Onboarding items', value: '9', subtitle: '3 due this week', tone: 'info', route: '/workspace' },
+      { label: 'Role transitions', value: '5', subtitle: '2 need evidence', tone: 'warning', route: '/workspace' },
+      { label: 'Pending Actions', value: '6', subtitle: 'Confirm owner updates', tone: 'danger', route: '/workspace' },
+      { label: 'Activity', value: '8', subtitle: '3 unread', tone: 'info', route: '/workspace/activity' }
     ];
   }
   if (role === 'Support') {
@@ -121,25 +120,25 @@ function workspaceKpis(mode: string, role: WorkspaceRole): KpiItem[] {
       { label: 'Support requests', value: roleShift[3], subtitle: 'Queue-linked items', tone: 'warning', route: '/workspace/my-requests' },
       { label: 'SLA At Risk', value: roleShift[4], subtitle: 'Escalation exposure', tone: 'danger', route: '/reports/sla-dashboard' },
       { label: 'Escalations', value: roleShift[2], subtitle: 'Needs triage', tone: 'danger', route: '/workflows/escalations' },
-      { label: 'Pending Actions', value: roleShift[1], subtitle: 'Fulfilment updates', tone: 'warning', route: '/workspace/my-work' },
-      { label: 'Notifications', value: '10', subtitle: '5 unread', tone: 'info', route: '/workspace/notifications' }
+      { label: 'Pending Actions', value: roleShift[1], subtitle: 'Fulfilment updates', tone: 'warning', route: '/workspace' },
+      { label: 'Activity', value: '10', subtitle: '5 unread', tone: 'info', route: '/workspace/activity' }
     ];
   }
   if (role === 'CEO') {
     return [
-      { label: 'Executive actions', value: '7', subtitle: roleFocus[role], tone: 'warning', route: '/workspace/my-work' },
+      { label: 'Executive actions', value: '7', subtitle: roleFocus[role], tone: 'warning', route: '/workspace' },
       { label: 'Strategic updates', value: '12', subtitle: 'Portfolio signals', tone: 'info', route: '/trackers/strategic-initiatives' },
       { label: 'Governance alerts', value: '4', subtitle: 'Requires review', tone: 'danger', route: '/governance/dashboard' },
       { label: 'SLA At Risk', value: '6', subtitle: 'Enterprise exposure', tone: 'danger', route: '/reports/sla-dashboard' },
-      { label: 'Notifications', value: '9', subtitle: 'Key alerts', tone: 'info', route: '/workspace/notifications' }
+      { label: 'Activity', value: '9', subtitle: 'Key alerts', tone: 'info', route: '/workspace/activity' }
     ];
   }
   return [
-    { label: 'Assigned work', value: roleShift[0], subtitle: roleFocus[role], tone: 'danger', route: '/workspace/my-work' },
+    { label: 'Assigned work', value: roleShift[0], subtitle: roleFocus[role], tone: 'danger', route: '/workspace' },
     { label: 'My Requests', value: roleShift[3], subtitle: 'Open service requests', tone: 'info', route: '/workspace/my-requests' },
-    { label: 'Pending Actions', value: roleShift[1], subtitle: 'Needs review or input', tone: 'warning', route: '/workspace/my-work' },
+    { label: 'Pending Actions', value: roleShift[1], subtitle: 'Needs review or input', tone: 'warning', route: '/workspace' },
     { label: 'Blocked Items', value: roleShift[2], subtitle: 'Blockers requiring action', tone: 'danger', route: '/tasks/blocked' },
-    { label: 'Notifications', value: roleShift[4], subtitle: 'Unread workspace alerts', tone: 'info', route: '/workspace/notifications' }
+    { label: 'Activity', value: roleShift[4], subtitle: 'Unread workspace alerts', tone: 'info', route: '/workspace/activity' }
   ];
 }
 
@@ -431,7 +430,7 @@ function DetailDrawer({ record, onClose }: { record: DetailRecord; onClose: () =
           <div>
             <h3 className="text-sm font-bold text-primary">Related work items</h3>
             <div className="mt-2 space-y-2">
-              {(work.related || ['DWS.01 Workspace', 'My Work']).map((item) => (
+              {(work.related || ['DWS.01 Workspace', 'Workspace Overview']).map((item) => (
                 <div key={item} className="rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm font-medium text-text-secondary">{item}</div>
               ))}
             </div>
@@ -524,7 +523,7 @@ export function Stage02WorkspacePage() {
     ? 'Let’s get you started with your onboarding, access, learning, and first work items.'
     : 'Here’s what’s happening across your workspace.';
   const aiInsights = mode === 'first-time' ? dataset.aiInsights : [
-    activity('AI-DASH-1', '3 items need your update', 'Open My Work'),
+    activity('AI-DASH-1', '3 items need your update', 'Open Workspace'),
     activity('AI-DASH-2', '2 requests are close to SLA breach', 'Review requests'),
     activity('AI-DASH-3', 'You have 1 unresolved blocker', 'Review blockers'),
     activity('AI-DASH-4', 'Weekly workspace summary is ready', 'View report')
@@ -532,7 +531,7 @@ export function Stage02WorkspacePage() {
   const dashboardQuickActions: QuickActionType[] = ['Create Task', 'Submit Request', 'New Tracker Item', 'Upload Document', 'Add Knowledge', 'Schedule Working Session'];
 
   const handleKpi = (kpi: KpiItem) => {
-    navigate(kpiRoutes[kpi.label] || kpi.route || '/workspace/my-work');
+    navigate(kpiRoutes[kpi.label] || kpi.route || '/workspace');
   };
 
   return (
@@ -545,9 +544,9 @@ export function Stage02WorkspacePage() {
               <p className="mt-2 text-sm font-medium text-text-secondary">{headerSubtitle}</p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <button onClick={() => navigate('/workspace/my-work')} className="inline-flex h-10 items-center gap-2 rounded-button border border-border-default bg-white px-4 text-sm font-semibold text-primary shadow-sm hover:bg-surface">
+              <button onClick={() => navigate('/workspace')} className="inline-flex h-10 items-center gap-2 rounded-button border border-border-default bg-white px-4 text-sm font-semibold text-primary shadow-sm hover:bg-surface">
                 <LayoutList size={16} />
-                My Work
+                Workspace
                 <ChevronRight size={14} />
               </button>
               <button onClick={() => toast.info('Workspace dashboard customisation opened.')} className="inline-flex h-10 items-center gap-2 rounded-button border border-border-default bg-white px-4 text-sm font-semibold text-primary shadow-sm hover:bg-surface">
@@ -563,8 +562,8 @@ export function Stage02WorkspacePage() {
 
           <section className="rounded-card border border-border-subtle bg-white p-5 shadow-sm">
             <div className="mb-5 flex items-center justify-between gap-3">
-              <h2 className="text-xl font-bold text-primary">My Work</h2>
-              <Link to="/workspace/my-work" className="inline-flex items-center gap-2 text-sm font-bold text-info-text hover:underline">
+              <h2 className="text-xl font-bold text-primary">Workspace Overview</h2>
+              <Link to="/workspace" className="inline-flex items-center gap-2 text-sm font-bold text-info-text hover:underline">
                 View all <ChevronRight size={16} />
               </Link>
             </div>
