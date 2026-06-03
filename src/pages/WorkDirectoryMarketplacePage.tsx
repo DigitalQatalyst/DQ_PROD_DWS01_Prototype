@@ -1,245 +1,119 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { BookOpen, Building2, FilterX, Inbox, UsersRound } from 'lucide-react';
 import { FilterBar } from '../components/FilterBar';
 import { KpiTile } from '../components/KpiTile';
-import { DetailPanel } from '../components/DetailPanel';
-import { OwnerBadge } from '../components/OwnerBadge';
-import { getUsers, getUnits, getTeams, getQueues } from '../services/platform.service';
-import { Users, Building, Inbox, User } from 'lucide-react';
 import { MarketplaceTopFilterBar } from '../components/MarketplaceTopFilterBar';
 import type { FilterGroup } from '../components/MarketplaceFilterPanel';
-import { usePersona } from '../context/PersonaContext';
-export function WorkDirectoryMarketplacePage() {
-  const {
-    activePersona
-  } = usePersona();
-  const [activeTab, setActiveTab] = useState('Teams');
-  const [search, setSearch] = useState('');
-  const [users, setUsers] = useState<any[]>([]);
-  const [units, setUnits] = useState<any[]>([]);
-  const [teams, setTeams] = useState<any[]>([]);
-  const [queues, setQueues] = useState<any[]>([]);
-  const [selectedEntity, setSelectedEntity] = useState<any | null>(null);
-  // Filter state
-  const [filterValues, setFilterValues] = useState<Record<string, string[]>>({});
-  const tabs = ['Teams', 'Units', 'Owners', 'Experts', 'Fulfilment Contacts', 'Support Contacts'];
-  const filterGroups: FilterGroup[] = [{
+import { DirectoryCard } from '../components/WorkDirectoryComponents';
+import { useDirectoryLifecycle } from '../context/DirectoryLifecycleContext';
+
+const tabs = ['Teams', 'Units', 'Owners', 'Experts', 'Fulfilment Contacts', 'Support Contacts'];
+
+const tabMatches: Record<string, string[]> = {
+  Teams: ['Team'],
+  Units: ['Unit'],
+  Owners: ['Person', 'Service Owner', 'Governance Owner'],
+  Experts: ['Expert'],
+  'Fulfilment Contacts': ['Fulfilment Contact', 'Service Owner'],
+  'Support Contacts': ['Support Contact', 'Queue']
+};
+
+const filterGroups: FilterGroup[] = [
+  {
     id: 'type',
     label: 'Directory Type',
-    options: [{
-      value: 'Teams',
-      label: 'Teams'
-    }, {
-      value: 'Units',
-      label: 'Units'
-    }, {
-      value: 'Service Owners',
-      label: 'Service Owners'
-    }, {
-      value: 'Fulfilment Queues',
-      label: 'Fulfilment Queues'
-    }, {
-      value: 'Experts',
-      label: 'Experts'
-    }, {
-      value: 'Governance Owners',
-      label: 'Governance Owners'
-    }]
-  }, {
+    options: ['Person', 'Team', 'Unit', 'Service Owner', 'Fulfilment Contact', 'Support Contact', 'Expert', 'Governance Owner', 'Queue'].map((value) => ({ value, label: value }))
+  },
+  {
     id: 'area',
     label: 'Ownership Area',
-    options: [{
-      value: 'Tasks',
-      label: 'Tasks'
-    }, {
-      value: 'Requests',
-      label: 'Requests'
-    }, {
-      value: 'Approvals',
-      label: 'Approvals'
-    }, {
-      value: 'Knowledge',
-      label: 'Knowledge'
-    }, {
-      value: 'SLA Rules',
-      label: 'SLA Rules'
-    }, {
-      value: 'Platform Configuration',
-      label: 'Platform Configuration'
-    }, {
-      value: 'HRA Workflow',
-      label: 'HRA Workflow'
-    }, {
-      value: 'Support Triage',
-      label: 'Support Triage'
-    }]
-  }, {
+    options: ['Tasks', 'Requests', 'Approvals', 'Knowledge', 'SLA Rules', 'Platform Configuration', 'HRA Workflow', 'Support Triage', 'Governance', 'Workflow', 'Reviews'].map((value) => ({ value, label: value }))
+  },
+  {
     id: 'availability',
     label: 'Availability',
-    options: [{
-      value: 'Available',
-      label: 'Available'
-    }, {
-      value: 'Busy',
-      label: 'Busy'
-    }, {
-      value: 'Escalation only',
-      label: 'Escalation only'
-    }]
-  }, {
+    options: ['Available', 'Busy', 'Escalation only'].map((value) => ({ value, label: value }))
+  },
+  {
     id: 'workload',
     label: 'Workload',
-    options: [{
-      value: 'Low',
-      label: 'Low'
-    }, {
-      value: 'Medium',
-      label: 'Medium'
-    }, {
-      value: 'High',
-      label: 'High'
-    }]
-  }, {
+    options: ['Low', 'Medium', 'High'].map((value) => ({ value, label: value }))
+  },
+  {
     id: 'unit',
     label: 'Unit',
-    options: [{
-      value: 'Digital Platforms',
-      label: 'Digital Platforms'
-    }, {
-      value: 'HRA',
-      label: 'HRA'
-    }, {
-      value: 'Support Operations',
-      label: 'Support Operations'
-    }, {
-      value: 'Platform Governance',
-      label: 'Platform Governance'
-    }, {
-      value: 'eCom.DXP',
-      label: 'eCom.DXP'
-    }]
-  }, {
+    options: ['Digital Platforms', 'HRA', 'Support Operations', 'Platform Governance', 'eCom.DXP', 'Enterprise'].map((value) => ({ value, label: value }))
+  },
+  {
     id: 'contact',
     label: 'Contact Route',
-    options: [{
-      value: 'Contact owner',
-      label: 'Contact owner'
-    }, {
-      value: 'Route request',
-      label: 'Route request'
-    }, {
-      value: 'Escalate',
-      label: 'Escalate'
-    }, {
-      value: 'View queue',
-      label: 'View queue'
-    }]
-  }];
-  useEffect(() => {
-    Promise.all([getUsers(), getUnits(), getTeams(), getQueues()]).then(([u, un, t, q]) => {
-      setUsers(u);
-      setUnits(un);
-      setTeams(t);
-      setQueues(q);
-    });
-  }, []);
+    options: ['Contact owner', 'Route request', 'Request review', 'Handoff work', 'Escalate', 'View queue', 'View structure', 'Assign task'].map((value) => ({ value, label: value }))
+  }
+];
+
+export function WorkDirectoryMarketplacePage() {
+  const { entries, isLoading } = useDirectoryLifecycle();
+  const [activeTab, setActiveTab] = useState('Teams');
+  const [search, setSearch] = useState('');
+  const [filterValues, setFilterValues] = useState<Record<string, string[]>>({});
+
   const handleFilterChange = (groupId: string, values: string[]) => {
-    setFilterValues((prev) => ({
-      ...prev,
-      [groupId]: values
-    }));
+    setFilterValues((prev) => ({ ...prev, [groupId]: values }));
   };
+
   const handleClearAll = () => {
     setFilterValues({});
     setSearch('');
+    setActiveTab('Teams');
   };
-  const ownersCount = users.filter((u) => u.role.includes('Lead') || u.role.includes('Master')).length;
-  const renderContent = () => {
-    let items: any[] = [];
-    if (activeTab === 'Teams') {
-      items = teams.filter((t) => t.name.toLowerCase().includes(search.toLowerCase()));
-      if (items.length === 0) return null;
-      return items.map((team) => <div key={team.id} onClick={() => setSelectedEntity(team)} className="p-6 rounded-card bg-white border border-border-default hover:shadow-md cursor-pointer transition-all">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-navy-50 text-primary rounded-lg">
-              <Users size={20} />
+
+  const filteredEntries = entries.filter((entry) => {
+    const tabTypes = tabMatches[activeTab] || [];
+    const matchesTab = tabTypes.includes(entry.entityType);
+    const normalizedSearch = search.trim().toLowerCase();
+    const matchesSearch =
+      normalizedSearch === '' ||
+      entry.name.toLowerCase().includes(normalizedSearch) ||
+      entry.roleLabel.toLowerCase().includes(normalizedSearch) ||
+      entry.unit.toLowerCase().includes(normalizedSearch) ||
+      entry.summary.toLowerCase().includes(normalizedSearch) ||
+      entry.ownershipAreas.some((area) => area.toLowerCase().includes(normalizedSearch));
+    const matchesType = !filterValues.type?.length || filterValues.type.includes(entry.entityType);
+    const matchesArea = !filterValues.area?.length || filterValues.area.some((area) => entry.ownershipAreas.includes(area));
+    const matchesAvailability = !filterValues.availability?.length || filterValues.availability.includes(entry.availability);
+    const matchesWorkload = !filterValues.workload?.length || filterValues.workload.includes(entry.workload);
+    const matchesUnit = !filterValues.unit?.length || filterValues.unit.includes(entry.unit) || (entry.team ? filterValues.unit.includes(entry.team) : false);
+    const matchesContact = !filterValues.contact?.length || filterValues.contact.some((route) => entry.contactRoutes.includes(route));
+    return matchesTab && matchesSearch && matchesType && matchesArea && matchesAvailability && matchesWorkload && matchesUnit && matchesContact;
+  });
+
+  const units = entries.filter((entry) => entry.entityType === 'Unit').length;
+  const teams = entries.filter((entry) => entry.entityType === 'Team').length;
+  const owners = entries.filter((entry) => ['Person', 'Service Owner', 'Governance Owner', 'Expert'].includes(entry.entityType)).length;
+  const queues = entries.filter((entry) => entry.entityType === 'Queue' || entry.entityType === 'Support Contact').length;
+
+  return (
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight text-primary">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-navy-50 text-primary">
+              <UsersRound size={24} />
             </div>
-            <h3 className="font-semibold text-primary">{team.name}</h3>
-          </div>
-          <div className="space-y-2">
-            <div className="text-xs text-text-muted">Lead</div>
-            <OwnerBadge userId={team.leadUserId} />
-          </div>
-        </div>);
-    }
-    if (activeTab === 'Units') {
-      items = units.filter((u) => u.name.toLowerCase().includes(search.toLowerCase()));
-      if (items.length === 0) return null;
-      return items.map((unit) => <div key={unit.id} onClick={() => setSelectedEntity(unit)} className="p-6 rounded-card bg-white border border-border-default hover:shadow-md cursor-pointer transition-all">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-navy-50 text-primary rounded-lg">
-              <Building size={20} />
-            </div>
-            <h3 className="font-semibold text-primary">{unit.name}</h3>
-          </div>
-          <div className="space-y-2">
-            <div className="text-xs text-text-muted">Lead</div>
-            <OwnerBadge userId={unit.leadUserId} />
-          </div>
-        </div>);
-    }
-    if (activeTab === 'Owners' || activeTab === 'Experts' || activeTab === 'Fulfilment Contacts') {
-      items = users.filter((u) => u.name.toLowerCase().includes(search.toLowerCase()));
-      if (items.length === 0) return null;
-      return items.map((user) => <div key={user.id} onClick={() => setSelectedEntity(user)} className="p-6 rounded-card bg-white border border-border-default hover:shadow-md cursor-pointer transition-all">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-navy-50 text-primary rounded-lg">
-              <User size={20} />
-            </div>
-            <h3 className="font-semibold text-primary">{user.name}</h3>
-          </div>
-          <div className="text-sm text-text-secondary mb-1">{user.role}</div>
-          <div className="text-xs text-text-muted">
-            Unit: {units.find((u) => u.id === user.unitId)?.name || user.unitId}
-          </div>
-        </div>);
-    }
-    if (activeTab === 'Support Contacts') {
-      items = queues.filter((q) => q.name.toLowerCase().includes(search.toLowerCase()));
-      if (items.length === 0) return null;
-      return items.map((queue) => <div key={queue.id} onClick={() => setSelectedEntity(queue)} className="p-6 rounded-card bg-white border border-border-default hover:shadow-md cursor-pointer transition-all">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-navy-50 text-primary rounded-lg">
-              <Inbox size={20} />
-            </div>
-            <h3 className="font-semibold text-primary">{queue.name}</h3>
-          </div>
-          <div className="text-sm text-text-secondary mb-2">
-            Managed by: {queue.ownerPersonaIds.join(', ')}
-          </div>
-          <div className="text-xs text-text-muted">
-            Active requests: {queue.newCount + queue.atRiskCount}
-          </div>
-        </div>);
-    }
-    return null;
-  };
-  const content = renderContent();
-  const totalCount = teams.length + units.length + users.length + queues.length;
-  // Mocking visible count based on active tab for simplicity
-  const visibleCount = content ? Array.isArray(content) ? content.length : 0 : 0;
-  return <div className="max-w-[1280px] mx-auto px-6 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-primary mb-2">Work Directory</h1>
-        <p className="text-text-secondary">
-          Find teams, owners, experts, and support contacts.
-        </p>
+            Work Directory
+          </h1>
+          <p className="mt-2 max-w-3xl text-base text-text-secondary">
+            Discover teams, units, owners, experts, fulfilment contacts, support routes, and accountable ownership paths.
+          </p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <KpiTile label="Units" value={units.length.toString()} status="info" />
-        <KpiTile label="Teams" value={teams.length.toString()} status="info" />
-        <KpiTile label="Owners" value={ownersCount.toString()} status="success" />
-        <KpiTile label="Support Queues" value={queues.length.toString()} status="warning" />
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <KpiTile label="Units" value={String(units)} status="info" />
+        <KpiTile label="Teams" value={String(teams)} status="info" />
+        <KpiTile label="Owners" value={String(owners)} status="success" />
+        <KpiTile label="Support Queues" value={String(queues)} status="warning" />
       </div>
 
       <FilterBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
@@ -256,19 +130,49 @@ export function WorkDirectoryMarketplacePage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {content}
-      </div>
+      {!isLoading && (
+        <p className="mt-4 text-sm text-text-muted">
+          Showing <strong className="text-text-primary">{filteredEntries.length}</strong> of <strong className="text-text-primary">{entries.length}</strong> directory entries
+        </p>
+      )}
 
-      {!content && <div className="text-center py-16 bg-white rounded-card border border-border-default">
-          <p className="text-text-muted mb-4">
-            No marketplace items match your filters.
-          </p>
-          <button onClick={handleClearAll} className="px-4 py-2 bg-surface text-primary font-semibold text-sm rounded-button hover:bg-navy-50 transition-colors">
+      {isLoading ? (
+        <div className="mt-8 flex h-64 items-center justify-center rounded-card bg-white text-text-muted">
+          Loading Work Directory...
+        </div>
+      ) : filteredEntries.length > 0 ? (
+        <div className="mt-4 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {filteredEntries.map((entry) => <DirectoryCard key={entry.id} entry={entry} />)}
+        </div>
+      ) : (
+        <div className="mt-8 flex flex-col items-center justify-center rounded-card border border-dashed border-border-default bg-white py-16 text-center">
+          <FilterX size={44} className="mb-4 text-text-muted opacity-50" />
+          <h3 className="mb-2 text-lg font-bold text-text-primary">No directory entries found</h3>
+          <p className="mb-6 max-w-md text-sm text-text-secondary">No people, teams, units, owners, or queues match the current search and filters.</p>
+          <button
+            onClick={handleClearAll}
+            className="rounded-button bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-navy-700"
+          >
             Clear filters
           </button>
-        </div>}
+        </div>
+      )}
 
-      {selectedEntity && <DetailPanel entity={selectedEntity} type="kpi" onClose={() => setSelectedEntity(null)} />}
-    </div>;
+      <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+        {[
+          { title: 'Organisation Structure', icon: Building2, route: '/marketplaces/work-directory/structure' },
+          { title: 'Ownership Review', icon: BookOpen, route: '/admin/work-directory/review' },
+          { title: 'Organisation Signals', icon: Inbox, route: '/intelligence/organisation-signals' }
+        ].map((item) => {
+          const Icon = item.icon;
+          return (
+            <Link key={item.title} to={item.route} className="flex items-center gap-3 rounded-card border border-border-default bg-white p-4 text-sm font-bold text-primary shadow-sm hover:border-secondary">
+              <Icon size={18} />
+              {item.title}
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
 }

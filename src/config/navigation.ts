@@ -43,6 +43,7 @@ const nonAssociate: WorkspaceRole[] = ['Scrum Master', 'Team / Squad Lead', 'Uni
 const team: WorkspaceRole[] = ['Scrum Master', 'Team / Squad Lead', 'Unit Lead', 'Admin', 'CEO'];
 const unit: WorkspaceRole[] = ['Unit Lead', 'Admin', 'CEO'];
 const adminOnly: WorkspaceRole[] = ['Admin'];
+const directoryReview: WorkspaceRole[] = ['Team / Squad Lead', 'Unit Lead', 'Admin'];
 const serviceQueue: WorkspaceRole[] = ['HRA', 'Admin', 'Support'];
 const executive: WorkspaceRole[] = ['Unit Lead', 'Admin', 'CEO'];
 
@@ -77,9 +78,9 @@ const item = (
 
 export const navigationItems: NavItemConfig[] = [
   // ── Marketplace ────────────────────────────────────────────────────────────
-  item('marketplace', 'marketplace-services', 'Service Catalogue', '/marketplaces/services', [], all, 'Discover HRA, IT/access, platform support, knowledge/content, admin, approval, and escalation requests.'),
-  item('marketplace', 'marketplace-task-templates', 'Task Template Catalogue', '/marketplaces/task-templates', [], all, 'Select governed task templates with checklist, evidence, SLA, and closure criteria.'),
-  item('marketplace', 'marketplace-knowledge', 'Knowledge Hub', '/marketplaces/knowledge', [], all, 'Find GHC, 6xD, playbooks, templates, learning references, and workspace guides.'),
+  item('marketplace', 'marketplace-services', 'Services Marketplace', '/marketplaces/services', [], all, 'Discover HRA, IT/access, platform support, knowledge/content, admin, approval, and escalation requests.'),
+  item('marketplace', 'marketplace-task-templates', 'Task Template Marketplace', '/marketplaces/task-templates', [], all, 'Select governed task templates with checklist, evidence, SLA, and closure criteria.'),
+  item('marketplace', 'marketplace-knowledge', 'Knowledge Marketplace', '/marketplaces/knowledge', [], all, 'Find GHC, 6xD, playbooks, templates, learning references, and workspace guides.'),
   item('marketplace', 'marketplace-work-directory', 'Work Directory', '/marketplaces/work-directory', [], all, 'Find teams, owners, experts, fulfilment contacts, and responsibility points.'),
   item('marketplace', 'marketplace-analytics', 'Analytics Discovery', '/marketplaces/analytics', [], all, 'Discover permitted dashboards, SLA views, governance reports, and performance surfaces.'),
   item('marketplace', 'marketplace-feedback', 'Marketplace Feedback', '/marketplaces/feedback', [], all, 'Flag unclear services, missing templates, outdated knowledge, incorrect owners, or broken navigation.'),
@@ -184,6 +185,7 @@ export const navigationItems: NavItemConfig[] = [
   item('administration', 'admin-overview', 'Admin Overview', '/admin', ['admin:full'], adminOnly, 'Platform health, open changes, pending approvals, and configuration risks.'),
   item('administration', 'admin-users', 'User & Role Management', '/admin/users-roles', ['admin:full'], adminOnly, 'Users, roles, segments, and permission checkboxes.'),
   item('administration', 'admin-org', 'Organisation / Unit / Team Setup', '/admin/org-setup', ['admin:full'], adminOnly, 'Organisation, units, teams, and ownership setup.'),
+  item('administration', 'admin-work-directory-review', 'Work Directory Review', '/admin/work-directory/review', [], directoryReview, 'Review stale ownership, missing backups, unavailable owners, overloaded queues, and missing contact routes.'),
   item('administration', 'admin-features', 'Feature Configuration', '/admin/features', ['admin:full'], adminOnly, 'Feature flags and configuration status.'),
   item('administration', 'admin-task-model', 'Task Model Configuration', '/admin/task-model', ['admin:full'], adminOnly, 'Task types, required fields, statuses, and evidence rules.'),
   item('administration', 'admin-trackers', 'Tracker Configuration', '/admin/tracker-configuration', ['admin:full'], adminOnly, 'Tracker templates, views, fields, and automation rules.'),

@@ -7,13 +7,13 @@ export function StatusPill({
 }: StatusPillProps) {
   const lowerStatus = status.toLowerCase();
   let type = 'neutral';
-  if (['closed', 'approved', 'effective', 'met', 'on track', 'completed', 'success', 'ready', 'available', 'low', 'positive', 'reviewed'].includes(lowerStatus)) {
+  if (['closed', 'approved', 'effective', 'met', 'on track', 'completed', 'success', 'ready', 'available', 'low', 'positive', 'reviewed', 'covered'].includes(lowerStatus)) {
     type = 'success';
   } else if (['in progress', 'in review', 'under review', 'awaiting review', 'awaiting input', 'info'].includes(lowerStatus)) {
     type = 'info';
-  } else if (['pending', 'pending info', 'review needed', 'due today', 'due soon', 'watch', 'needs update', 'warning'].includes(lowerStatus)) {
+  } else if (['pending', 'pending info', 'review needed', 'due today', 'due soon', 'watch', 'needs update', 'warning', 'busy', 'medium', 'needs backup', 'needs review', 'restricted', 'issue flagged'].includes(lowerStatus)) {
     type = 'warning';
-  } else if (['blocked', 'breached', 'missing update', 'returned', 'critical', 'danger', 'overdue', 'at risk', 'action required', 'needs improvement'].includes(lowerStatus)) {
+  } else if (['blocked', 'breached', 'missing update', 'returned', 'critical', 'danger', 'overdue', 'at risk', 'action required', 'needs improvement', 'high', 'escalation only', 'unavailable'].includes(lowerStatus)) {
     type = 'danger';
   } else if (['draft', 'new', 'routed'].includes(lowerStatus)) {
     type = 'info';

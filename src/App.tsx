@@ -14,6 +14,7 @@ import { useWorkspaceRole } from './context/WorkspaceRoleContext';
 import { ServiceLifecycleProvider } from './context/ServiceLifecycleContext';
 import { TaskLifecycleProvider } from './context/TaskLifecycleContext';
 import { KnowledgeLifecycleProvider } from './context/KnowledgeLifecycleContext';
+import { DirectoryLifecycleProvider } from './context/DirectoryLifecycleContext';
 import { navigationItems, getNavigationItem } from './config/navigation';
 import { hasAnyPermission } from './config/permissions';
 import { PortalLayout } from './layouts/PortalLayout';
@@ -44,6 +45,13 @@ import { ServicesMarketplacePage } from './pages/ServicesMarketplacePage';
 import { TaskTemplatesMarketplacePage } from './pages/TaskTemplatesMarketplacePage';
 import { KnowledgeMarketplacePage } from './pages/KnowledgeMarketplacePage';
 import { WorkDirectoryMarketplacePage } from './pages/WorkDirectoryMarketplacePage';
+import { WorkDirectoryDetailPage } from './pages/WorkDirectoryDetailPage';
+import { WorkDirectoryActionFlowPage } from './pages/WorkDirectoryActionFlowPage';
+import { WorkDirectoryStructurePage } from './pages/WorkDirectoryStructurePage';
+import { DirectoryQueuePage } from './pages/DirectoryQueuePage';
+import { DirectoryAdminReviewPage } from './pages/DirectoryAdminReviewPage';
+import { OrganisationSignalsPage } from './pages/OrganisationSignalsPage';
+import { DirectoryRelatedWorkItemPage } from './pages/DirectoryRelatedWorkItemPage';
 import { AnalyticsMarketplacePage } from './pages/AnalyticsMarketplacePage';
 import { MarketplaceFeedbackPage } from './pages/MarketplaceFeedbackPage';
 import { MyWorkPage } from './pages/MyWorkPage';
@@ -159,8 +167,14 @@ import { TasksAllPage, TasksBlockedPage, TasksClosureQualityPage, TasksCreatePag
 // A wrapper to handle route guards
 function RouteGuard({ children }: {children: React.ReactNode;}) {
   const { activePersona, hasRouteAccess } = usePersona();
+  const { activeRole } = useWorkspaceRole();
   const location = useLocation();
-  if (!hasRouteAccess(location.pathname, activePersona)) {
+  const roleScopedAccess: Record<string, string[]> = {
+    '/intelligence/organisation-signals': ['Team / Squad Lead', 'Unit Lead', 'Admin', 'CEO'],
+    '/admin/work-directory/review': ['Team / Squad Lead', 'Unit Lead', 'Admin']
+  };
+  const isRolePermitted = roleScopedAccess[location.pathname]?.includes(activeRole);
+  if (!hasRouteAccess(location.pathname, activePersona) && !isRolePermitted) {
     return (
       <div className="p-8">
         <PlaceholderPage
@@ -206,6 +220,7 @@ function renderDwsRoute(route: string) {
   if (route === '/service-owner/requests') return <ServiceOwnerQueuePage />;
   if (route === '/workflow/approvals') return <ApproverQueuePage />;
   if (route === '/intelligence/service-signals') return <ExecutiveSignalPage />;
+  if (route === '/admin/work-directory/review') return <DirectoryAdminReviewPage />;
   return <DwsSectionPage route={route} />;
 }
 
@@ -354,7 +369,7 @@ function AppRoutes() {
               <ExecutiveKnowledgeSignalPage />
             </RouteGuard>
           } />
-        
+
         {/* Legacy redirect */}
         <Route path="/marketplaces/knowledge-signals" element={<Navigate to="/intelligence/knowledge-signals" replace />} />
         
@@ -363,6 +378,54 @@ function AppRoutes() {
           element={
           <RouteGuard>
               <WorkDirectoryMarketplacePage />
+            </RouteGuard>
+          } />
+
+        <Route
+          path="/marketplaces/work-directory/structure"
+          element={
+          <RouteGuard>
+              <WorkDirectoryStructurePage />
+            </RouteGuard>
+          } />
+
+        <Route
+          path="/marketplaces/work-directory/:directoryId"
+          element={
+          <RouteGuard>
+              <WorkDirectoryDetailPage />
+            </RouteGuard>
+          } />
+
+        <Route
+          path="/marketplaces/work-directory/:directoryId/contact"
+          element={
+          <RouteGuard>
+              <WorkDirectoryActionFlowPage mode="contact" />
+            </RouteGuard>
+          } />
+
+        <Route
+          path="/marketplaces/work-directory/:directoryId/route"
+          element={
+          <RouteGuard>
+              <WorkDirectoryActionFlowPage mode="route" />
+            </RouteGuard>
+          } />
+
+        <Route
+          path="/marketplaces/work-directory/:directoryId/escalate"
+          element={
+          <RouteGuard>
+              <WorkDirectoryActionFlowPage mode="escalate" />
+            </RouteGuard>
+          } />
+
+        <Route
+          path="/marketplaces/work-directory/related-work/:workItemId"
+          element={
+          <RouteGuard>
+              <DirectoryRelatedWorkItemPage />
             </RouteGuard>
           } />
         
@@ -389,6 +452,14 @@ function AppRoutes() {
               <RequestStatusPage />
             </RouteGuard>
           } />
+
+        <Route
+          path="/queues/:queueId"
+          element={
+          <RouteGuard>
+              <DirectoryQueuePage />
+            </RouteGuard>
+          } />
       </Route>
       <Route element={<Stage02Layout />}>
         <Route path="/workspace" element={<Stage02WorkspacePage />} />
@@ -408,6 +479,7 @@ function AppRoutes() {
         <Route path="/stage02/knowledge" element={<Stage02SectionPage section="knowledge" />} />
         <Route path="/stage02/people" element={<Stage02SectionPage section="people" />} />
         <Route path="/stage02/reports" element={<Stage02SectionPage section="reports" />} />
+        <Route path="/intelligence/organisation-signals" element={<RouteGuard><OrganisationSignalsPage /></RouteGuard>} />
         {navigationItems.map((item) => (
           <Route
             key={item.id}
@@ -926,6 +998,14 @@ function AppRoutes() {
               <AdminConsolePage />
             </RouteGuard>
           } />
+
+        <Route
+          path="/admin/work-directory/review"
+          element={
+          <RouteGuard>
+              <DirectoryAdminReviewPage />
+            </RouteGuard>
+          } />
         
         <Route
           path="/execution/workflow"
@@ -1307,8 +1387,10 @@ export function App() {
             <ServiceLifecycleProvider>
               <TaskLifecycleProvider>
                 <KnowledgeLifecycleProvider>
-                  <AppRoutes />
-                  <Toaster position="top-right" richColors />
+                  <DirectoryLifecycleProvider>
+                    <AppRoutes />
+                    <Toaster position="top-right" richColors />
+                  </DirectoryLifecycleProvider>
                 </KnowledgeLifecycleProvider>
               </TaskLifecycleProvider>
             </ServiceLifecycleProvider>

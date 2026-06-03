@@ -75,3 +75,24 @@ export const getTaskChecklistRecords = async () => taskChecklistRecords;
 export const getTaskEvidenceRecords = async () => taskEvidenceRecords;
 export const getTaskReviewRecords = async () => taskReviewRecords;
 export const getTaskSignals = async () => taskExecutiveSignals;
+
+// --- Work Directory ---
+import {
+  adminOwnershipReviews,
+  contactRoutes,
+  directoryActivities,
+  directoryDetailRecords,
+  directoryEntries,
+  directoryLinkedWork,
+  organisationSignals,
+  ownershipAreas
+} from '../mocks/workDirectory.mock';
+
+export const getDirectoryEntries = async () => directoryEntries;
+export const getDirectoryDetailRecords = async () => directoryDetailRecords;
+export const getDirectoryOwnershipAreas = async () => ownershipAreas;
+export const getDirectoryContactRoutes = async () => contactRoutes;
+export const getDirectoryLinkedWork = async () => directoryLinkedWork;
+export const getDirectoryActivities = async () => directoryActivities;
+export const getDirectoryAdminReviews = async () => adminOwnershipReviews;
+export const getDirectoryOrganisationSignals = async () => organisationSignals;
