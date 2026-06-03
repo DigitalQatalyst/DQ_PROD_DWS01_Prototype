@@ -162,10 +162,10 @@ export function DetailPanel({
 
       <div className="pt-6 border-t border-border-subtle flex gap-3">
         <button onClick={() => {
-        toast.success('Information provided in prototype mode');
+        toast.success('Request status opened in prototype mode');
         onClose();
       }} className="flex-1 bg-primary text-white py-2 rounded-button font-medium hover:bg-navy-800 transition-colors">
-          Provide Info
+          View Request Status
         </button>
       </div>
     </div>;

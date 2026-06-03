@@ -86,6 +86,7 @@ export const navigationItems: NavItemConfig[] = [
   item('workflows', 'workflows-my', 'My Workflows', '/workflows/my-workflows', ['workflows:personal'], all, 'Workflows assigned to or requiring input from the active user.', 'workflows'),
   item('workflows', 'workflows-centre', 'Workflow Centre', '/workflows/centre', ['workflows:operate'], nonAssociate, 'Operational workflow centre across authorised work.'),
   item('workflows', 'workflows-pending-approvals', 'Pending Approvals', '/workflows/pending-approvals', ['workflows:personal'], all, 'Approvals assigned to the active user.', 'approvals'),
+  item('workflows', 'workflows-approver-queue', 'Approval Queue', '/workflow/approvals', ['workflows:operate'], nonAssociate, 'Review and process governed approvals.', 'approvals'),
   item('workflows', 'workflows-handoffs', 'Handoffs', '/workflows/handoffs', ['workflows:operate'], nonAssociate, 'Workflow handoffs and owner transitions.'),
   item('workflows', 'workflows-escalations', 'Escalations', '/workflows/escalations', ['workflows:operate'], nonAssociate, 'Workflow escalations and risk decisions.', 'escalations'),
   item('workflows', 'workflows-sla-risks', 'SLA Risks', '/workflows/sla-risks', ['workflows:personal'], all, 'SLA risks affecting assigned work.', 'slaRisks'),
@@ -142,6 +143,7 @@ export const navigationItems: NavItemConfig[] = [
   item('services', 'services-admin-requests', 'Admin Requests', '/services/admin-requests', ['admin:full'], adminOnly, 'Platform administration requests.'),
   item('services', 'services-central-queue', 'Central Support Queue', '/services/central-support-queue', ['services:queue'], ['Support', 'Admin'], 'Central support triage and routing.'),
   item('services', 'services-fulfilment', 'Fulfilment Owner Queues', '/services/fulfilment-owner-queues', ['services:queue'], serviceQueue, 'Fulfilment queues by owner and SLA.'),
+  item('services', 'services-owner-queue', 'Service Owner Queue', '/service-owner/requests', ['services:queue'], ['HRA', 'Admin', 'Support'], 'Routed service requests for service owner review, action, and fulfilment.'),
 
   item('people', 'people-directory', 'People Directory', '/people/directory', ['people:view'], all, 'People directory with owners, roles, and contact points.'),
   item('people', 'people-teams', 'Teams', '/people/teams', ['people:view'], all, 'Teams and squad membership.'),
@@ -157,6 +159,7 @@ export const navigationItems: NavItemConfig[] = [
   item('reports', 'reports-associate-performance', 'Associate Performance View', '/reports/associate-performance', ['reports:personal'], all, 'Personal and authorised associate performance view.'),
   item('reports', 'reports-team-unit', 'Team & Unit Performance', '/reports/team-unit-performance', ['reports:team'], team, 'Team and unit performance reporting.'),
   item('reports', 'reports-outcome', 'Outcome Tracking', '/reports/outcome-tracking', ['reports:executive'], executive, 'Outcome tracking and strategic delivery indicators.'),
+  item('reports', 'reports-service-signals', 'Service Signals', '/intelligence/service-signals', ['reports:executive'], executive, 'Executive intelligence signals for services.', 'signals'),
   item('reports', 'reports-trackers', 'Tracker Reports', '/reports/tracker-reports', ['reports:team'], nonAssociate, 'Tracker reporting across authorised records.'),
   item('reports', 'reports-ai-status', 'AI Status Reports', '/reports/ai-status-reports', ['reports:team'], nonAssociate, 'AI-generated status reports and summaries.'),
   item('reports', 'reports-audit', 'Audit Reports', '/reports/audit-reports', ['reports:executive'], ['Unit Lead', 'Admin', 'CEO'], 'Audit reports and immutable event views.'),
