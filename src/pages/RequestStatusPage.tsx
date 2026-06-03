@@ -11,6 +11,7 @@ import { PendingInformationCard } from '../components/PendingInformationCard';
 import { ClosureOutcomeCard } from '../components/ClosureOutcomeCard';
 import { AuditTrailCue } from '../components/AuditTrailCue';
 import { ServiceEmptyState } from '../components/ServiceEmptyState';
+import { WorkItemLinkedKnowledgeCard } from '../components/WorkItemLinkedKnowledgeCard';
 
 export function RequestStatusPage() {
   const { requestId } = useParams<{ requestId: string }>();
@@ -116,6 +117,9 @@ export function RequestStatusPage() {
             )}
 
             <AuditTrailCue />
+
+            {/* Linked Knowledge */}
+            {requestId && <WorkItemLinkedKnowledgeCard workItemId={requestId} />}
             
           </div>
           

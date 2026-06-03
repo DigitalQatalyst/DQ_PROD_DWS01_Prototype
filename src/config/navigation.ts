@@ -3,6 +3,7 @@ import type { Permission } from './permissions';
 
 export type NavIcon =
   | 'home'
+  | 'briefcase'
   | 'checkSquare'
   | 'gitBranch'
   | 'database'
@@ -12,7 +13,12 @@ export type NavIcon =
   | 'cloud'
   | 'users'
   | 'pie'
-  | 'settings';
+  | 'brain'
+  | 'settings'
+  | 'fileText'
+  | 'bookOpen'
+  | 'barChart2'
+  | 'messageSquare';
 
 export interface NavItemConfig {
   id: string;
@@ -41,13 +47,14 @@ const serviceQueue: WorkspaceRole[] = ['HRA', 'Admin', 'Support'];
 const executive: WorkspaceRole[] = ['Unit Lead', 'Admin', 'CEO'];
 
 export const navSections: NavSectionConfig[] = [
-  { id: 'workspace', label: 'Workspace', icon: 'home' },
+  { id: 'marketplace', label: 'Marketplace', icon: 'briefcase' },
+  { id: 'workspace', label: 'Workspace', icon: 'book' },
   { id: 'tasks', label: 'Tasks', icon: 'checkSquare' },
   { id: 'workflows', label: 'Workflows', icon: 'gitBranch' },
   { id: 'trackers', label: 'Trackers', icon: 'database' },
   { id: 'performance', label: 'Performance', icon: 'gauge' },
   { id: 'governance', label: 'Governance', icon: 'shield' },
-  { id: 'knowledge', label: 'Knowledge', icon: 'book' },
+  { id: 'knowledge', label: 'Knowledge', icon: 'bookOpen' },
   { id: 'services', label: 'Services & Support', icon: 'cloud' },
   { id: 'people', label: 'People', icon: 'users' },
   { id: 'reports', label: 'Reports & Intelligence', icon: 'pie' },
@@ -69,6 +76,15 @@ const item = (
 };
 
 export const navigationItems: NavItemConfig[] = [
+  // ── Marketplace ────────────────────────────────────────────────────────────
+  item('marketplace', 'marketplace-services', 'Service Catalogue', '/marketplaces/services', [], all, 'Discover HRA, IT/access, platform support, knowledge/content, admin, approval, and escalation requests.'),
+  item('marketplace', 'marketplace-task-templates', 'Task Template Catalogue', '/marketplaces/task-templates', [], all, 'Select governed task templates with checklist, evidence, SLA, and closure criteria.'),
+  item('marketplace', 'marketplace-knowledge', 'Knowledge Hub', '/marketplaces/knowledge', [], all, 'Find GHC, 6xD, playbooks, templates, learning references, and workspace guides.'),
+  item('marketplace', 'marketplace-work-directory', 'Work Directory', '/marketplaces/work-directory', [], all, 'Find teams, owners, experts, fulfilment contacts, and responsibility points.'),
+  item('marketplace', 'marketplace-analytics', 'Analytics Discovery', '/marketplaces/analytics', [], all, 'Discover permitted dashboards, SLA views, governance reports, and performance surfaces.'),
+  item('marketplace', 'marketplace-feedback', 'Marketplace Feedback', '/marketplaces/feedback', [], all, 'Flag unclear services, missing templates, outdated knowledge, incorrect owners, or broken navigation.'),
+
+  // ── Workspace ──────────────────────────────────────────────────────────────
   item('workspace', 'workspace-my-work', 'My Work', '/workspace/my-work', ['workspace:personal'], all, 'Personal execution cockpit across tasks, requests, approvals, blockers, tracker updates, and working-session follow-ups.', 'myWork'),
   item('workspace', 'workspace-my-requests', 'My Requests', '/workspace/my-requests', ['services:personal'], all, 'Personal service and support requests.', 'requests'),
   item('workspace', 'workspace-working-sessions', 'Working Sessions', '/workspace/working-sessions', ['workspace:personal'], all, 'Active working sessions, decisions, and follow-up actions.'),
@@ -160,6 +176,7 @@ export const navigationItems: NavItemConfig[] = [
   item('reports', 'reports-team-unit', 'Team & Unit Performance', '/reports/team-unit-performance', ['reports:team'], team, 'Team and unit performance reporting.'),
   item('reports', 'reports-outcome', 'Outcome Tracking', '/reports/outcome-tracking', ['reports:executive'], executive, 'Outcome tracking and strategic delivery indicators.'),
   item('reports', 'reports-service-signals', 'Service Signals', '/intelligence/service-signals', ['reports:executive'], executive, 'Executive intelligence signals for services.', 'signals'),
+  item('reports', 'reports-knowledge-signals', 'Knowledge Signals', '/intelligence/knowledge-signals', ['reports:executive'], all, 'Executive intelligence signals for knowledge.', 'signals'),
   item('reports', 'reports-trackers', 'Tracker Reports', '/reports/tracker-reports', ['reports:team'], nonAssociate, 'Tracker reporting across authorised records.'),
   item('reports', 'reports-ai-status', 'AI Status Reports', '/reports/ai-status-reports', ['reports:team'], nonAssociate, 'AI-generated status reports and summaries.'),
   item('reports', 'reports-audit', 'Audit Reports', '/reports/audit-reports', ['reports:executive'], ['Unit Lead', 'Admin', 'CEO'], 'Audit reports and immutable event views.'),

@@ -5,9 +5,9 @@ import { KpiTile } from '../components/KpiTile';
 import { usePersona } from '../context/PersonaContext';
 import { BarChart2, Lock, ArrowRight } from 'lucide-react';
 import {
-  MarketplaceFilterPanel,
-  FilterGroup } from
-'../components/MarketplaceFilterPanel';
+  MarketplaceTopFilterBar,
+} from '../components/MarketplaceTopFilterBar';
+import type { FilterGroup } from '../components/MarketplaceFilterPanel';
 import { MarketplaceActionRouter } from '../components/MarketplaceActionRouter';
 import { RequestIntakeWizard } from '../components/RequestIntakeWizard';
 export function AnalyticsMarketplacePage() {
@@ -346,10 +346,8 @@ export function AnalyticsMarketplacePage() {
 
       <FilterBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        <MarketplaceFilterPanel
-          title="Refine dashboards"
-          helperText="Filter this marketplace by role, status, owner, SLA, and relevance."
+      <div className="mt-4">
+        <MarketplaceTopFilterBar
           searchPlaceholder="Search dashboards, metrics, reports, or visibility areas"
           searchValue={search}
           onSearchChange={setSearch}
@@ -358,85 +356,80 @@ export function AnalyticsMarketplacePage() {
           onChange={handleFilterChange}
           recommendedActive={recommendedActive}
           onRecommendedChange={setRecommendedActive}
-          totalCount={dashboards.length}
-          visibleCount={filteredDashboards.length}
           onClearAll={handleClearAll}
-          persona={activePersona.role} />
-        
-
-        <div className="flex-1">
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {filteredDashboards.map((dashboard) => {
-              const isPermitted = hasRouteAccess(dashboard.route, activePersona);
-              return (
-                <div
-                  key={dashboard.id}
-                  onClick={() => handleOpenAction(dashboard, isPermitted)}
-                  className={`flex flex-col bg-white rounded-card border border-border-default p-6 transition-all relative overflow-hidden
-                  ${isPermitted ? 'hover:shadow-md hover:border-border-strong cursor-pointer group' : 'opacity-75 cursor-pointer hover:border-border-strong'}`}>
-                  
-                  {!isPermitted &&
-                  <div
-                    className="absolute top-4 right-4 text-text-disabled"
-                    title="Restricted for your persona">
-                    
-                      <Lock size={16} />
-                    </div>
-                  }
-
-                  <div className="flex items-start justify-between mb-4">
-                    <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors
-                    ${isPermitted ? 'bg-navy-50 text-primary group-hover:bg-primary group-hover:text-white' : 'bg-surface text-text-disabled'}`}>
-                      
-                      <BarChart2 size={20} />
-                    </div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted bg-surface px-2 py-1 rounded">
-                      {dashboard.category}
-                    </span>
-                  </div>
-
-                  <h3
-                    className={`text-lg font-semibold mb-2 ${isPermitted ? 'text-primary' : 'text-text-muted'}`}>
-                    
-                    {dashboard.title}
-                  </h3>
-                  <p
-                    className={`text-sm mb-6 flex-1 ${isPermitted ? 'text-text-secondary' : 'text-text-disabled'}`}>
-                    
-                    {dashboard.desc}
-                  </p>
-
-                  <button
-                    className={`w-full py-2.5 font-semibold text-sm rounded-button transition-colors flex items-center justify-center gap-2 ${isPermitted ? 'bg-surface text-primary group-hover:bg-primary group-hover:text-white' : 'bg-surface text-text-muted hover:text-primary'}`}>
-                    
-                    {isPermitted ? 'Open Dashboard' : 'Request Access'}
-                    {isPermitted ?
-                    <ArrowRight size={16} /> :
-
-                    <Lock size={16} />
-                    }
-                  </button>
-                </div>);
-
-            })}
-          </div>
-
-          {filteredDashboards.length === 0 &&
-          <div className="text-center py-16 bg-white rounded-card border border-border-default">
-              <p className="text-text-muted mb-4">
-                No marketplace items match your filters.
-              </p>
-              <button
-              onClick={handleClearAll}
-              className="px-4 py-2 bg-surface text-primary font-semibold text-sm rounded-button hover:bg-navy-50 transition-colors">
-              
-                Clear filters
-              </button>
-            </div>
-          }
-        </div>
+        />
       </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {filteredDashboards.map((dashboard) => {
+          const isPermitted = hasRouteAccess(dashboard.route, activePersona);
+          return (
+            <div
+              key={dashboard.id}
+              onClick={() => handleOpenAction(dashboard, isPermitted)}
+              className={`flex flex-col bg-white rounded-card border border-border-default p-6 transition-all relative overflow-hidden
+              ${isPermitted ? 'hover:shadow-md hover:border-border-strong cursor-pointer group' : 'opacity-75 cursor-pointer hover:border-border-strong'}`}>
+              
+              {!isPermitted &&
+              <div
+                className="absolute top-4 right-4 text-text-disabled"
+                title="Restricted for your persona">
+                
+                  <Lock size={16} />
+                </div>
+              }
+
+              <div className="flex items-start justify-between mb-4">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors
+                ${isPermitted ? 'bg-navy-50 text-primary group-hover:bg-primary group-hover:text-white' : 'bg-surface text-text-disabled'}`}>
+                  
+                  <BarChart2 size={20} />
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted bg-surface px-2 py-1 rounded">
+                  {dashboard.category}
+                </span>
+              </div>
+
+              <h3
+                className={`text-lg font-semibold mb-2 ${isPermitted ? 'text-primary' : 'text-text-muted'}`}>
+                
+                {dashboard.title}
+              </h3>
+              <p
+                className={`text-sm mb-6 flex-1 ${isPermitted ? 'text-text-secondary' : 'text-text-disabled'}`}>
+                
+                {dashboard.desc}
+              </p>
+
+              <button
+                className={`w-full py-2.5 font-semibold text-sm rounded-button transition-colors flex items-center justify-center gap-2 ${isPermitted ? 'bg-surface text-primary group-hover:bg-primary group-hover:text-white' : 'bg-surface text-text-muted hover:text-primary'}`}>
+                
+                {isPermitted ? 'Open Dashboard' : 'Request Access'}
+                {isPermitted ?
+                <ArrowRight size={16} /> :
+
+                <Lock size={16} />
+                }
+              </button>
+            </div>);
+
+        })}
+      </div>
+
+      {filteredDashboards.length === 0 &&
+      <div className="text-center py-16 bg-white rounded-card border border-border-default">
+          <p className="text-text-muted mb-4">
+            No marketplace items match your filters.
+          </p>
+          <button
+          onClick={handleClearAll}
+          className="px-4 py-2 bg-surface text-primary font-semibold text-sm rounded-button hover:bg-navy-50 transition-colors">
+          
+            Clear filters
+          </button>
+        </div>
+      }
 
       <MarketplaceActionRouter
         marketplaceType={actionItem ? 'analytics' : null}
