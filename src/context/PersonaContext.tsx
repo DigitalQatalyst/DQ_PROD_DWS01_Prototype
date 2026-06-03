@@ -32,6 +32,63 @@ export function PersonaProvider({ children }: {children: ReactNode;}) {
     if (route.startsWith('/onboarding')) return true;
     if (universalRoutes.has(route)) return true;
     const accessMap: Record<string, PersonaId[]> = {
+      '/marketplace/discern': ['associate', 'scrum-master', 'team-lead', 'unit-lead', 'hra', 'admin', 'support', 'ceo'],
+      '/marketplace/design': ['associate', 'scrum-master', 'team-lead', 'unit-lead', 'hra', 'admin', 'support', 'ceo'],
+      '/marketplace/deploy': ['associate', 'scrum-master', 'team-lead', 'unit-lead', 'hra', 'admin', 'support', 'ceo'],
+      '/marketplace/drive': ['associate', 'scrum-master', 'team-lead', 'unit-lead', 'hra', 'admin', 'support', 'ceo'],
+      '/marketplace/services': ['associate', 'hra', 'admin', 'support'],
+      '/marketplace/services/:serviceId': ['associate', 'hra', 'admin', 'support'],
+      '/marketplace/task-library': [
+      'associate',
+      'scrum-master',
+      'team-lead',
+      'unit-lead',
+      'admin'],
+      
+      '/marketplace/task-library/:templateId': [
+      'associate',
+      'scrum-master',
+      'team-lead',
+      'unit-lead',
+      'admin'],
+
+      '/marketplace/knowledge-discovery': [
+      'associate',
+      'scrum-master',
+      'team-lead',
+      'unit-lead',
+      'hra',
+      'admin',
+      'support'],
+      
+      '/marketplace/knowledge-discovery/:knowledgeId': [
+      'associate',
+      'scrum-master',
+      'team-lead',
+      'unit-lead',
+      'hra',
+      'admin',
+      'support'],
+
+      '/marketplace/work-directory': [
+      'associate',
+      'scrum-master',
+      'team-lead',
+      'unit-lead',
+      'hra',
+      'admin',
+      'support'],
+
+      '/marketplace/analytics-discovery': [
+      'scrum-master',
+      'team-lead',
+      'unit-lead',
+      'hra',
+      'admin',
+      'support',
+      'ceo'],
+
+      '/marketplace/feedback': ['associate', 'hra', 'admin', 'support'],
       '/marketplaces/services': ['associate', 'hra', 'admin', 'support'],
       '/marketplaces/services/:serviceId': ['associate', 'hra', 'admin', 'support'],
       '/requests/start/:serviceId': ['associate', 'hra', 'admin', 'support'],
@@ -183,6 +240,9 @@ export function PersonaProvider({ children }: {children: ReactNode;}) {
     }
     // Dynamic lifecycle routes — match by prefix for parameterised paths
     const lifecyclePrefixes: { prefix: string; allowed: PersonaId[] }[] = [
+      { prefix: '/marketplace/services/', allowed: ['associate', 'hra', 'admin', 'support'] },
+      { prefix: '/marketplace/knowledge-discovery/', allowed: ['associate', 'scrum-master', 'team-lead', 'unit-lead', 'hra', 'admin', 'support'] },
+      { prefix: '/marketplace/task-library/', allowed: ['associate', 'scrum-master', 'team-lead', 'unit-lead', 'admin'] },
       { prefix: '/marketplaces/services/', allowed: ['associate', 'hra', 'admin', 'support'] },
       { prefix: '/requests/start/', allowed: ['associate', 'hra', 'admin', 'support'] },
       { prefix: '/requests/', allowed: ['associate', 'hra', 'admin', 'support'] },

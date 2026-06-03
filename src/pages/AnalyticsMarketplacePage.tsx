@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FilterBar } from '../components/FilterBar';
 import { KpiTile } from '../components/KpiTile';
 import { usePersona } from '../context/PersonaContext';
@@ -10,9 +10,12 @@ import {
 import type { FilterGroup } from '../components/MarketplaceFilterPanel';
 import { MarketplaceActionRouter } from '../components/MarketplaceActionRouter';
 import { RequestIntakeWizard } from '../components/RequestIntakeWizard';
+import { getMarketplaceCategoryLabel } from '../utils/marketplaceBreadcrumbs';
 export function AnalyticsMarketplacePage() {
+  const [searchParams] = useSearchParams();
   const { activePersona, hasRouteAccess } = usePersona();
   const navigate = useNavigate();
+  const breadcrumbCategory = getMarketplaceCategoryLabel(searchParams.get('from'), 'drive');
   const [activeTab, setActiveTab] = useState('All');
   const [search, setSearch] = useState('');
   // Filter state
@@ -324,6 +327,7 @@ export function AnalyticsMarketplacePage() {
   return (
     <div className="max-w-[1280px] mx-auto px-6 py-8">
       <div className="mb-8">
+        <div className="mb-2 text-xs font-bold uppercase tracking-wider text-text-muted">Marketplace / {breadcrumbCategory} / Analytics Discovery</div>
         <h1 className="text-3xl font-bold text-primary mb-2">
           Analytics Discovery
         </h1>

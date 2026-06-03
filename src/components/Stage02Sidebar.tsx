@@ -17,7 +17,7 @@ import {
   Users,
   type LucideIcon
 } from 'lucide-react';
-import { navSections, navigationItems, type NavIcon } from '../config/navigation';
+import { navSections, navStages, navigationItems, type NavIcon } from '../config/navigation';
 import { hasAnyPermission } from '../config/permissions';
 import { useWorkspaceRole } from '../context/WorkspaceRoleContext';
 import { badgeCounts } from '../mocks/dwsEntities.mock';
@@ -55,7 +55,10 @@ export function Stage02Sidebar({ collapsed, onCollapsedChange }: Stage02SidebarP
     [activeRole]
   );
   const activeItem = visibleItems.find((item) => location.pathname === item.route || (item.route !== '/' && location.pathname.startsWith(`${item.route}/`)));
-  const activeSectionId = activeItem?.section || (location.pathname === '/workspace' || location.pathname.startsWith('/workspace/') ? 'workspace' : undefined);
+  const isMarketplacePath = location.pathname.startsWith('/marketplaces') || location.pathname.startsWith('/marketplace');
+  const activeSectionId = isMarketplacePath
+    ? 'marketplace'
+    : activeItem?.section || (location.pathname === '/workspace' || location.pathname.startsWith('/workspace/') ? 'workspace' : undefined);
   const [expandedSection, setExpandedSection] = useState(() => localStorage.getItem('dws-expanded-section') || activeItem?.section || 'workspace');
 
   useEffect(() => {
@@ -75,142 +78,65 @@ export function Stage02Sidebar({ collapsed, onCollapsedChange }: Stage02SidebarP
           {!collapsed && <div className="mt-1 truncate text-xs text-text-muted">{activeSegment.subtitle}</div>}
         </div>
 
-        <nav aria-label="DWS workspace navigation" className="flex-1 space-y-1">
-          {/* ── Marketplace section (above Workspace) ── */}
-          {(() => {
-            const marketplaceSection = navSections.find((s) => s.id === 'marketplace')!;
-            if (!marketplaceSection) return null;
-            const MarketIcon = iconMap[marketplaceSection.icon];
-            const isActiveSection = location.pathname.startsWith('/marketplaces');
-            const isOpen = !collapsed && expandedSection === 'marketplace';
-            const marketplaceItems = navigationItems.filter((item) => item.section === 'marketplace');
+        <nav aria-label="DWS workspace navigation" className="flex-1 space-y-3">
+          {navStages.filter((stage) => stage.allowedSegments.includes(activeRole)).map((stage) => {
+            const stageSections = navSections.filter((section) => {
+              if (section.stageId !== stage.id) return false;
+              if (section.allowedSegments && !section.allowedSegments.includes(activeRole)) return false;
+              return visibleItems.some((item) => item.section === section.id);
+            });
+            if (stageSections.length === 0) return null;
             return (
-              <div className="border-b border-border-subtle py-1">
-                <button
-                  onClick={() => {
-                    setExpandedSection((cur) => cur === 'marketplace' ? '' : 'marketplace');
-                    navigate('/marketplaces/services');
-                  }}
-                  title={collapsed ? marketplaceSection.label : undefined}
-                  className={`flex h-11 w-full items-center gap-3 rounded-lg px-3 text-sm font-bold transition-colors ${
-                    isActiveSection ? 'bg-navy-50 text-primary' : 'text-text-secondary hover:bg-surface hover:text-primary'
-                  } ${collapsed ? 'justify-center' : ''}`}
-                >
-                  <MarketIcon size={18} strokeWidth={1.8} />
-                  {!collapsed && <span className="flex-1 truncate text-left">{marketplaceSection.label}</span>}
-                  {!collapsed && <span className="text-text-muted">{isOpen ? '−' : '+'}</span>}
-                </button>
-                {isOpen && (
-                  <div className="mt-1 space-y-1 pl-4">
-                    {marketplaceItems.map((item) => (
-                      <NavLink
-                        key={item.id}
-                        to={item.route}
-                        title={item.description}
-                        className={({ isActive }) =>
-                          `flex min-h-9 items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
-                            isActive ? 'bg-primary text-white shadow-sm' : 'text-text-secondary hover:bg-surface hover:text-primary'
-                          }`
-                        }
-                      >
-                        <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
-                        <span className="min-w-0 flex-1 truncate">{item.label}</span>
-                      </NavLink>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })()}
-
-          {/* ── Workspace sections ── */}
-          {navSections.filter((s) => s.id !== 'marketplace').map((section) => {
-            const sectionItems = visibleItems.filter((item) => item.section === section.id);
-            if (sectionItems.length === 0) return null;
-            const Icon = iconMap[section.icon];
-            const isActiveSection = activeSectionId === section.id;
-            const isOpen = !collapsed && expandedSection === section.id;
-            const sectionBadge = sectionItems.reduce((sum, item) => sum + (item.badgeCountKey ? badgeCounts[item.badgeCountKey] || 0 : 0), 0);
-            if (section.id === 'workspace') {
-              return (
-                <div key={section.id} className="border-b border-border-subtle py-1 last:border-b-0">
-                  <div className={`flex h-11 w-full items-center gap-2 rounded-lg px-3 text-sm font-bold transition-colors ${isActiveSection ? 'bg-navy-50 text-primary' : 'text-text-secondary hover:bg-surface hover:text-primary'} ${collapsed ? 'justify-center' : ''}`}>
-                    <button
-                      onClick={() => navigate('/workspace')}
-                      title={collapsed ? section.label : undefined}
-                      className={`flex min-w-0 flex-1 items-center gap-3 text-left ${collapsed ? 'justify-center' : ''}`}>
-                      <Icon size={18} strokeWidth={1.8} />
-                      {!collapsed && <span className="flex-1 truncate">{section.label}</span>}
-                    </button>
-                    {!collapsed && sectionBadge > 0 && <span className="rounded-pill bg-primary px-2 py-0.5 text-[10px] font-bold text-white">{sectionBadge > 99 ? '99+' : sectionBadge}</span>}
-                    {!collapsed && (
-                      <button
-                        onClick={() => setExpandedSection((current) => current === section.id ? '' : section.id)}
-                        aria-label={isOpen ? 'Collapse Workspace section' : 'Expand Workspace section'}
-                        className="rounded px-1 text-text-muted hover:bg-white hover:text-primary">
-                        {isOpen ? '−' : '+'}
-                      </button>
-                    )}
-                  </div>
-                  {isOpen && (
-                    <div className="mt-1 space-y-1 pl-4">
-                      {sectionItems.map((item) => (
-                        <NavLink
-                          key={item.id}
-                          to={item.route}
-                          title={item.description}
-                          className={({ isActive }) =>
-                            `flex min-h-9 items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
-                              isActive ? 'bg-primary text-white shadow-sm' : 'text-text-secondary hover:bg-surface hover:text-primary'
-                            }`
-                          }>
-                          <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
-                          <span className="min-w-0 flex-1 truncate">{item.label}</span>
-                          {item.badgeCountKey && badgeCounts[item.badgeCountKey] ? <span className="rounded-pill bg-navy-100 px-2 py-0.5 text-[10px] font-bold text-primary">{badgeCounts[item.badgeCountKey]}</span> : null}
-                        </NavLink>
-                      ))}
+              <div key={stage.id} className="space-y-1">
+                {!collapsed && <div className="px-3 pt-2 text-[10px] font-bold uppercase tracking-wider text-text-muted">{stage.label}</div>}
+                {stageSections.map((section) => {
+                  const sectionItems = visibleItems.filter((item) => item.section === section.id);
+                  const Icon = iconMap[section.icon];
+                  const isActiveSection = activeSectionId === section.id;
+                  const isOpen = !collapsed && expandedSection === section.id;
+                  const sectionBadge = sectionItems.reduce((sum, item) => sum + (item.badgeCountKey ? badgeCounts[item.badgeCountKey] || 0 : 0), 0);
+                  return (
+                    <div key={section.id} className="border-b border-border-subtle py-1 last:border-b-0">
+                      <div className={`flex h-11 w-full items-center gap-2 rounded-lg px-3 text-sm font-bold transition-colors ${isActiveSection ? 'bg-navy-50 text-primary' : 'text-text-secondary hover:bg-surface hover:text-primary'} ${collapsed ? 'justify-center' : ''}`}>
+                        <button
+                          onClick={() => section.route ? navigate(section.route) : setExpandedSection((current) => current === section.id ? '' : section.id)}
+                          title={collapsed ? section.label : undefined}
+                          className={`flex min-w-0 flex-1 items-center gap-3 text-left ${collapsed ? 'justify-center' : ''}`}>
+                          <Icon size={18} strokeWidth={1.8} />
+                          {!collapsed && <span className="flex-1 truncate">{section.label}</span>}
+                        </button>
+                        {!collapsed && sectionBadge > 0 && <span className="rounded-pill bg-primary px-2 py-0.5 text-[10px] font-bold text-white">{sectionBadge > 99 ? '99+' : sectionBadge}</span>}
+                        {!collapsed && (
+                          <button
+                            onClick={() => setExpandedSection((current) => current === section.id ? '' : section.id)}
+                            aria-label={isOpen ? `Collapse ${section.label} section` : `Expand ${section.label} section`}
+                            className="rounded px-1 text-text-muted hover:bg-white hover:text-primary">
+                            {isOpen ? '−' : '+'}
+                          </button>
+                        )}
+                      </div>
+                      {isOpen && (
+                        <div className="mt-1 space-y-1 pl-4">
+                          {sectionItems.map((item) => (
+                            <NavLink
+                              key={item.id}
+                              to={item.route}
+                              title={item.description}
+                              className={({ isActive }) =>
+                                `flex min-h-9 items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+                                  isActive ? 'bg-primary text-white shadow-sm' : 'text-text-secondary hover:bg-surface hover:text-primary'
+                                }`
+                              }>
+                              <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
+                              <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                              {item.badgeCountKey && badgeCounts[item.badgeCountKey] ? <span className="rounded-pill bg-navy-100 px-2 py-0.5 text-[10px] font-bold text-primary">{badgeCounts[item.badgeCountKey]}</span> : null}
+                            </NavLink>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              );
-            }
-            return (
-              <div key={section.id} className="border-b border-border-subtle py-1 last:border-b-0">
-                <button
-                  onClick={() => {
-                    if (section.id === 'workspace') {
-                      setExpandedSection('workspace');
-                      navigate('/workspace');
-                    } else {
-                      setExpandedSection((current) => current === section.id ? '' : section.id);
-                    }
-                  }}
-                  title={collapsed ? section.label : undefined}
-                  className={`flex h-11 w-full items-center gap-3 rounded-lg px-3 text-sm font-bold transition-colors ${isActiveSection ? 'bg-navy-50 text-primary' : 'text-text-secondary hover:bg-surface hover:text-primary'} ${collapsed ? 'justify-center' : ''}`}>
-                  <Icon size={18} strokeWidth={1.8} />
-                  {!collapsed && <span className="flex-1 truncate text-left">{section.label}</span>}
-                  {!collapsed && sectionBadge > 0 && <span className="rounded-pill bg-primary px-2 py-0.5 text-[10px] font-bold text-white">{sectionBadge > 99 ? '99+' : sectionBadge}</span>}
-                  {!collapsed && <span className="text-text-muted">{isOpen ? '−' : '+'}</span>}
-                </button>
-                {isOpen && (
-                  <div className="mt-1 space-y-1 pl-4">
-                    {sectionItems.map((item) => (
-                      <NavLink
-                        key={item.id}
-                        to={item.route}
-                        title={item.description}
-                        className={({ isActive }) =>
-                          `flex min-h-9 items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
-                            isActive ? 'bg-primary text-white shadow-sm' : 'text-text-secondary hover:bg-surface hover:text-primary'
-                          }`
-                        }>
-                        <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
-                        <span className="min-w-0 flex-1 truncate">{item.label}</span>
-                        {item.badgeCountKey && badgeCounts[item.badgeCountKey] ? <span className="rounded-pill bg-navy-100 px-2 py-0.5 text-[10px] font-bold text-primary">{badgeCounts[item.badgeCountKey]}</span> : null}
-                      </NavLink>
-                    ))}
-                  </div>
-                )}
+                  );
+                })}
               </div>
             );
           })}

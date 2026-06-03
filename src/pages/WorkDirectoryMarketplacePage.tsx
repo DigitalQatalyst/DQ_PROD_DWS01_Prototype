@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { FilterBar } from '../components/FilterBar';
 import { KpiTile } from '../components/KpiTile';
 import { DetailPanel } from '../components/DetailPanel';
@@ -8,10 +9,13 @@ import { Users, Building, Inbox, User } from 'lucide-react';
 import { MarketplaceTopFilterBar } from '../components/MarketplaceTopFilterBar';
 import type { FilterGroup } from '../components/MarketplaceFilterPanel';
 import { usePersona } from '../context/PersonaContext';
+import { getMarketplaceCategoryLabel } from '../utils/marketplaceBreadcrumbs';
 export function WorkDirectoryMarketplacePage() {
+  const [searchParams] = useSearchParams();
   const {
     activePersona
   } = usePersona();
+  const breadcrumbCategory = getMarketplaceCategoryLabel(searchParams.get('from'), 'discern');
   const [activeTab, setActiveTab] = useState('Teams');
   const [search, setSearch] = useState('');
   const [users, setUsers] = useState<any[]>([]);
@@ -229,6 +233,7 @@ export function WorkDirectoryMarketplacePage() {
   const visibleCount = content ? Array.isArray(content) ? content.length : 0 : 0;
   return <div className="max-w-[1280px] mx-auto px-6 py-8">
       <div className="mb-8">
+        <div className="mb-2 text-xs font-bold uppercase tracking-wider text-text-muted">Marketplace / {breadcrumbCategory} / Work Directory</div>
         <h1 className="text-3xl font-bold text-primary mb-2">Work Directory</h1>
         <p className="text-text-secondary">
           Find teams, owners, experts, and support contacts.

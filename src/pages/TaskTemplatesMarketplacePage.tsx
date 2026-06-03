@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { FilterBar } from '../components/FilterBar';
 import { MarketplaceTopFilterBar } from '../components/MarketplaceTopFilterBar';
 import { useTaskLifecycle } from '../context/TaskLifecycleContext';
@@ -6,10 +7,13 @@ import { TemplateCard } from '../components/TemplateCard';
 import type { FilterGroup } from '../components/MarketplaceFilterPanel';
 import { usePersona } from '../context/PersonaContext';
 import { Briefcase } from 'lucide-react';
+import { getMarketplaceCategoryLabel } from '../utils/marketplaceBreadcrumbs';
 
 export function TaskTemplatesMarketplacePage() {
+  const [searchParams] = useSearchParams();
   const { activePersona } = usePersona();
   const { templates, isLoading } = useTaskLifecycle();
+  const breadcrumbCategory = getMarketplaceCategoryLabel(searchParams.get('from'), 'design');
   
   const [activeTab, setActiveTab] = useState('All');
   const [search, setSearch] = useState('');
@@ -105,6 +109,7 @@ export function TaskTemplatesMarketplacePage() {
       {/* Header section */}
       <div className="mb-8 flex items-center justify-between">
         <div>
+          <div className="mb-2 text-xs font-bold uppercase tracking-wider text-text-muted">Marketplace / {breadcrumbCategory} / Task Library</div>
           <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight text-primary">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <Briefcase size={24} />
