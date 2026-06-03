@@ -5,9 +5,9 @@ import { ServiceCard } from '../components/ServiceCard';
 import { ServiceEmptyState } from '../components/ServiceEmptyState';
 import { Search } from 'lucide-react';
 import {
-  MarketplaceFilterPanel,
-  FilterGroup,
-} from '../components/MarketplaceFilterPanel';
+  MarketplaceTopFilterBar,
+} from '../components/MarketplaceTopFilterBar';
+import type { FilterGroup } from '../components/MarketplaceFilterPanel';
 import { usePersona } from '../context/PersonaContext';
 import { useServiceLifecycle } from '../context/ServiceLifecycleContext';
 
@@ -170,11 +170,9 @@ export function ServicesMarketplacePage() {
       {/* Category tabs */}
       <FilterBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {/* Filter panel + service card grid */}
-      <div className="flex flex-col lg:flex-row gap-6">
-        <MarketplaceFilterPanel
-          title="Refine services"
-          helperText="Filter this marketplace by category, SLA, approval, and service owner."
+      {/* Top filter bar */}
+      <div className="mt-4">
+        <MarketplaceTopFilterBar
           searchPlaceholder="Search services, owners, SLAs, or request types"
           searchValue={search}
           onSearchChange={setSearch}
@@ -183,29 +181,25 @@ export function ServicesMarketplacePage() {
           onChange={handleFilterChange}
           recommendedActive={recommendedActive}
           onRecommendedChange={setRecommendedActive}
-          totalCount={services.length}
-          visibleCount={filteredServices.length}
           onClearAll={handleClearAll}
-          persona={activePersona.role}
         />
-
-        <div className="flex-1">
-          {filteredServices.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredServices.map((service) => (
-                <ServiceCard key={service.id} service={service} />
-              ))}
-            </div>
-          ) : (
-            <ServiceEmptyState
-              title="No services match your filters"
-              message="Try adjusting your search or filters, or clear all filters to see all available services."
-              ctaLabel="Clear filters"
-              onCtaClick={handleClearAll}
-            />
-          )}
-        </div>
       </div>
+
+      {/* Service card grid */}
+      {filteredServices.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {filteredServices.map((service) => (
+            <ServiceCard key={service.id} service={service} />
+          ))}
+        </div>
+      ) : (
+        <ServiceEmptyState
+          title="No services match your filters"
+          message="Try adjusting your search or filters, or clear all filters to see all available services."
+          ctaLabel="Clear filters"
+          onCtaClick={handleClearAll}
+        />
+      )}
     </div>
   );
 }

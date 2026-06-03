@@ -181,7 +181,7 @@ function SubmitRequestForm({ onCreate }: { onCreate: (record: DwsRecord) => void
       <button
         disabled={!canSubmit}
         onClick={() => {
-          onCreate({
+          const newRequest = {
             id: `REQ-${Date.now().toString().slice(-4)}`,
             title: `${values['Request category']} - ${values['Request type']}`,
             type: 'Request',
@@ -194,8 +194,20 @@ function SubmitRequestForm({ onCreate }: { onCreate: (record: DwsRecord) => void
             lastUpdated: 'Just now',
             description: `${values.Description}. Expected outcome: ${values['Expected outcome']}.`,
             nextAction: 'Route request to the fulfilment owner queue.',
-            related: [values['Linked task/workflow/tracker'], values.Attachments].filter(Boolean)
-          });
+            category: values['Request category'],
+            related: [values['Linked task/workflow/tracker'], values.Attachments].filter(Boolean),
+            sla: 'On Track'
+          };
+          
+          try {
+            const localRequests = JSON.parse(localStorage.getItem('local_my_requests') || '[]');
+            localStorage.setItem('local_my_requests', JSON.stringify([newRequest, ...localRequests]));
+            window.dispatchEvent(new Event('local_requests_updated'));
+          } catch (e) {
+            console.error('Failed to save request to local storage', e);
+          }
+          
+          onCreate(newRequest);
           toast.success('Request submitted successfully.');
         }}
         className="mt-6 rounded-button bg-primary px-4 py-2 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50">
