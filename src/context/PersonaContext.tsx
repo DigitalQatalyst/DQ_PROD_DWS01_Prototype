@@ -102,6 +102,7 @@ export function PersonaProvider({ children }: {children: ReactNode;}) {
       'ceo'],
 
       '/marketplaces/analytics': [
+      'associate',
       'scrum-master',
       'team-lead',
       'unit-lead',
@@ -143,6 +144,7 @@ export function PersonaProvider({ children }: {children: ReactNode;}) {
       '/workflow/approvals': ['scrum-master', 'team-lead', 'unit-lead', 'hra', 'admin', 'support', 'ceo'],
       '/intelligence/service-signals': ['ceo'],
       '/intelligence/organisation-signals': ['team-lead', 'unit-lead', 'admin', 'ceo'],
+      '/intelligence/analytics-signals': ['team-lead', 'unit-lead', 'admin', 'ceo'],
       '/admin/work-directory/review': ['team-lead', 'unit-lead', 'admin'],
     };
     // Persona-scoped subtree restrictions — routes inside these prefixes
@@ -187,6 +189,7 @@ export function PersonaProvider({ children }: {children: ReactNode;}) {
     // Dynamic lifecycle routes — match by prefix for parameterised paths
     const lifecyclePrefixes: { prefix: string; allowed: PersonaId[] }[] = [
       { prefix: '/marketplaces/services/', allowed: ['associate', 'hra', 'admin', 'support'] },
+      { prefix: '/marketplaces/analytics/', allowed: ['associate', 'scrum-master', 'team-lead', 'unit-lead', 'hra', 'admin', 'support', 'ceo'] },
       { prefix: '/marketplaces/work-directory/', allowed: ['associate', 'scrum-master', 'team-lead', 'unit-lead', 'hra', 'admin', 'support', 'ceo'] },
       { prefix: '/requests/start/', allowed: ['associate', 'hra', 'admin', 'support'] },
       { prefix: '/requests/', allowed: ['associate', 'hra', 'admin', 'support'] },

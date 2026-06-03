@@ -52,7 +52,7 @@ import { DirectoryQueuePage } from './pages/DirectoryQueuePage';
 import { DirectoryAdminReviewPage } from './pages/DirectoryAdminReviewPage';
 import { OrganisationSignalsPage } from './pages/OrganisationSignalsPage';
 import { DirectoryRelatedWorkItemPage } from './pages/DirectoryRelatedWorkItemPage';
-import { AnalyticsMarketplacePage } from './pages/AnalyticsMarketplacePage';
+import { AnalyticsDetailPage, AnalyticsExecutiveSignalPage, AnalyticsLeadReviewQueuePage, AnalyticsMarketplacePage } from './pages/AnalyticsMarketplacePage';
 import { MarketplaceFeedbackPage } from './pages/MarketplaceFeedbackPage';
 import { MyWorkPage } from './pages/MyWorkPage';
 import { MyTasksPage } from './pages/MyTasksPage';
@@ -171,6 +171,7 @@ function RouteGuard({ children }: {children: React.ReactNode;}) {
   const location = useLocation();
   const roleScopedAccess: Record<string, string[]> = {
     '/intelligence/organisation-signals': ['Team / Squad Lead', 'Unit Lead', 'Admin', 'CEO'],
+    '/intelligence/analytics-signals': ['Team / Squad Lead', 'Unit Lead', 'Admin', 'CEO'],
     '/admin/work-directory/review': ['Team / Squad Lead', 'Unit Lead', 'Admin']
   };
   const isRolePermitted = roleScopedAccess[location.pathname]?.includes(activeRole);
@@ -434,6 +435,30 @@ function AppRoutes() {
           element={
           <RouteGuard>
               <AnalyticsMarketplacePage />
+            </RouteGuard>
+          } />
+
+        <Route
+          path="/marketplaces/analytics/:analyticsId"
+          element={
+          <RouteGuard>
+              <AnalyticsDetailPage />
+            </RouteGuard>
+          } />
+
+        <Route
+          path="/analytics/review"
+          element={
+          <RouteGuard>
+              <AnalyticsLeadReviewQueuePage />
+            </RouteGuard>
+          } />
+
+        <Route
+          path="/intelligence/analytics-signals"
+          element={
+          <RouteGuard>
+              <AnalyticsExecutiveSignalPage />
             </RouteGuard>
           } />
         

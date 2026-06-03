@@ -48,7 +48,7 @@ const serviceQueue: WorkspaceRole[] = ['HRA', 'Admin', 'Support'];
 const executive: WorkspaceRole[] = ['Unit Lead', 'Admin', 'CEO'];
 
 export const navSections: NavSectionConfig[] = [
-  { id: 'marketplace', label: 'Marketplace', icon: 'briefcase' },
+  { id: 'marketplace', label: 'Stage 01 Marketplaces', icon: 'briefcase' },
   { id: 'workspace', label: 'Workspace', icon: 'book' },
   { id: 'tasks', label: 'Tasks', icon: 'checkSquare' },
   { id: 'workflows', label: 'Workflows', icon: 'gitBranch' },
@@ -80,9 +80,9 @@ export const navigationItems: NavItemConfig[] = [
   // ── Marketplace ────────────────────────────────────────────────────────────
   item('marketplace', 'marketplace-services', 'Services Marketplace', '/marketplaces/services', [], all, 'Discover HRA, IT/access, platform support, knowledge/content, admin, approval, and escalation requests.'),
   item('marketplace', 'marketplace-task-templates', 'Task Template Marketplace', '/marketplaces/task-templates', [], all, 'Select governed task templates with checklist, evidence, SLA, and closure criteria.'),
-  item('marketplace', 'marketplace-knowledge', 'Knowledge Marketplace', '/marketplaces/knowledge', [], all, 'Find GHC, 6xD, playbooks, templates, learning references, and workspace guides.'),
-  item('marketplace', 'marketplace-work-directory', 'Work Directory', '/marketplaces/work-directory', [], all, 'Find teams, owners, experts, fulfilment contacts, and responsibility points.'),
+  item('marketplace', 'marketplace-knowledge', 'Knowledge Hub', '/marketplaces/knowledge', [], all, 'Find GHC, 6xD, playbooks, templates, learning references, and workspace guides.'),
   item('marketplace', 'marketplace-analytics', 'Analytics Discovery', '/marketplaces/analytics', [], all, 'Discover permitted dashboards, SLA views, governance reports, and performance surfaces.'),
+  item('marketplace', 'marketplace-work-directory', 'Work Directory', '/marketplaces/work-directory', [], all, 'Find teams, owners, experts, fulfilment contacts, and responsibility points.'),
   item('marketplace', 'marketplace-feedback', 'Marketplace Feedback', '/marketplaces/feedback', [], all, 'Flag unclear services, missing templates, outdated knowledge, incorrect owners, or broken navigation.'),
 
   // ── Workspace ──────────────────────────────────────────────────────────────
