@@ -11,6 +11,7 @@ import { PersonaProvider, usePersona } from './context/PersonaContext';
 import { ViewingModeProvider } from './context/ViewingModeContext';
 import { WorkspaceRoleProvider } from './context/WorkspaceRoleContext';
 import { useWorkspaceRole } from './context/WorkspaceRoleContext';
+import { ServiceLifecycleProvider } from './context/ServiceLifecycleContext';
 import { navigationItems, getNavigationItem } from './config/navigation';
 import { hasAnyPermission } from './config/permissions';
 import { PortalLayout } from './layouts/PortalLayout';
@@ -124,6 +125,11 @@ import { TaskSectionBuilderPage } from './pages/TaskSectionBuilderPage';
 import { TaskPermissionRulesPage } from './pages/TaskPermissionRulesPage';
 import { TaskTemplateGovernancePage } from './pages/TaskTemplateGovernancePage';
 import { StrategyLinkedTasksPage } from './pages/StrategyLinkedTasksPage';
+import { ServiceDetailPage } from './pages/ServiceDetailPage';
+import { RequestWorkflowPage } from './pages/RequestWorkflowPage';
+import { ServiceOwnerQueuePage } from './pages/ServiceOwnerQueuePage';
+import { ApproverQueuePage } from './pages/ApproverQueuePage';
+import { ExecutiveSignalPage } from './pages/ExecutiveSignalPage';
 import { Stage02WorkspacePage } from './pages/Stage02WorkspacePage';
 import { Stage02SectionPage } from './pages/Stage02SectionPage';
 import { Stage02PerformancePage } from './pages/Stage02PerformancePage';
@@ -178,6 +184,9 @@ function renderDwsRoute(route: string) {
   if (route === '/performance/learning-progress') return <Stage02PerformancePage section="learning" />;
   if (route === '/performance/contribution-history') return <Stage02PerformancePage section="contribution-history" />;
   if (route === '/performance/role') return <Stage02PerformancePage section="role-performance" />;
+  if (route === '/service-owner/requests') return <ServiceOwnerQueuePage />;
+  if (route === '/workflow/approvals') return <ApproverQueuePage />;
+  if (route === '/intelligence/service-signals') return <ExecutiveSignalPage />;
   return <DwsSectionPage route={route} />;
 }
 
@@ -222,6 +231,24 @@ function AppRoutes() {
               <ServicesMarketplacePage />
             </RouteGuard>
           } />
+        
+        <Route
+          path="/marketplaces/services/:serviceId"
+          element={
+          <RouteGuard>
+              <ServiceDetailPage />
+            </RouteGuard>
+          } />
+        
+        <Route
+          path="/requests/start/:serviceId"
+          element={
+          <RouteGuard>
+              <RequestWorkflowPage />
+            </RouteGuard>
+          } />
+        
+        {/* Route moved to line ~400 — handled by RequestStatusPage */}
         
         <Route
           path="/marketplaces/task-templates"
@@ -364,7 +391,7 @@ function AppRoutes() {
           } />
         
         <Route
-          path="/workspace/request-status"
+          path="/requests/:requestId/status"
           element={
           <RouteGuard>
               <RequestStatusPage />
@@ -1132,6 +1159,32 @@ function AppRoutes() {
           } />
         
 
+        {/* Service Lifecycle downstream routes (Prompt 5 & 6) */}
+        <Route
+          path="/service-owner/requests"
+          element={
+          <RouteGuard>
+              <ServiceOwnerQueuePage />
+            </RouteGuard>
+          } />
+        
+        <Route
+          path="/workflow/approvals"
+          element={
+          <RouteGuard>
+              <ApproverQueuePage />
+            </RouteGuard>
+          } />
+        
+        <Route
+          path="/intelligence/service-signals"
+          element={
+          <RouteGuard>
+              <ExecutiveSignalPage />
+            </RouteGuard>
+          } />
+        
+
         {/* Catch-all for unbuilt routes */}
         <Route
           path="*"
@@ -1154,8 +1207,10 @@ export function App() {
       <PersonaProvider>
         <WorkspaceRoleProvider>
           <ViewingModeProvider>
-            <AppRoutes />
-            <Toaster position="top-right" richColors />
+            <ServiceLifecycleProvider>
+              <AppRoutes />
+              <Toaster position="top-right" richColors />
+            </ServiceLifecycleProvider>
           </ViewingModeProvider>
         </WorkspaceRoleProvider>
       </PersonaProvider>
