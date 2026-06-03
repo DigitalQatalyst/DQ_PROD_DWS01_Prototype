@@ -725,7 +725,7 @@ function WorkspacePageShell({ route }: { route: WorkspaceRoute }) {
           </div>
           <div className="grid grid-cols-2 gap-3">
             {quickActions(route, activeRole).map(({ label, icon: Icon }) => (
-              <button key={label} onClick={() => label === 'Take Action' ? navigate('/workspace/my-work') : label === 'Submit Request' ? navigate('/marketplaces/services') : setModalTitle(label)} className="rounded-card border border-border-subtle bg-white p-3 text-left text-xs font-bold text-primary hover:bg-surface">
+              <button key={label} onClick={() => label === 'Take Action' ? navigate('/workspace') : label === 'Submit Request' ? navigate('/marketplaces/services') : setModalTitle(label)} className="rounded-card border border-border-subtle bg-white p-3 text-left text-xs font-bold text-primary hover:bg-surface">
                 <Icon size={18} className="mb-3 text-primary" />
                 {label}
               </button>

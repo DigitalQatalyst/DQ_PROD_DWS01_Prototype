@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { FilterBar } from '../components/FilterBar';
 import { KpiTile } from '../components/KpiTile';
 import { ServiceCard } from '../components/ServiceCard';
@@ -10,10 +11,13 @@ import {
 import type { FilterGroup } from '../components/MarketplaceFilterPanel';
 import { usePersona } from '../context/PersonaContext';
 import { useServiceLifecycle } from '../context/ServiceLifecycleContext';
+import { getMarketplaceCategoryLabel } from '../utils/marketplaceBreadcrumbs';
 
 export function ServicesMarketplacePage() {
+  const [searchParams] = useSearchParams();
   const { activePersona } = usePersona();
   const { services, requests } = useServiceLifecycle();
+  const breadcrumbCategory = getMarketplaceCategoryLabel(searchParams.get('from'), 'deploy');
 
   const [activeTab, setActiveTab] = useState('All');
   const [search, setSearch] = useState('');
@@ -147,6 +151,7 @@ export function ServicesMarketplacePage() {
     <div className="max-w-[1280px] mx-auto px-6 py-8">
       {/* Page header */}
       <div className="mb-8">
+        <div className="mb-2 text-xs font-bold uppercase tracking-wider text-text-muted">Marketplace / {breadcrumbCategory} / Services Marketplace</div>
         <h1 className="text-3xl font-bold text-primary mb-2">
           Service Catalogue
         </h1>

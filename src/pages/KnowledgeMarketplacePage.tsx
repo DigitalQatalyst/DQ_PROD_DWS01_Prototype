@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { FilterBar } from '../components/FilterBar';
 import { MarketplaceTopFilterBar } from '../components/MarketplaceTopFilterBar';
 import { useKnowledgeLifecycle } from '../context/KnowledgeLifecycleContext';
@@ -6,6 +7,7 @@ import { KnowledgeCard } from '../components/KnowledgeCard';
 import type { FilterGroup } from '../components/MarketplaceFilterPanel';
 import { BookOpen, Link as LinkIcon, Flag, ShieldCheck, Activity, ClipboardList } from 'lucide-react';
 import { KnowledgeAssetType } from '../types/knowledgeDiscovery';
+import { getMarketplaceCategoryLabel } from '../utils/marketplaceBreadcrumbs';
 
 const ALL_TABS: { label: string; value: KnowledgeAssetType | 'All' }[] = [
   { label: 'All',                value: 'All' },
@@ -24,9 +26,12 @@ const ALL_TABS: { label: string; value: KnowledgeAssetType | 'All' }[] = [
 const TAB_LABELS = ALL_TABS.map(t => t.label);
 
 export function KnowledgeMarketplacePage() {
+  const [searchParams] = useSearchParams();
   const { assets, isLoading } = useKnowledgeLifecycle();
+  const breadcrumbCategory = getMarketplaceCategoryLabel(searchParams.get('from'), 'discern');
+  const initialTabLabel = searchParams.get('focus') === 'playbooks-templates' ? 'Playbooks' : 'All';
 
-  const [activeTabLabel, setActiveTabLabel] = useState('All');
+  const [activeTabLabel, setActiveTabLabel] = useState(initialTabLabel);
   const [search, setSearch] = useState('');
   const [filterValues, setFilterValues] = useState<Record<string, string[]>>({});
   const [recommendedActive, setRecommendedActive] = useState(false);
@@ -120,6 +125,7 @@ export function KnowledgeMarketplacePage() {
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
+          <div className="mb-2 text-xs font-bold uppercase tracking-wider text-text-muted">Marketplace / {breadcrumbCategory} / Knowledge Discovery</div>
           <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight text-primary">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
               <BookOpen size={24} />

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { DataTable } from '../components/DataTable';
 import { StatusPill } from '../components/StatusPill';
@@ -10,8 +11,13 @@ import {
 import type { FilterGroup } from '../components/MarketplaceFilterPanel';
 import { usePersona } from '../context/PersonaContext';
 import { MarketplaceActionRouter } from '../components/MarketplaceActionRouter';
+import { getMarketplaceCategoryLabel } from '../utils/marketplaceBreadcrumbs';
 export function MarketplaceFeedbackPage() {
+  const [searchParams] = useSearchParams();
   const { activePersona } = usePersona();
+  const breadcrumbCategory = searchParams.get('from')
+    ? `${getMarketplaceCategoryLabel(searchParams.get('from'), 'drive')} / `
+    : '';
   const [activeTab, setActiveTab] = useState('All Feedback');
   const [search, setSearch] = useState('');
   // Form state
@@ -275,6 +281,7 @@ export function MarketplaceFeedbackPage() {
   return (
     <div className="max-w-[1280px] mx-auto px-6 py-8">
       <div className="mb-8">
+        <div className="mb-2 text-xs font-bold uppercase tracking-wider text-text-muted">Marketplace / {breadcrumbCategory}Marketplace Feedback</div>
         <h1 className="text-3xl font-bold text-primary mb-2">
           Marketplace Feedback
         </h1>

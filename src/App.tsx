@@ -45,6 +45,7 @@ import { KnowledgeMarketplacePage } from './pages/KnowledgeMarketplacePage';
 import { WorkDirectoryMarketplacePage } from './pages/WorkDirectoryMarketplacePage';
 import { AnalyticsMarketplacePage } from './pages/AnalyticsMarketplacePage';
 import { MarketplaceFeedbackPage } from './pages/MarketplaceFeedbackPage';
+import { D4MarketplaceLandingPage } from './pages/D4MarketplaceLandingPage';
 import { MyTasksPage } from './pages/MyTasksPage';
 import { MyRequestsPage } from './pages/MyRequestsPage';
 import { AgileExecutionPage } from './pages/AgileExecutionPage';
@@ -200,6 +201,9 @@ function renderDwsRoute(route: string) {
   if (route === '/performance/learning-progress') return <Stage02PerformancePage section="learning" />;
   if (route === '/performance/contribution-history') return <Stage02PerformancePage section="contribution-history" />;
   if (route === '/performance/role') return <Stage02PerformancePage section="role-performance" />;
+  if (route === '/support/operations') return <SupportOperationsPage />;
+  if (route === '/reports/sla-dashboard') return <SlaDashboardPage />;
+  if (route === '/reports/team-unit-performance') return <TeamUnitPerformancePage />;
   if (route === '/service-owner/requests') return <ServiceOwnerQueuePage />;
   if (route === '/workflow/approvals') return <ApproverQueuePage />;
   if (route === '/intelligence/service-signals') return <ExecutiveSignalPage />;
@@ -257,14 +261,16 @@ function AppRoutes() {
 
       {/* Marketplace Layout Routes */}
       <Route element={<MarketplaceLayout />}>
-        <Route
-          path="/marketplaces/services"
-          element={
-          <RouteGuard>
-              <ServicesMarketplacePage />
-            </RouteGuard>
-          } />
-        
+        <Route path="/marketplace" element={<Navigate to="/marketplace/discern" replace />} />
+        <Route path="/marketplaces" element={<Navigate to="/marketplace/discern" replace />} />
+        <Route path="/marketplaces/discern" element={<Navigate to="/marketplace/discern" replace />} />
+        <Route path="/marketplaces/design" element={<Navigate to="/marketplace/design" replace />} />
+        <Route path="/marketplaces/deploy" element={<Navigate to="/marketplace/deploy" replace />} />
+        <Route path="/marketplaces/drive" element={<Navigate to="/marketplace/drive" replace />} />
+        <Route path="/marketplace/deliver" element={<Navigate to="/marketplace/deploy" replace />} />
+        <Route path="/marketplaces/deliver" element={<Navigate to="/marketplace/deploy" replace />} />
+        <Route path="/marketplaces/feedback" element={<Navigate to="/marketplace/feedback" replace />} />
+        <Route path="/marketplaces/services" element={<Navigate to="/marketplace/services" replace />} />
         <Route
           path="/marketplaces/services/:serviceId"
           element={
@@ -272,9 +278,51 @@ function AppRoutes() {
               <ServiceDetailPage />
             </RouteGuard>
           } />
+        <Route path="/marketplace/knowledge" element={<Navigate to="/marketplace/knowledge-discovery" replace />} />
+        <Route path="/marketplaces/knowledge" element={<Navigate to="/marketplace/knowledge-discovery" replace />} />
+        <Route
+          path="/marketplaces/knowledge/:knowledgeId"
+          element={
+          <RouteGuard>
+              <KnowledgeDetailPage />
+            </RouteGuard>
+          } />
+        <Route path="/marketplace/task-templates" element={<Navigate to="/marketplace/task-library" replace />} />
+        <Route path="/marketplaces/task-templates" element={<Navigate to="/marketplace/task-library" replace />} />
+        <Route
+          path="/marketplaces/task-templates/:templateId"
+          element={
+          <RouteGuard>
+              <TaskTemplateDetailPage />
+            </RouteGuard>
+          } />
+        <Route path="/marketplaces/work-directory" element={<Navigate to="/marketplace/work-directory" replace />} />
+        <Route path="/marketplace/analytics" element={<Navigate to="/marketplace/analytics-discovery" replace />} />
+        <Route path="/marketplaces/analytics" element={<Navigate to="/marketplace/analytics-discovery" replace />} />
+
+        <Route path="/marketplace/discern" element={<RouteGuard><D4MarketplaceLandingPage /></RouteGuard>} />
+        <Route path="/marketplace/design" element={<RouteGuard><D4MarketplaceLandingPage /></RouteGuard>} />
+        <Route path="/marketplace/deploy" element={<RouteGuard><D4MarketplaceLandingPage /></RouteGuard>} />
+        <Route path="/marketplace/drive" element={<RouteGuard><D4MarketplaceLandingPage /></RouteGuard>} />
+
+        <Route
+          path="/marketplace/services"
+          element={
+          <RouteGuard>
+              <ServicesMarketplacePage />
+            </RouteGuard>
+          } />
         
         <Route
-          path="/marketplaces/task-templates"
+          path="/marketplace/services/:serviceId"
+          element={
+          <RouteGuard>
+              <ServiceDetailPage />
+            </RouteGuard>
+          } />
+        
+        <Route
+          path="/marketplace/task-library"
           element={
           <RouteGuard>
               <TaskTemplatesMarketplacePage />
@@ -282,7 +330,7 @@ function AppRoutes() {
           } />
           
         <Route
-          path="/marketplaces/task-templates/:templateId"
+          path="/marketplace/task-library/:templateId"
           element={
           <RouteGuard>
               <TaskTemplateDetailPage />
@@ -314,7 +362,7 @@ function AppRoutes() {
           } />
         
         <Route
-          path="/marketplaces/knowledge"
+          path="/marketplace/knowledge-discovery"
           element={
           <RouteGuard>
               <KnowledgeMarketplacePage />
@@ -322,7 +370,7 @@ function AppRoutes() {
           } />
           
         <Route
-          path="/marketplaces/knowledge/:knowledgeId"
+          path="/marketplace/knowledge-discovery/:knowledgeId"
           element={
           <RouteGuard>
               <KnowledgeDetailPage />
@@ -352,7 +400,7 @@ function AppRoutes() {
         <Route path="/marketplaces/knowledge-signals" element={<Navigate to="/intelligence/knowledge-signals" replace />} />
         
         <Route
-          path="/marketplaces/work-directory"
+          path="/marketplace/work-directory"
           element={
           <RouteGuard>
               <WorkDirectoryMarketplacePage />
@@ -360,11 +408,11 @@ function AppRoutes() {
           } />
         
         <Route
-          path="/marketplaces/analytics"
+          path="/marketplace/analytics-discovery"
           element={<AnalyticsMarketplacePage />} />
         
         <Route
-          path="/marketplaces/feedback"
+          path="/marketplace/feedback"
           element={
           <RouteGuard>
               <MarketplaceFeedbackPage />
@@ -379,7 +427,7 @@ function AppRoutes() {
             </RouteGuard>
           } />
       </Route>
-      <Route path="/services/submit-request" element={<Navigate to="/marketplaces/services" replace />} />
+      <Route path="/services/submit-request" element={<Navigate to="/marketplace/services" replace />} />
       <Route element={<Stage02Layout />}>
         <Route path="/workspace" element={<Stage02WorkspacePage />} />
         <Route path="/stage02/workspace" element={<Navigate to="/workspace" replace />} />
@@ -400,6 +448,25 @@ function AppRoutes() {
         <Route path="/stage02/reports" element={<Stage02SectionPage section="reports" />} />
         <Route path="/workspace/my-work" element={<Navigate to="/workspace" replace />} />
         <Route path="/workspace/notifications" element={<Navigate to="/workspace/activity" replace />} />
+        <Route path="/knowledge" element={<Navigate to="/marketplace/knowledge-discovery" replace />} />
+        <Route path="/knowledge/ghc" element={<Navigate to="/marketplace/knowledge-discovery" replace />} />
+        <Route path="/knowledge/6xd" element={<Navigate to="/marketplace/knowledge-discovery" replace />} />
+        <Route path="/knowledge/references" element={<Navigate to="/marketplace/knowledge-discovery" replace />} />
+        <Route path="/knowledge/playbooks-templates" element={<Navigate to="/marketplace/knowledge-discovery" replace />} />
+        <Route path="/knowledge/learning-references" element={<Navigate to="/marketplace/knowledge-discovery" replace />} />
+        <Route path="/knowledge/recommendations" element={<Navigate to="/marketplace/knowledge-discovery" replace />} />
+        <Route path="/people/directory" element={<Navigate to="/marketplace/work-directory" replace />} />
+        <Route path="/people/teams" element={<Navigate to="/marketplace/work-directory" replace />} />
+        <Route path="/people/units" element={<Navigate to="/marketplace/work-directory" replace />} />
+        <Route path="/people/owners-experts" element={<Navigate to="/marketplace/work-directory" replace />} />
+        <Route path="/people/service-owners" element={<Navigate to="/marketplace/work-directory" replace />} />
+        <Route path="/people/contact-points" element={<Navigate to="/marketplace/work-directory" replace />} />
+        <Route path="/people/roles" element={<Navigate to="/marketplace/work-directory" replace />} />
+        <Route path="/trackers/governance-actions" element={<Navigate to="/governance/actions" replace />} />
+        <Route path="/performance/team" element={<Navigate to="/reports/team-unit-performance" replace />} />
+        <Route path="/performance/unit" element={<Navigate to="/reports/team-unit-performance" replace />} />
+        <Route path="/workflows/centre" element={<Navigate to="/workflows/my-workflows" replace />} />
+        <Route path="/workflow/approvals" element={<Navigate to="/workflows/pending-approvals" replace />} />
         <Route path="/tasks/my-tasks" element={<Navigate to="/workspace/my-tasks" replace />} />
         <Route path="/tasks/all" element={<RouteGuard><TasksAllPage /></RouteGuard>} />
         <Route path="/tasks/create" element={<RouteGuard><TasksCreatePage /></RouteGuard>} />
