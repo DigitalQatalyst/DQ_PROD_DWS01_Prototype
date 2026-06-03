@@ -23,6 +23,7 @@ interface TaskFromTemplateWizardProps {
   onClose: () => void;
   preFilledOwner?: any;
   preLinkedKnowledge?: any;
+  isModal?: boolean;
 }
 let taskCounter = 1;
 export function TaskFromTemplateWizard({
@@ -30,7 +31,8 @@ export function TaskFromTemplateWizard({
   activePersona,
   onClose,
   preFilledOwner,
-  preLinkedKnowledge
+  preLinkedKnowledge,
+  isModal = true
 }: TaskFromTemplateWizardProps) {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
@@ -733,8 +735,13 @@ export function TaskFromTemplateWizard({
     </div>;
 
   if (submittedId) {
+    const Container = isModal ? 'div' : 'div';
+    const containerClasses = isModal 
+      ? "fixed inset-0 z-50 flex items-center justify-center bg-navy-900/40 backdrop-blur-sm p-4"
+      : "flex items-center justify-center p-4 mt-8";
+      
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy-900/40 backdrop-blur-sm p-4">
+      <Container className={containerClasses}>
         <div className="bg-white rounded-xl shadow-2xl w-full max-w-[600px] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
           <div className="p-8 text-center">
             <div className="w-16 h-16 bg-success/10 text-success rounded-full flex items-center justify-center mx-auto mb-6">
@@ -781,8 +788,7 @@ export function TaskFromTemplateWizard({
             <div className="flex flex-col gap-3">
               <button
                 onClick={() => {
-                  navigate('/workspace/my-tasks');
-                  onClose();
+                  navigate('/tasks/my-tasks');
                 }}
                 className="w-full py-3 bg-primary text-white font-semibold rounded-button hover:bg-navy-800 transition-colors">
                 
@@ -790,8 +796,7 @@ export function TaskFromTemplateWizard({
               </button>
               <button
                 onClick={() => {
-                  navigate('/execution/tasks/all');
-                  onClose();
+                  navigate('/tasks/all');
                 }}
                 className="w-full py-3 bg-surface text-primary font-semibold rounded-button hover:bg-navy-50 transition-colors border border-border-default">
                 
@@ -800,15 +805,52 @@ export function TaskFromTemplateWizard({
               <div className="flex gap-3 mt-2">
                 <button
                   onClick={() => {
-                    toast(`Opening task ${submittedId} in prototype context.`);
-                    onClose();
+                    navigate(`/tasks/${submittedId}`);
                   }}
                   className="flex-1 py-2 text-sm font-medium text-text-secondary hover:text-primary transition-colors">
                   
                   Open Task Detail
                 </button>
                 <button
-                  onClick={onClose}
+                  onClick={() => {
+                    navigate(`/tasks/create/${template.id || 'blank'}`);
+                    setStep(1);
+                    setSubmittedId(null);
+                    setFormData({
+                      title: '',
+                      purpose: '',
+                      expectedOutput: '',
+                      owner: preFilledOwner?.id || activePersona.id,
+                      contributors: [],
+                      teamUnit: '',
+                      dueDate: '',
+                      priority: 'Medium',
+                      aspiration: '',
+                      objective: '',
+                      outcome: '',
+                      register: '',
+                      registerItem: '',
+                      contributionType: '',
+                      noStrategicContext: false,
+                      checklist: template?.checklist ?
+                      Array.from({
+                        length: template.checklist
+                      }).map((_, i) => ({
+                        id: i,
+                        text: `Template item ${i + 1}`,
+                        required: true
+                      })) :
+                      [],
+                      evidenceRequired: template?.evidence || false,
+                      evidenceType: '',
+                      closureCriteria: '',
+                      reviewer: '',
+                      sla: template?.sla || '3-5 business days',
+                      reviewPath: 'Standard',
+                      approvalRequired: template?.approval === 'Approval required',
+                      closureQualityReview: template?.type === 'Closure'
+                    });
+                  }}
                   className="flex-1 py-2 text-sm font-medium text-text-secondary hover:text-primary transition-colors">
                   
                   Return to templates
@@ -817,11 +859,15 @@ export function TaskFromTemplateWizard({
             </div>
           </div>
         </div>
-      </div>);
+      </Container>);
 
   }
+  const containerClasses = isModal
+    ? "fixed inset-0 z-50 flex items-center justify-center bg-navy-900/40 backdrop-blur-sm p-4"
+    : "flex items-center justify-center p-4 w-full";
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy-900/40 backdrop-blur-sm p-4">
+    <div className={containerClasses}>
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-[920px] max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="px-6 py-4 border-b border-border-default flex items-center justify-between bg-surface shrink-0">
@@ -921,7 +967,7 @@ export function TaskFromTemplateWizard({
 
             <button
               onClick={handleSubmit}
-              className="px-6 py-2 text-sm font-semibold bg-orange text-white rounded-button hover:bg-[#e34a2c] transition-colors">
+              className="px-6 py-2 text-sm font-semibold bg-primary text-white rounded-button hover:bg-navy-800 transition-colors">
               
                 Create Task
               </button>

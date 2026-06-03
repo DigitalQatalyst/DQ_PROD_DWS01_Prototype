@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { StatusPill } from '../components/StatusPill';
+import { WorkItemLinkedKnowledgeCard } from '../components/WorkItemLinkedKnowledgeCard';
 import { useViewingMode } from '../context/ViewingModeContext';
 import { useWorkspaceRole } from '../context/WorkspaceRoleContext';
 import type { WorkspaceRole } from '../config/segments';
@@ -165,7 +166,7 @@ const roleOwners: Record<WorkspaceRole, string[]> = {
   CEO: ['Mariam Said', 'Executive Office', 'DWS Leadership']
 };
 
-function buildWorkspaceRecords(route: WorkspaceRoute, role: WorkspaceRole, mode: string): WorkspaceRecord[] {
+export function buildWorkspaceRecords(route: WorkspaceRoute, role: WorkspaceRole, mode: string): WorkspaceRecord[] {
   const titles = mode === 'first-time' && route === 'my-work'
     ? ['Complete onboarding profile', 'Submit laptop and DQ access update', 'Join DQ Ways of Working session', 'Review first manager feedback', 'Update onboarding tracker item', 'Confirm learning path progress']
     : mode === 'first-time' && route === 'my-requests'
@@ -317,6 +318,9 @@ function DetailDrawer({ record, route, onClose, onUpdate }: { record: WorkspaceR
             <p className="mt-2 text-sm leading-6 text-text-secondary">{record.description}</p>
           </div>
           <InfoList title="Related work items" values={record.related} />
+          
+          <WorkItemLinkedKnowledgeCard workItemId={record.id} />
+          
           <div className="rounded-card border border-border-subtle bg-surface p-4">
             <h3 className="text-sm font-bold text-primary">Recommended next action</h3>
             <p className="mt-2 text-sm leading-6 text-text-secondary">{record.nextAction}</p>
@@ -558,7 +562,52 @@ function WorkspacePageShell({ route }: { route: WorkspaceRoute }) {
   const { activeRole, activeSegment } = useWorkspaceRole();
   const navigate = useNavigate();
   const meta = routeMeta[route];
-  const [records, setRecords] = useState<WorkspaceRecord[]>(() => buildWorkspaceRecords(route, activeRole, mode));
+  
+  const loadRecords = () => {
+    const defaultRecords = buildWorkspaceRecords(route, activeRole, mode);
+    if (route === 'my-requests') {
+      try {
+        const localRequests = JSON.parse(localStorage.getItem('local_my_requests') || '[]');
+        console.log("WorkspaceSectionPages loaded local requests:", localRequests.length);
+        if (localRequests.length > 0) {
+          toast.success(`Loaded ${localRequests.length} local requests.`);
+        }
+        const mappedLocalRequests = localRequests.map((r: any) => {
+          const rawDate = r.lastUpdate || r.lastUpdated || r.submittedAt || '';
+          let formattedDate = rawDate;
+          if (rawDate && rawDate.includes('T')) {
+            try {
+              const d = new Date(rawDate);
+              formattedDate = `Today, ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+            } catch (e) {
+              formattedDate = 'Just now';
+            }
+          } else if (!rawDate) {
+            formattedDate = 'Just now';
+          }
+          
+          return {
+            ...r,
+            title: r.title || r.service || 'Unknown Request',
+            type: r.type || 'Request',
+            dueDate: r.dueDate || 'Pending',
+            source: r.source || r.category || 'Unknown',
+            lastUpdate: formattedDate,
+            owner: r.owner || 'Unassigned',
+            status: r.status || 'Submitted',
+            priority: r.priority || r.urgency || 'Normal',
+          };
+        });
+        return [...mappedLocalRequests, ...defaultRecords];
+      } catch (e) {
+        console.error("Error parsing local requests in WorkspaceSectionPages", e);
+        return defaultRecords;
+      }
+    }
+    return defaultRecords;
+  };
+
+  const [records, setRecords] = useState<WorkspaceRecord[]>(loadRecords);
   const [activeTab, setActiveTab] = useState(meta.tabs[0]);
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('All');
@@ -578,8 +627,15 @@ function WorkspacePageShell({ route }: { route: WorkspaceRoute }) {
   }));
 
   React.useEffect(() => {
-    setRecords(buildWorkspaceRecords(route, activeRole, mode));
+    setRecords(loadRecords());
     setActiveTab(meta.tabs[0]);
+    
+    const handleStorageChange = () => {
+      setRecords(loadRecords());
+    };
+    
+    window.addEventListener('local_requests_updated', handleStorageChange);
+    return () => window.removeEventListener('local_requests_updated', handleStorageChange);
   }, [activeRole, mode, route, meta.tabs]);
 
   const filters = useMemo(() => ['All', ...Array.from(new Set(records.flatMap((record) => [record.status, record.priority, record.category]))).slice(0, 7)], [records]);

@@ -25,7 +25,7 @@ export function MarketplaceDropdown() {
     icon: FileText,
     description: 'Select governed task templates with checklist, evidence, SLA, and closure criteria.'
   }, {
-    title: 'Knowledge Discovery',
+    title: 'Knowledge Hub',
     route: '/marketplaces/knowledge',
     icon: BookOpen,
     description: 'Find GHC, 6xD, playbooks, templates, learning references, and workspace guides.'
