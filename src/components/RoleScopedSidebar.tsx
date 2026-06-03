@@ -161,7 +161,7 @@ const sidebarConfig: Record<PersonaId, NavGroup[]> = {
       icon: Layers
     },
     {
-      label: 'Knowledge Discovery',
+      label: 'Knowledge Hub',
       route: '/marketplaces/knowledge',
       icon: BookOpen
     }]

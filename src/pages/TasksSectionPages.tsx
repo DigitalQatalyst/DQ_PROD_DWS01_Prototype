@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { StatusPill } from '../components/StatusPill';
+import { WorkItemLinkedKnowledgeCard } from '../components/WorkItemLinkedKnowledgeCard';
 import { useViewingMode } from '../context/ViewingModeContext';
 import { useWorkspaceRole } from '../context/WorkspaceRoleContext';
 import type { WorkspaceRole } from '../config/segments';
@@ -198,7 +199,7 @@ const templates: TaskTemplate[] = [
   { id: 'TPL-108', name: 'Feature Implementation Task', contextPattern: 'Feature request has been accepted for implementation.', purpose: 'Deliver feature work with traceable output.', defaultFields: ['Context', 'Linked tracker', 'Expected output'], checklist: ['Define output', 'Implement change', 'Attach proof'], evidenceRules: 'Change evidence required.', closureCriteria: ['Output delivered', 'Acceptance checked'], defaultSla: 'Sprint cycle', ownerRole: 'Product / Admin', usedBy: 'Platform Admin' }
 ];
 
-function buildTasks(role: WorkspaceRole, mode: string): DqTask[] {
+export function buildTasks(role: WorkspaceRole, mode: string): DqTask[] {
   const titles = mode === 'first-time'
     ? ['Complete onboarding profile update', 'Submit access setup evidence', 'Review DQ Ways of Working task', 'Complete role-based learning task', 'Resolve onboarding access blocker']
     : roleSeeds[role];
@@ -514,6 +515,8 @@ function TaskDetailDrawer({ task, route, onClose, onUpdate, onModal }: { task: D
               </div>
               <ChipButtonList values={linkedValues} onOpen={setLinkedDetail} />
             </DrawerCard>
+
+            <WorkItemLinkedKnowledgeCard workItemId={current.taskId} />
 
             <DrawerCard title={`Checklist (${completionPercent}% complete)`}>
               <div className="space-y-2">

@@ -40,6 +40,34 @@ export function RequestIntakeWizard({
   const handleSubmit = () => {
     const newId = `REQ-NEW-${String(requestCounter).padStart(3, '0')}`;
     requestCounter++;
+    
+    try {
+      const localRequests = JSON.parse(localStorage.getItem('local_my_requests') || '[]');
+      const newRequest = {
+        id: newId,
+        title: formData.title || service.title,
+        type: 'Request',
+        status: 'Submitted',
+        dueDate: formData.neededByDate || 'Pending',
+        priority: formData.urgency || 'Medium',
+        owner: service.ownerType || 'Central Queue',
+        source: service.category,
+        category: service.category,
+        description: formData.description,
+        nextAction: 'Review the status timeline and provide any required input.',
+        related: ['DWS.01 Workspace', service.category, activePersona.name],
+        lastUpdate: 'Just now',
+        sla: 'On Track'
+      };
+      localStorage.setItem('local_my_requests', JSON.stringify([newRequest, ...localRequests]));
+      window.dispatchEvent(new Event('local_requests_updated'));
+      console.log('Saved to local storage:', newRequest);
+      toast.success('Saved to local storage.');
+    } catch (e) {
+      console.error('Failed to save to local storage', e);
+      toast.error('Failed to save to local storage.');
+    }
+
     setSubmittedId(newId);
   };
   const handleClose = () => {
