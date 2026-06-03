@@ -45,7 +45,6 @@ import { KnowledgeMarketplacePage } from './pages/KnowledgeMarketplacePage';
 import { WorkDirectoryMarketplacePage } from './pages/WorkDirectoryMarketplacePage';
 import { AnalyticsMarketplacePage } from './pages/AnalyticsMarketplacePage';
 import { MarketplaceFeedbackPage } from './pages/MarketplaceFeedbackPage';
-import { MyWorkPage } from './pages/MyWorkPage';
 import { MyTasksPage } from './pages/MyTasksPage';
 import { MyRequestsPage } from './pages/MyRequestsPage';
 import { AgileExecutionPage } from './pages/AgileExecutionPage';
@@ -60,7 +59,6 @@ import { ExecutiveEnterprisePage } from './pages/ExecutiveEnterprisePage';
 import { AuditLogPage } from './pages/AuditLogPage';
 import { MyUpdatesPage } from './pages/MyUpdatesPage';
 import { MyBlockersPage } from './pages/MyBlockersPage';
-import { NotificationsPage } from './pages/NotificationsPage';
 import { KnowledgeContextPage } from './pages/KnowledgeContextPage';
 import { AssignedWorkPage } from './pages/AssignedWorkPage';
 import { RequestStatusPage } from './pages/RequestStatusPage';
@@ -153,7 +151,7 @@ import { Stage02SectionPage } from './pages/Stage02SectionPage';
 import { Stage02PerformancePage } from './pages/Stage02PerformancePage';
 import { DwsSectionPage } from './pages/DwsSectionPage';
 import { AccessRestrictedPage } from './pages/AccessRestrictedPage';
-import { WorkspaceMyRequestsPage, WorkspaceMyWorkPage, WorkspaceNotificationsPage, WorkspaceWorkingSessionsPage } from './pages/WorkspaceSectionPages';
+import { WorkspaceActivityPage, WorkspaceMyRequestsPage, WorkspaceWorkingSessionsPage } from './pages/WorkspaceSectionPages';
 import { TasksAllPage, TasksBlockedPage, TasksClosureQualityPage, TasksCreatePage, TasksEvidencePage, TasksMyTasksPage, TasksReviewPage, TasksTemplatesPage } from './pages/TasksSectionPages';
 // A wrapper to handle route guards
 function RouteGuard({ children }: {children: React.ReactNode;}) {
@@ -183,10 +181,10 @@ function DwsRouteGuard({ route, children }: { route: string; children: React.Rea
 }
 
 function renderDwsRoute(route: string) {
-  if (route === '/workspace/my-work') return <WorkspaceMyWorkPage />;
+  if (route === '/workspace/my-tasks') return <TasksMyTasksPage />;
   if (route === '/workspace/my-requests') return <WorkspaceMyRequestsPage />;
   if (route === '/workspace/working-sessions') return <WorkspaceWorkingSessionsPage />;
-  if (route === '/workspace/notifications') return <WorkspaceNotificationsPage />;
+  if (route === '/workspace/activity') return <WorkspaceActivityPage />;
   if (route === '/tasks/my-tasks') return <TasksMyTasksPage />;
   if (route === '/tasks/all') return <TasksAllPage />;
   if (route === '/tasks/create') return <TasksCreatePage />;
@@ -381,6 +379,7 @@ function AppRoutes() {
             </RouteGuard>
           } />
       </Route>
+      <Route path="/services/submit-request" element={<Navigate to="/marketplaces/services" replace />} />
       <Route element={<Stage02Layout />}>
         <Route path="/workspace" element={<Stage02WorkspacePage />} />
         <Route path="/stage02/workspace" element={<Navigate to="/workspace" replace />} />
@@ -399,6 +398,16 @@ function AppRoutes() {
         <Route path="/stage02/knowledge" element={<Stage02SectionPage section="knowledge" />} />
         <Route path="/stage02/people" element={<Stage02SectionPage section="people" />} />
         <Route path="/stage02/reports" element={<Stage02SectionPage section="reports" />} />
+        <Route path="/workspace/my-work" element={<Navigate to="/workspace" replace />} />
+        <Route path="/workspace/notifications" element={<Navigate to="/workspace/activity" replace />} />
+        <Route path="/tasks/my-tasks" element={<Navigate to="/workspace/my-tasks" replace />} />
+        <Route path="/tasks/all" element={<RouteGuard><TasksAllPage /></RouteGuard>} />
+        <Route path="/tasks/create" element={<RouteGuard><TasksCreatePage /></RouteGuard>} />
+        <Route path="/tasks/templates" element={<RouteGuard><TasksTemplatesPage /></RouteGuard>} />
+        <Route path="/tasks/review" element={<RouteGuard><TasksReviewPage /></RouteGuard>} />
+        <Route path="/tasks/blocked" element={<RouteGuard><TasksBlockedPage /></RouteGuard>} />
+        <Route path="/tasks/closure-quality" element={<RouteGuard><TasksClosureQualityPage /></RouteGuard>} />
+        <Route path="/tasks/evidence" element={<RouteGuard><TasksEvidencePage /></RouteGuard>} />
         {navigationItems.map((item) => (
           <Route
             key={item.id}
@@ -416,11 +425,7 @@ function AppRoutes() {
       <Route element={<AppLayout />}>
         <Route
           path="/workspace/my-work"
-          element={
-          <RouteGuard>
-              <MyWorkPage />
-            </RouteGuard>
-          } />
+          element={<Navigate to="/workspace" replace />} />
         
         <Route
           path="/workspace/my-tasks"
@@ -456,11 +461,7 @@ function AppRoutes() {
         
         <Route
           path="/workspace/notifications"
-          element={
-          <RouteGuard>
-              <NotificationsPage />
-            </RouteGuard>
-          } />
+          element={<Navigate to="/workspace/activity" replace />} />
         
         <Route
           path="/workspace/knowledge-context"

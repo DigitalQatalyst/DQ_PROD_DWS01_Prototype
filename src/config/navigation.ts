@@ -49,7 +49,6 @@ const executive: WorkspaceRole[] = ['Unit Lead', 'Admin', 'CEO'];
 export const navSections: NavSectionConfig[] = [
   { id: 'marketplace', label: 'Marketplace', icon: 'briefcase' },
   { id: 'workspace', label: 'Workspace', icon: 'book' },
-  { id: 'tasks', label: 'Tasks', icon: 'checkSquare' },
   { id: 'workflows', label: 'Workflows', icon: 'gitBranch' },
   { id: 'trackers', label: 'Trackers', icon: 'database' },
   { id: 'performance', label: 'Performance', icon: 'gauge' },
@@ -85,19 +84,10 @@ export const navigationItems: NavItemConfig[] = [
   item('marketplace', 'marketplace-feedback', 'Marketplace Feedback', '/marketplaces/feedback', [], all, 'Flag unclear services, missing templates, outdated knowledge, incorrect owners, or broken navigation.'),
 
   // ── Workspace ──────────────────────────────────────────────────────────────
-  item('workspace', 'workspace-my-work', 'My Work', '/workspace/my-work', ['workspace:personal'], all, 'Personal execution cockpit across tasks, requests, approvals, blockers, tracker updates, and working-session follow-ups.', 'myWork'),
+  item('workspace', 'workspace-my-tasks', 'My Tasks', '/workspace/my-tasks', ['tasks:personal'], all, 'Tasks assigned to or owned by the active user.', 'tasks'),
   item('workspace', 'workspace-my-requests', 'My Requests', '/workspace/my-requests', ['services:personal'], all, 'Personal service and support requests.', 'requests'),
   item('workspace', 'workspace-working-sessions', 'Working Sessions', '/workspace/working-sessions', ['workspace:personal'], all, 'Active working sessions, decisions, and follow-up actions.'),
-  item('workspace', 'workspace-notifications', 'Notifications', '/workspace/notifications', ['workspace:personal'], all, 'Workspace notifications requiring review.', 'notifications'),
-
-  item('tasks', 'tasks-my', 'My Tasks', '/tasks/my-tasks', ['tasks:personal'], all, 'Tasks assigned to or owned by the active user.', 'tasks'),
-  item('tasks', 'tasks-all', 'All Tasks', '/tasks/all', ['tasks:all'], nonAssociate, 'Authorised task view across team, unit, support, or executive scope.'),
-  item('tasks', 'tasks-create', 'Create Task', '/tasks/create', ['tasks:personal'], all, 'Create a governed DWS task with outcome, owner, evidence, and SLA.'),
-  item('tasks', 'tasks-templates', 'Task Templates', '/tasks/templates', ['tasks:personal'], all, 'Reusable task templates and required evidence patterns.'),
-  item('tasks', 'tasks-review', 'Task Review', '/tasks/review', ['tasks:review'], nonAssociate, 'Task discipline review queue for authorised scopes.', 'reviews'),
-  item('tasks', 'tasks-blocked', 'Blocked Tasks', '/tasks/blocked', ['tasks:personal'], all, 'Blocked and overdue task items requiring action.', 'blocked'),
-  item('tasks', 'tasks-closure-quality', 'Closure Quality', '/tasks/closure-quality', ['tasks:personal'], all, 'Closure quality checks and missing evidence.', 'quality'),
-  item('tasks', 'tasks-evidence', 'Task Evidence', '/tasks/evidence', ['tasks:personal'], all, 'Evidence queue linked to task outcomes.', 'evidence'),
+  item('workspace', 'workspace-activity', 'Activity', '/workspace/activity', ['workspace:personal'], all, 'Platform activity, notifications, announcements, mentions, approvals, and recent user events.', 'notifications'),
 
   item('workflows', 'workflows-my', 'My Workflows', '/workflows/my-workflows', ['workflows:personal'], all, 'Workflows assigned to or requiring input from the active user.', 'workflows'),
   item('workflows', 'workflows-centre', 'Workflow Centre', '/workflows/centre', ['workflows:operate'], nonAssociate, 'Operational workflow centre across authorised work.'),
@@ -149,7 +139,7 @@ export const navigationItems: NavItemConfig[] = [
   item('knowledge', 'knowledge-feedback', 'Knowledge Feedback', '/knowledge/feedback', ['knowledge:view'], all, 'Feedback and improvement requests for knowledge content.'),
 
   item('services', 'services-my-requests', 'My Requests', '/services/my-requests', ['services:personal'], all, 'Requests raised by or assigned to the active user.'),
-  item('services', 'services-submit-request', 'Submit Request', '/services/submit-request', ['services:personal'], all, 'Submit a request with category, urgency, expected outcome, and linked work.'),
+  item('services', 'services-submit-request', 'Submit Request', '/marketplaces/services', ['services:personal'], all, 'Open the services marketplace to choose a service and submit a request.'),
   item('services', 'services-status', 'Request Status', '/services/request-status', ['services:personal'], all, 'Status tracker for requests and SLA health.'),
   item('services', 'services-hra', 'HRA Requests', '/services/hra-requests', ['services:queue'], ['HRA', 'Admin'], 'HRA onboarding, role transition, and policy request queue.'),
   item('services', 'services-it', 'IT & Access Requests', '/services/it-access', ['services:personal'], all, 'IT, access, and system enablement requests.'),
@@ -203,5 +193,5 @@ export function getNavigationItem(route: string) {
 }
 
 export function getDefaultRouteForRole(role: WorkspaceRole) {
-  return navigationItems.some((navItem) => navItem.section === 'workspace' && navItem.allowedSegments.includes(role)) ? '/workspace' : '/workspace/my-work';
+  return navigationItems.some((navItem) => navItem.section === 'workspace' && navItem.allowedSegments.includes(role)) ? '/workspace' : '/workspace';
 }
