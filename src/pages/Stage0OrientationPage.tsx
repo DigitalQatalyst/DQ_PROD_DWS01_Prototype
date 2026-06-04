@@ -1,14 +1,20 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
+  ArrowRight,
   BarChart3,
   BookOpen,
+  Bot,
   CheckCircle2,
+  CheckSquare,
   CircleHelp,
   ClipboardList,
   Compass,
   Cpu,
   Headphones,
+  Home,
+  LayoutDashboard,
   Megaphone,
   Search,
   ShieldCheck,
@@ -40,6 +46,41 @@ const announcements = [
   'Updated onboarding guide available for all DWS.01 users',
   '4D marketplace taxonomy refreshed for service discovery',
   'Governance templates aligned to the latest delivery review cycle'
+];
+
+const orientationCards = [
+  {
+    title: 'Home',
+    subtitle: 'Start here',
+    description: 'View your platform context, announcements, quick links, recent items, and starting guidance.',
+    action: 'View Home',
+    route: '/home',
+    icon: Home
+  },
+  {
+    title: 'Dashboard',
+    subtitle: 'Track performance',
+    description: 'Review KPIs, workload trends, SLA health, request/task summaries, and performance visibility.',
+    action: 'Open Dashboard',
+    route: '/dashboard',
+    icon: LayoutDashboard
+  },
+  {
+    title: 'My Work',
+    subtitle: 'Act on assigned work',
+    description: 'Open your assigned tasks, requests, approvals, blockers, working sessions, and action-required items.',
+    action: 'Open My Work',
+    route: '/workspace',
+    icon: CheckSquare
+  },
+  {
+    title: 'AI Cockpit',
+    subtitle: 'Ask, automate, and analyze',
+    description: 'Use AI to search, summarize, recommend next actions, and assist with work across the platform.',
+    action: 'Open AI Cockpit',
+    route: '/ai-cockpit',
+    icon: Bot
+  }
 ];
 
 const changedItems = [
@@ -151,6 +192,39 @@ function OperatingModel() {
               </div>
               <h3 className="text-sm font-bold text-primary">{step.label}</h3>
               <p className="mt-2 text-sm leading-6 text-text-muted">{step.description}</p>
+            </article>
+          );
+        })}
+      </div>
+    </SectionShell>
+  );
+}
+
+function OrientationGuide() {
+  return (
+    <SectionShell className="pt-16">
+      <div className="mb-8">
+        <div className="text-xs font-bold uppercase tracking-[0.16em] text-info-text">Orientation</div>
+        <h2 className="mt-2 text-2xl font-bold text-primary">Where to go next</h2>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-text-muted">
+          Start with context, measure what is happening, act on assigned work, or ask AI for assistance.
+        </p>
+      </div>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {orientationCards.map((card) => {
+          const Icon = card.icon;
+          return (
+            <article key={card.title} className="flex min-h-[260px] flex-col rounded-2xl border border-border-subtle bg-white p-5 shadow-sm">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-navy-50 text-primary">
+                <Icon size={20} />
+              </div>
+              <h3 className="mt-5 text-lg font-bold text-primary">{card.title}</h3>
+              <div className="mt-1 text-xs font-bold uppercase tracking-wider text-info-text">{card.subtitle}</div>
+              <p className="mt-3 flex-1 text-sm leading-6 text-text-muted">{card.description}</p>
+              <Link to={card.route} className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-primary hover:text-info-text">
+                {card.action}
+                <ArrowRight size={15} />
+              </Link>
             </article>
           );
         })}
@@ -312,6 +386,7 @@ export function Stage0OrientationPage() {
       <Stage0Hero mode={mode} marketplaceAnchorId="explore-marketplaces" updatesAnchorId="stage0-updates" />
 
       <div className="space-y-16">
+        <OrientationGuide />
         <OperatingModel />
         <MarketplaceSection />
         {returning ? <ChangedSinceLastVisit /> : <PrioritiesAndUpdates />}

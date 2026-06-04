@@ -497,14 +497,13 @@ function ActionModal({ type, onClose }: { type: ModalType; onClose: () => void }
 
 export function Stage02WorkspacePage() {
   const { mode } = useViewingMode();
-  const { activeRole, activeSegment } = useWorkspaceRole();
+  const { activeRole } = useWorkspaceRole();
   const navigate = useNavigate();
   const dataset = useMemo(() => getStage02Dataset(mode, activeRole), [mode, activeRole]);
   const [activeTab, setActiveTab] = useState<PreviewTab>('All');
   const [detail, setDetail] = useState<DetailRecord>(null);
   const [modal, setModal] = useState<ModalType>(null);
   const dashboardKpis = useMemo(() => workspaceKpis(mode, activeRole), [mode, activeRole]);
-  const firstName = activeSegment.profileName.split(' ')[0];
   const allPreviewRows = useMemo(() => [
     ...dataset.tabs.Tasks,
     ...dataset.tabs.Trackers,
@@ -518,10 +517,6 @@ export function Stage02WorkspacePage() {
     if (activeTab === 'Approvals') return row.type.toLowerCase().includes('approval') || row.title.toLowerCase().includes('approve');
     return row.type.toLowerCase().includes(activeTab.slice(0, -1).toLowerCase());
   }).slice(0, 5);
-  const headerTitle = mode === 'first-time' ? `Welcome to your workspace, ${firstName}` : `Welcome back, ${firstName}`;
-  const headerSubtitle = mode === 'first-time'
-    ? 'Let’s get you started with your onboarding, access, learning, and first work items.'
-    : 'Here’s what’s happening across your workspace.';
   const aiInsights = mode === 'first-time' ? dataset.aiInsights : [
     activity('AI-DASH-1', '3 items need your update', 'Open Workspace'),
     activity('AI-DASH-2', '2 requests are close to SLA breach', 'Review requests'),
@@ -540,13 +535,16 @@ export function Stage02WorkspacePage() {
         <div className="min-w-0 space-y-6">
           <header className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-primary">{headerTitle}</h1>
-              <p className="mt-2 text-sm font-medium text-text-secondary">{headerSubtitle}</p>
+              <div className="text-xs font-bold uppercase tracking-wider text-info-text">Orientation · Measure / visibility</div>
+              <h1 className="mt-1 text-3xl font-bold tracking-tight text-primary">Dashboard</h1>
+              <p className="mt-2 max-w-3xl text-sm font-medium leading-6 text-text-secondary">
+                Track performance, workload, SLA health, and operating trends across your scope.
+              </p>
             </div>
             <div className="flex flex-wrap gap-3">
               <button onClick={() => navigate('/workspace')} className="inline-flex h-10 items-center gap-2 rounded-button border border-border-default bg-white px-4 text-sm font-semibold text-primary shadow-sm hover:bg-surface">
                 <LayoutList size={16} />
-                Workspace
+                Open My Work
                 <ChevronRight size={14} />
               </button>
               <button onClick={() => toast.info('Workspace dashboard customisation opened.')} className="inline-flex h-10 items-center gap-2 rounded-button border border-border-default bg-white px-4 text-sm font-semibold text-primary shadow-sm hover:bg-surface">
@@ -562,9 +560,9 @@ export function Stage02WorkspacePage() {
 
           <section className="rounded-card border border-border-subtle bg-white p-5 shadow-sm">
             <div className="mb-5 flex items-center justify-between gap-3">
-              <h2 className="text-xl font-bold text-primary">Workspace Overview</h2>
+              <h2 className="text-xl font-bold text-primary">Operational Overview</h2>
               <Link to="/workspace" className="inline-flex items-center gap-2 text-sm font-bold text-info-text hover:underline">
-                View all <ChevronRight size={16} />
+                Open My Work <ChevronRight size={16} />
               </Link>
             </div>
             <div className="mb-4 flex flex-wrap gap-6 border-b border-border-subtle">

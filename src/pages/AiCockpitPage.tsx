@@ -4,9 +4,9 @@ import { toast } from 'sonner';
 import { useWorkspaceRole } from '../context/WorkspaceRoleContext';
 
 const insightCards = [
-  { title: 'Work requiring attention', value: '6', detail: 'Tasks, approvals, and requests requiring action.', icon: CheckSquare },
-  { title: 'Risks and blockers', value: '3', detail: 'SLA exposure and unresolved blockers across your work.', icon: AlertTriangle },
-  { title: 'Decision support', value: '4', detail: 'Recommended decisions based on active work signals.', icon: Lightbulb },
+  { title: 'Work summary', value: '6', detail: 'Tasks, approvals, and requests summarized for your active scope.', icon: CheckSquare },
+  { title: 'Recommendations', value: '3', detail: 'AI recommendations based on SLA exposure and unresolved blockers.', icon: AlertTriangle },
+  { title: 'Next-best actions', value: '4', detail: 'Recommended actions based on active work signals.', icon: Lightbulb },
 ];
 
 export function AiCockpitPage() {
@@ -15,11 +15,12 @@ export function AiCockpitPage() {
   return (
     <div className="min-h-[calc(100vh-64px)] bg-surface px-5 py-7 lg:px-8">
       <header className="mb-6">
-        <div className="text-xs font-bold uppercase tracking-wider text-info-text">Orientation</div>
+        <div className="text-xs font-bold uppercase tracking-wider text-info-text">Orientation · Ask / automate / assist</div>
         <h1 className="mt-1 text-3xl font-bold text-primary">AI Cockpit</h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">
-          AI-assisted work intelligence, summaries, risk signals, and decision support for the active {activeRole} role.
+          Use AI to search, summarize, recommend, and assist with your work.
         </p>
+        <p className="mt-1 text-xs font-semibold text-text-muted">Active scope: {activeRole}</p>
       </header>
 
       <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -55,7 +56,7 @@ export function AiCockpitPage() {
         <div className="rounded-card border border-border-subtle bg-white p-5 shadow-sm">
           <h2 className="flex items-center gap-2 text-lg font-bold text-primary"><MessageSquareText size={18} /> Suggested prompts</h2>
           <div className="mt-4 space-y-2">
-            {['Summarise my priorities for today', 'What approvals are waiting on me?', 'Show blockers affecting outcomes', 'Prepare my weekly status update'].map((prompt) => (
+            {['Summarise my priorities for today', 'Search for relevant platform guidance', 'Recommend my next-best actions', 'Prepare my weekly status update'].map((prompt) => (
               <button key={prompt} onClick={() => toast.info(`Prompt selected: ${prompt}`)} className="w-full rounded-lg border border-border-subtle bg-surface px-3 py-3 text-left text-sm font-semibold text-primary hover:bg-navy-50">
                 {prompt}
               </button>
