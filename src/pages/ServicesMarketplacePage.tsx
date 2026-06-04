@@ -1,22 +1,18 @@
 import React, { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { FilterBar } from '../components/FilterBar';
-import { KpiTile } from '../components/KpiTile';
 import { ServiceCard } from '../components/ServiceCard';
 import { ServiceEmptyState } from '../components/ServiceEmptyState';
-import { Search } from 'lucide-react';
 import {
   MarketplaceTopFilterBar,
 } from '../components/MarketplaceTopFilterBar';
 import type { FilterGroup } from '../components/MarketplaceFilterPanel';
-import { usePersona } from '../context/PersonaContext';
 import { useServiceLifecycle } from '../context/ServiceLifecycleContext';
 import { getMarketplaceCategoryLabel } from '../utils/marketplaceBreadcrumbs';
 
 export function ServicesMarketplacePage() {
   const [searchParams] = useSearchParams();
-  const { activePersona } = usePersona();
-  const { services, requests } = useServiceLifecycle();
+  const { services } = useServiceLifecycle();
   const breadcrumbCategory = getMarketplaceCategoryLabel(searchParams.get('from'), 'deploy');
 
   const [activeTab, setActiveTab] = useState('All');
@@ -142,34 +138,17 @@ export function ServicesMarketplacePage() {
     });
   }, [services, activeTab, search, filterValues]);
 
-  // ── KPI data ────────────────────────────────────────────────────
-  const atRiskCount = requests.filter(
-    (r) => r.slaState === 'At Risk'
-  ).length;
-
   return (
     <div className="max-w-[1280px] mx-auto px-6 py-8">
       {/* Page header */}
       <div className="mb-8">
         <div className="mb-2 text-xs font-bold uppercase tracking-wider text-text-muted">Marketplace / {breadcrumbCategory} / Services Marketplace</div>
         <h1 className="text-3xl font-bold text-primary mb-2">
-          Service Catalogue
+          Services Marketplace
         </h1>
         <p className="text-text-secondary">
           Discover and submit requests for support, access, and governance.
         </p>
-      </div>
-
-      {/* KPI strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <KpiTile label="Available Services" value={services.length.toString()} status="info" />
-        <KpiTile label="Avg Routing Time" value="< 1d" status="success" />
-        <KpiTile
-          label="At-Risk Requests"
-          value={atRiskCount.toString()}
-          status="warning"
-        />
-        <KpiTile label="Closed This Week" value="21" status="success" />
       </div>
 
       {/* Category tabs */}

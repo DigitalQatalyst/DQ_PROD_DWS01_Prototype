@@ -151,8 +151,9 @@ import { Stage02WorkspacePage } from './pages/Stage02WorkspacePage';
 import { Stage02SectionPage } from './pages/Stage02SectionPage';
 import { Stage02PerformancePage } from './pages/Stage02PerformancePage';
 import { DwsSectionPage } from './pages/DwsSectionPage';
+import { AiCockpitPage } from './pages/AiCockpitPage';
 import { AccessRestrictedPage } from './pages/AccessRestrictedPage';
-import { WorkspaceActivityPage, WorkspaceMyRequestsPage, WorkspaceWorkingSessionsPage } from './pages/WorkspaceSectionPages';
+import { WorkspaceActivityPage, WorkspaceMyRequestsPage, WorkspaceMyWorkPage, WorkspaceWorkingSessionsPage } from './pages/WorkspaceSectionPages';
 import { TasksAllPage, TasksBlockedPage, TasksClosureQualityPage, TasksCreatePage, TasksEvidencePage, TasksMyTasksPage, TasksReviewPage, TasksTemplatesPage } from './pages/TasksSectionPages';
 // A wrapper to handle route guards
 function RouteGuard({ children }: {children: React.ReactNode;}) {
@@ -163,7 +164,7 @@ function RouteGuard({ children }: {children: React.ReactNode;}) {
       <div className="p-8">
         <PlaceholderPage
           title="This view is outside the active persona scope"
-          description="Switch persona or return to Stage 0 to choose a permitted route."
+          description="Switch role or return to Home to choose a permitted route."
           phase="Prototype Shell" />
         
       </div>);
@@ -182,10 +183,13 @@ function DwsRouteGuard({ route, children }: { route: string; children: React.Rea
 }
 
 function renderDwsRoute(route: string) {
+  if (route === '/workspace') return <WorkspaceMyWorkPage />;
   if (route === '/workspace/my-tasks') return <TasksMyTasksPage />;
   if (route === '/workspace/my-requests') return <WorkspaceMyRequestsPage />;
   if (route === '/workspace/working-sessions') return <WorkspaceWorkingSessionsPage />;
   if (route === '/workspace/activity') return <WorkspaceActivityPage />;
+  if (route === '/requests/status') return <WorkspaceMyRequestsPage />;
+  if (route === '/support/service-desk') return <SupportOperationsPage />;
   if (route === '/tasks/my-tasks') return <TasksMyTasksPage />;
   if (route === '/tasks/all') return <TasksAllPage />;
   if (route === '/tasks/create') return <TasksCreatePage />;
@@ -204,6 +208,7 @@ function renderDwsRoute(route: string) {
   if (route === '/support/operations') return <SupportOperationsPage />;
   if (route === '/reports/sla-dashboard') return <SlaDashboardPage />;
   if (route === '/reports/team-unit-performance') return <TeamUnitPerformancePage />;
+  if (route === '/platform-admin') return <AdminConsolePage />;
   if (route === '/service-owner/requests') return <ServiceOwnerQueuePage />;
   if (route === '/workflow/approvals') return <ApproverQueuePage />;
   if (route === '/intelligence/service-signals') return <ExecutiveSignalPage />;
@@ -215,7 +220,7 @@ function AppRoutes() {
     <Routes>
       <Route
         path="/"
-        element={<Navigate to="/stage-0/orientation" replace />} />
+        element={<Navigate to="/home" replace />} />
       
       {/* Full Page Routes (No Layout) */}
       <Route path="/knowledge/:knowledgeId/reference" element={<RouteGuard><KnowledgeReferencePage /></RouteGuard>} />
@@ -226,11 +231,7 @@ function AppRoutes() {
       <Route element={<PortalLayout />}>
         <Route
           path="/stage-0/orientation"
-          element={
-          <RouteGuard>
-              <Stage0OrientationPage />
-            </RouteGuard>
-          } />
+          element={<Navigate to="/home" replace />} />
         
         <Route
           path="/stage-0/operating-guide"
@@ -261,8 +262,8 @@ function AppRoutes() {
 
       {/* Marketplace Layout Routes */}
       <Route element={<MarketplaceLayout />}>
-        <Route path="/marketplace" element={<Navigate to="/marketplace/discern" replace />} />
-        <Route path="/marketplaces" element={<Navigate to="/marketplace/discern" replace />} />
+        <Route path="/marketplace" element={<RouteGuard><D4MarketplaceLandingPage /></RouteGuard>} />
+        <Route path="/marketplaces" element={<Navigate to="/marketplace" replace />} />
         <Route path="/marketplaces/discern" element={<Navigate to="/marketplace/discern" replace />} />
         <Route path="/marketplaces/design" element={<Navigate to="/marketplace/design" replace />} />
         <Route path="/marketplaces/deploy" element={<Navigate to="/marketplace/deploy" replace />} />
@@ -429,7 +430,11 @@ function AppRoutes() {
       </Route>
       <Route path="/services/submit-request" element={<Navigate to="/marketplace/services" replace />} />
       <Route element={<Stage02Layout />}>
-        <Route path="/workspace" element={<Stage02WorkspacePage />} />
+        <Route path="/home" element={<Stage0OrientationPage />} />
+        <Route path="/dashboard" element={<Stage02WorkspacePage />} />
+        <Route path="/ai-cockpit" element={<AiCockpitPage />} />
+        <Route path="/help-support" element={<OperatingGuidePage />} />
+        <Route path="/workspace" element={<WorkspaceMyWorkPage />} />
         <Route path="/stage02/workspace" element={<Navigate to="/workspace" replace />} />
         <Route path="/stage02/tasks" element={<Stage02SectionPage section="tasks" />} />
         <Route path="/stage02/workflows" element={<Stage02SectionPage section="workflows" />} />
@@ -448,6 +453,7 @@ function AppRoutes() {
         <Route path="/stage02/reports" element={<Stage02SectionPage section="reports" />} />
         <Route path="/workspace/my-work" element={<Navigate to="/workspace" replace />} />
         <Route path="/workspace/notifications" element={<Navigate to="/workspace/activity" replace />} />
+        <Route path="/performance" element={<Navigate to="/performance/overview" replace />} />
         <Route path="/knowledge" element={<Navigate to="/marketplace/knowledge-discovery" replace />} />
         <Route path="/knowledge/ghc" element={<Navigate to="/marketplace/knowledge-discovery" replace />} />
         <Route path="/knowledge/6xd" element={<Navigate to="/marketplace/knowledge-discovery" replace />} />
@@ -462,7 +468,6 @@ function AppRoutes() {
         <Route path="/people/service-owners" element={<Navigate to="/marketplace/work-directory" replace />} />
         <Route path="/people/contact-points" element={<Navigate to="/marketplace/work-directory" replace />} />
         <Route path="/people/roles" element={<Navigate to="/marketplace/work-directory" replace />} />
-        <Route path="/trackers/governance-actions" element={<Navigate to="/governance/actions" replace />} />
         <Route path="/performance/team" element={<Navigate to="/reports/team-unit-performance" replace />} />
         <Route path="/performance/unit" element={<Navigate to="/reports/team-unit-performance" replace />} />
         <Route path="/workflows/centre" element={<Navigate to="/workflows/my-workflows" replace />} />

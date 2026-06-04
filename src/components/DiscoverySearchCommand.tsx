@@ -1,15 +1,19 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, X, Briefcase, FileText, BookOpen, CheckSquare, Inbox, BarChart2, User } from 'lucide-react';
-import { usePersona } from '../context/PersonaContext';
+
+interface SearchResult {
+  id: string;
+  group: string;
+  title: string;
+  subtitle: string;
+}
+
 export function DiscoverySearchCommand() {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
-  const {
-    activePersona
-  } = usePersona();
   // Mock data for search
   const groups = [{
     id: 'services',
@@ -94,7 +98,7 @@ export function DiscoverySearchCommand() {
       setQuery('');
     }
   }, [isOpen]);
-  const handleSelect = (result: any) => {
+  const handleSelect = (result: SearchResult) => {
     setIsOpen(false);
     if (result.id.startsWith('nav-')) {
       const group = groups.find((g) => g.id === result.group);
@@ -105,9 +109,9 @@ export function DiscoverySearchCommand() {
     }
   };
   return <>
-      <button onClick={() => setIsOpen(true)} className="flex items-center gap-2 h-10 px-4 rounded-button bg-surface hover:bg-navy-50 transition-colors border border-border-subtle text-text-muted w-64">
+      <button onClick={() => setIsOpen(true)} className="hidden h-10 w-52 items-center gap-2 rounded-button border border-border-subtle bg-surface px-4 text-text-muted transition-colors hover:bg-navy-50 md:flex xl:w-64">
         <Search size={16} />
-        <span className="text-sm flex-1 text-left">Discovery Search...</span>
+        <span className="flex-1 text-left text-sm">Global search...</span>
         <kbd className="hidden sm:inline-flex h-5 items-center gap-1 rounded border border-border-strong bg-white px-1.5 font-mono text-[10px] font-medium text-text-muted">
           <span className="text-xs">⌘</span>K
         </kbd>

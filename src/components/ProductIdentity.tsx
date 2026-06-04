@@ -7,7 +7,7 @@ export function ProductIdentity({
   variant = 'light'
 }: ProductIdentityProps) {
   const isDark = variant === 'dark';
-  return <Link to="/stage-0/orientation" className="flex items-baseline gap-1 hover:opacity-80 transition-opacity">
+  return <Link to="/home" className="flex items-baseline gap-1 hover:opacity-80 transition-opacity">
       <span className={`text-[18px] font-bold ${isDark ? 'text-white' : 'text-primary'}`}>
         DWS.01
       </span>

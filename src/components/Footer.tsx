@@ -19,8 +19,8 @@ export function Footer() {
           </h4>
           <ul className="space-y-2 text-sm text-[#B5C5F7]">
             <li>
-              <Link to="/stage-0/orientation" className="hover:text-white transition-colors">
-                Stage 0 Orientation
+              <Link to="/home" className="hover:text-white transition-colors">
+                Orientation
               </Link>
             </li>
             <li>

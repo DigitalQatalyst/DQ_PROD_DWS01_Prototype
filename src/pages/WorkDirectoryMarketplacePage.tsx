@@ -1,20 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { FilterBar } from '../components/FilterBar';
-import { KpiTile } from '../components/KpiTile';
 import { DetailPanel } from '../components/DetailPanel';
 import { OwnerBadge } from '../components/OwnerBadge';
 import { getUsers, getUnits, getTeams, getQueues } from '../services/platform.service';
 import { Users, Building, Inbox, User } from 'lucide-react';
 import { MarketplaceTopFilterBar } from '../components/MarketplaceTopFilterBar';
 import type { FilterGroup } from '../components/MarketplaceFilterPanel';
-import { usePersona } from '../context/PersonaContext';
 import { getMarketplaceCategoryLabel } from '../utils/marketplaceBreadcrumbs';
 export function WorkDirectoryMarketplacePage() {
   const [searchParams] = useSearchParams();
-  const {
-    activePersona
-  } = usePersona();
   const breadcrumbCategory = getMarketplaceCategoryLabel(searchParams.get('from'), 'discern');
   const [activeTab, setActiveTab] = useState('Teams');
   const [search, setSearch] = useState('');
@@ -156,7 +151,6 @@ export function WorkDirectoryMarketplacePage() {
     setFilterValues({});
     setSearch('');
   };
-  const ownersCount = users.filter((u) => u.role.includes('Lead') || u.role.includes('Master')).length;
   const renderContent = () => {
     let items: any[] = [];
     if (activeTab === 'Teams') {
@@ -228,9 +222,6 @@ export function WorkDirectoryMarketplacePage() {
     return null;
   };
   const content = renderContent();
-  const totalCount = teams.length + units.length + users.length + queues.length;
-  // Mocking visible count based on active tab for simplicity
-  const visibleCount = content ? Array.isArray(content) ? content.length : 0 : 0;
   return <div className="max-w-[1280px] mx-auto px-6 py-8">
       <div className="mb-8">
         <div className="mb-2 text-xs font-bold uppercase tracking-wider text-text-muted">Marketplace / {breadcrumbCategory} / Work Directory</div>
@@ -238,13 +229,6 @@ export function WorkDirectoryMarketplacePage() {
         <p className="text-text-secondary">
           Find teams, owners, experts, and support contacts.
         </p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <KpiTile label="Units" value={units.length.toString()} status="info" />
-        <KpiTile label="Teams" value={teams.length.toString()} status="info" />
-        <KpiTile label="Owners" value={ownersCount.toString()} status="success" />
-        <KpiTile label="Support Queues" value={queues.length.toString()} status="warning" />
       </div>
 
       <FilterBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
