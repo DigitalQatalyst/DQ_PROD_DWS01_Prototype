@@ -339,7 +339,7 @@ function Header({
     <header className="mb-5">
       <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-primary">Performance</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-primary">My Performance</h1>
           <p className="mt-2 text-sm font-medium text-text-secondary">Track your progress, grow your skills, and achieve your goals.</p>
         </div>
         <div className="flex flex-wrap gap-3">

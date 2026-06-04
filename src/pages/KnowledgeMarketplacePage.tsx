@@ -5,7 +5,7 @@ import { MarketplaceTopFilterBar } from '../components/MarketplaceTopFilterBar';
 import { useKnowledgeLifecycle } from '../context/KnowledgeLifecycleContext';
 import { KnowledgeCard } from '../components/KnowledgeCard';
 import type { FilterGroup } from '../components/MarketplaceFilterPanel';
-import { BookOpen, Link as LinkIcon, Flag, ShieldCheck, Activity, ClipboardList } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 import { KnowledgeAssetType } from '../types/knowledgeDiscovery';
 import { getMarketplaceCategoryLabel } from '../utils/marketplaceBreadcrumbs';
 
@@ -103,22 +103,7 @@ export function KnowledgeMarketplacePage() {
     return matchesTab && matchesSearch && matchesType && matchesStatus && matchesAck && matchesRecommended;
   });
 
-  // KPI calculations
   const totalAssets = assets.length;
-  const linkedToWork = assets.filter(a => a.linkedWorkCount > 0).length;
-  const outdatedFlags = assets.filter(a => a.feedbackMarker === 'Has outdated flags' || a.status === 'Needs Update').length;
-  const effectiveRefs = assets.filter(a => a.status === 'Effective').length;
-  const ackRequired = assets.filter(a => a.acknowledgementRequired).length;
-  const underReview = assets.filter(a => a.status === 'Under Review').length;
-
-  const kpis = [
-    { label: 'Total Assets',      value: totalAssets,   icon: BookOpen,       color: 'text-primary',  bg: 'bg-navy-50' },
-    { label: 'Linked to Work',    value: linkedToWork,  icon: LinkIcon,       color: 'text-success',  bg: 'bg-success/5' },
-    { label: 'Outdated / Flagged',value: outdatedFlags, icon: Flag,           color: 'text-warning',  bg: 'bg-warning/5' },
-    { label: 'Effective Refs',    value: effectiveRefs, icon: ShieldCheck,    color: 'text-success',  bg: 'bg-success/5' },
-    { label: 'Ack Required',      value: ackRequired,   icon: ClipboardList,  color: 'text-primary',  bg: 'bg-navy-50' },
-    { label: 'Under Review',      value: underReview,   icon: Activity,       color: 'text-warning',  bg: 'bg-warning/5' },
-  ];
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -136,22 +121,6 @@ export function KnowledgeMarketplacePage() {
             Browse GHC references, 6xD playbooks, guidelines, templates, and operating standards to support your work.
           </p>
         </div>
-      </div>
-
-      {/* KPI Strip */}
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        {kpis.map(kpi => {
-          const Icon = kpi.icon;
-          return (
-            <div key={kpi.label} className={`rounded-xl ${kpi.bg} px-4 py-3 ring-1 ring-inset ring-border-subtle`}>
-              <div className={`mb-1 flex items-center gap-1.5 text-xs font-semibold ${kpi.color}`}>
-                <Icon size={13} />
-              </div>
-              <p className="text-2xl font-bold text-text-primary">{kpi.value}</p>
-              <p className="mt-0.5 text-[11px] font-semibold text-text-muted">{kpi.label}</p>
-            </div>
-          );
-        })}
       </div>
 
       {/* Category Tabs */}

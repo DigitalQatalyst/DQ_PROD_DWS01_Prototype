@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FilterBar } from '../components/FilterBar';
-import { KpiTile } from '../components/KpiTile';
 import { usePersona } from '../context/PersonaContext';
 import { BarChart2, Lock, ArrowRight } from 'lucide-react';
 import {
@@ -321,9 +320,6 @@ export function AnalyticsMarketplacePage() {
       isPermitted
     });
   };
-  const visibleCount = dashboards.filter((d) =>
-  hasRouteAccess(d.route, activePersona)
-  ).length;
   return (
     <div className="max-w-[1280px] mx-auto px-6 py-8">
       <div className="mb-8">
@@ -335,17 +331,6 @@ export function AnalyticsMarketplacePage() {
           Discover permitted dashboards, SLA views, governance reports, and
           performance surfaces.
         </p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <KpiTile
-          label="Dashboards Visible"
-          value={visibleCount.toString()}
-          status="info" />
-        
-        <KpiTile label="SLA Views" value="2" status="warning" />
-        <KpiTile label="Governance Reports" value="3" status="danger" />
-        <KpiTile label="Outcome Views" value="1" status="success" />
       </div>
 
       <FilterBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
