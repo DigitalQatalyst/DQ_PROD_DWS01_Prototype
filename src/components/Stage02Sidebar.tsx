@@ -21,6 +21,7 @@ import { navSections, navigationItems, type NavIcon } from '../config/navigation
 import { hasAnyPermission } from '../config/permissions';
 import { useWorkspaceRole } from '../context/WorkspaceRoleContext';
 import { badgeCounts } from '../mocks/dwsEntities.mock';
+import { Stage03SidebarNav } from './Stage03SidebarNav';
 
 const iconMap: Record<NavIcon, LucideIcon> = {
   home: Home,
@@ -171,6 +172,8 @@ export function Stage02Sidebar({ collapsed, onCollapsedChange }: Stage02SidebarP
               </div>
             );
           })}
+
+          <Stage03SidebarNav collapsed={collapsed} />
         </nav>
 
         <button

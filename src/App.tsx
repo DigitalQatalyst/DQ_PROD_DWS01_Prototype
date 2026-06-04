@@ -150,6 +150,7 @@ import { ServiceOwnerQueuePage } from './pages/ServiceOwnerQueuePage';
 import { ApproverQueuePage } from './pages/ApproverQueuePage';
 import { ExecutiveSignalPage } from './pages/ExecutiveSignalPage';
 import { Stage02WorkspacePage } from './pages/Stage02WorkspacePage';
+import { RequestsConsolePage } from './pages/requests-console/RequestsConsolePage';
 import { Stage02SectionPage } from './pages/Stage02SectionPage';
 import { Stage02PerformancePage } from './pages/Stage02PerformancePage';
 import { DwsSectionPage } from './pages/DwsSectionPage';
@@ -392,6 +393,47 @@ function AppRoutes() {
       </Route>
       <Route element={<Stage02Layout />}>
         <Route path="/workspace" element={<Stage02WorkspacePage />} />
+        <Route path="/stage-03/requests-console" element={<RequestsConsolePage />} />
+        <Route
+          path="/stage-03/requests-console/:requestId/progress"
+          element={
+            <PlaceholderPage
+              title="Progress Update Flow"
+              description="Update fulfilment status, notes, blocker state, evidence state, and next action for the selected request."
+              phase="Stage 03 — Requests Console"
+            />
+          }
+        />
+        <Route
+          path="/stage-03/requests-console/:requestId/handoff"
+          element={
+            <PlaceholderPage
+              title="Reassign / Handoff Flow"
+              description="Move the request between owners or queues with handoff reason and notes."
+              phase="Stage 03 — Requests Console"
+            />
+          }
+        />
+        <Route
+          path="/stage-03/requests-console/:requestId/escalate"
+          element={
+            <PlaceholderPage
+              title="Escalate Request Flow"
+              description="Record escalation reason, severity, SLA impact, and resolution path."
+              phase="Stage 03 — Requests Console"
+            />
+          }
+        />
+        <Route
+          path="/stage-03/requests-console/:requestId"
+          element={
+            <PlaceholderPage
+              title="Request Fulfilment Detail"
+              description="Full fulfilment detail with requester context, SLA, evidence, linked work, and action rail."
+              phase="Stage 03 — Requests Console"
+            />
+          }
+        />
         <Route path="/stage02/workspace" element={<Navigate to="/workspace" replace />} />
         <Route path="/stage02/tasks" element={<Stage02SectionPage section="tasks" />} />
         <Route path="/stage02/workflows" element={<Stage02SectionPage section="workflows" />} />
