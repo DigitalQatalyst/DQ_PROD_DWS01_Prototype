@@ -34,6 +34,7 @@ interface SidebarItem {
   route: string;
   icon: LucideIcon;
   badge?: string;
+  helper?: string;
 }
 
 interface WorkspaceGroup {
@@ -44,10 +45,10 @@ interface WorkspaceGroup {
 }
 
 const orientationItems: SidebarItem[] = [
-  { label: 'Home', route: '/home', icon: Home },
-  { label: 'Dashboard', route: '/dashboard', icon: LayoutDashboard },
-  { label: 'My Work', route: '/workspace', icon: CheckSquare, badge: '18' },
-  { label: 'AI Cockpit', route: '/ai-cockpit', icon: Bot },
+  { label: 'Home', route: '/home', icon: Home, helper: 'Start here' },
+  { label: 'Dashboard', route: '/dashboard', icon: LayoutDashboard, helper: 'Track performance' },
+  { label: 'My Work', route: '/workspace', icon: CheckSquare, badge: '18', helper: 'Act on assigned work' },
+  { label: 'AI Cockpit', route: '/ai-cockpit', icon: Bot, helper: 'Ask, automate, and analyze' },
 ];
 
 const workspaceGroups: WorkspaceGroup[] = [
@@ -116,7 +117,12 @@ const itemClass = ({ isActive }: { isActive: boolean }) =>
 function SidebarLink({ item }: { item: SidebarItem }) {
   const Icon = item.icon;
   return (
-    <NavLink to={item.route} end={item.route === '/workspace' || item.route === '/home'} className={itemClass}>
+    <NavLink
+      to={item.route}
+      end={item.route === '/workspace' || item.route === '/home'}
+      className={itemClass}
+      title={item.helper}
+      aria-label={item.helper ? `${item.label}: ${item.helper}` : item.label}>
       {({ isActive }) => (
         <>
           {isActive && <span className="absolute bottom-1.5 left-0 top-1.5 w-0.5 rounded-r bg-secondary" />}

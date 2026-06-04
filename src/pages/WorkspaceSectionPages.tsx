@@ -72,7 +72,7 @@ interface Kpi {
 const routeMeta: Record<WorkspaceRoute, { title: string; purpose: string; primary: string; configure: string; tabs: string[]; columns: string[] }> = {
   'my-work': {
     title: 'My Work',
-    purpose: 'Personal execution cockpit across work that you own, are assigned to, or need to act on.',
+    purpose: 'Act on your assigned tasks, requests, approvals, blockers, and due items.',
     primary: 'New Work Item',
     configure: 'Configure View',
     tabs: ['All', 'Tasks', 'Requests', 'Approvals', 'Blockers', 'Updates'],
@@ -669,7 +669,9 @@ function WorkspacePageShell({ route }: { route: WorkspaceRoute }) {
     <div className="min-h-[calc(100vh-64px)] bg-surface px-5 py-6 lg:px-8">
       <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <div className="text-xs font-bold uppercase tracking-wider text-text-muted">{activeSegment.subtitle} · {mode === 'first-time' ? 'New Joiner' : 'Returning User'}</div>
+          <div className="text-xs font-bold uppercase tracking-wider text-text-muted">
+            {route === 'my-work' ? 'Orientation · Act / execution' : `${activeSegment.subtitle} · ${mode === 'first-time' ? 'New Joiner' : 'Returning User'}`}
+          </div>
           <h1 className="mt-1 text-3xl font-bold tracking-tight text-primary">{meta.title}</h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">{meta.purpose}</p>
         </div>
