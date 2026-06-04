@@ -10,7 +10,6 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Compass,
-  FileText,
   Gauge,
   GitBranch,
   Headphones,
@@ -47,7 +46,7 @@ const groups: NavGroup[] = [
     label: 'S00 · ORIENTATION',
     items: [
       { label: 'Home', route: '/stage-0/orientation', icon: Home },
-      { label: 'Operating Guide', route: '/stage-0/operating-guide', icon: FileText }
+      { label: 'Onboarding', route: '/onboarding', icon: BookOpen }
     ]
   },
   {
