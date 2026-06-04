@@ -46,7 +46,7 @@ const groups: NavGroup[] = [
   {
     label: 'S00 · ORIENTATION',
     items: [
-      { label: 'DWS.01 Landing & Orientation', route: '/stage-0/orientation', icon: Home },
+      { label: 'Home', route: '/stage-0/orientation', icon: Home },
       { label: 'Operating Guide', route: '/stage-0/operating-guide', icon: FileText }
     ]
   },
