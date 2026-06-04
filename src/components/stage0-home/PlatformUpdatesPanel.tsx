@@ -1,8 +1,10 @@
 import React from 'react';
-import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 import { platformUpdates } from '../../mocks/stage0Home.mock';
 
 export function PlatformUpdatesPanel() {
+  const navigate = useNavigate();
+
   return (
     <article className="rounded-card border border-border-subtle bg-white p-6 shadow-sm">
       <h2 className="text-lg font-semibold text-primary">Platform Updates</h2>
@@ -11,7 +13,7 @@ export function PlatformUpdatesPanel() {
           <li key={update.id}>
             <button
               type="button"
-              onClick={() => toast.info(`Opening update: ${update.title}`)}
+              onClick={() => navigate('/workspace/notifications')}
               className="w-full text-left"
             >
               <div className="text-sm font-semibold text-primary hover:text-info-text">{update.title}</div>
@@ -22,7 +24,7 @@ export function PlatformUpdatesPanel() {
       </ul>
       <button
         type="button"
-        onClick={() => toast.info('View all platform updates for this prototype.')}
+        onClick={() => navigate('/workspace/notifications')}
         className="mt-5 text-sm font-semibold text-info-text hover:underline"
       >
         View all updates

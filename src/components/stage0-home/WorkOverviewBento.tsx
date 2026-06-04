@@ -1,5 +1,7 @@
 import React from 'react';
-import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+import { stage0WorkspaceRouteForPersona } from '../../config/stage0HomeRoutes';
+import { usePersona } from '../../context/PersonaContext';
 import { workOverviewCards } from '../../mocks/stage0Home.mock';
 
 function toneClass(tone?: 'default' | 'high' | 'medium') {
@@ -9,6 +11,17 @@ function toneClass(tone?: 'default' | 'high' | 'medium') {
 }
 
 export function WorkOverviewBento() {
+  const navigate = useNavigate();
+  const { activePersona } = usePersona();
+  const workspaceRoute = stage0WorkspaceRouteForPersona(activePersona.id);
+
+  const routeForCard = (id: string) => {
+    if (id === 'assigned') return workspaceRoute;
+    if (id === 'requests') return '/workspace/my-requests';
+    if (id === 'activity') return '/workspace/notifications';
+    return '/workspace';
+  };
+
   return (
     <section className="mt-10">
       <h2 className="mb-5 text-xl font-semibold text-primary">Work Overview</h2>
@@ -41,7 +54,7 @@ export function WorkOverviewBento() {
             </ul>
             <button
               type="button"
-              onClick={() => toast.info(`${card.footerAction} opened for this prototype.`)}
+              onClick={() => navigate(routeForCard(card.id))}
               className="mt-5 text-left text-sm font-semibold text-info-text hover:underline"
             >
               {card.footerAction}

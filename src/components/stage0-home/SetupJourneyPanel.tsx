@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, ChevronLeft, ChevronRight, Circle } from 'lucide-react';
-import { toast } from 'sonner';
 import { setupJourneyCards, type SetupCardStatus } from '../../mocks/stage0Home.mock';
+import { usePersona } from '../../context/PersonaContext';
 
 const statusStyles: Record<
   SetupCardStatus,
@@ -15,6 +15,7 @@ const statusStyles: Record<
 
 export function SetupJourneyPanel() {
   const navigate = useNavigate();
+  const { activePersona } = usePersona();
   const railRef = useRef<HTMLDivElement | null>(null);
   const [activePage, setActivePage] = useState(0);
   const [canScrollPrev, setCanScrollPrev] = useState(false);
@@ -53,14 +54,14 @@ export function SetupJourneyPanel() {
       return;
     }
     if (id === 'access-tools') {
-      toast.info('Access request flow opens from the service catalogue in this prototype.');
+      navigate(['associate', 'hra', 'admin', 'support'].includes(activePersona.id) ? '/marketplaces/services' : '/workspace/my-requests');
       return;
     }
     if (id === 'first-checklist') {
-      toast.info('First action checklist drawer opened for this prototype.');
+      navigate('/workspace');
       return;
     }
-    toast.info('Workspace setup profile opened for this prototype.');
+    navigate('/workspace');
   };
 
   const scrollToCard = (index: number) => {
