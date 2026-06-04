@@ -1,21 +1,28 @@
 import React from 'react';
 import { ChevronRight, ClipboardList, ListTodo, Play } from 'lucide-react';
-import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+import { stage0WorkspaceRouteForPersona } from '../../config/stage0HomeRoutes';
+import { usePersona } from '../../context/PersonaContext';
 import { todaysPriorities } from '../../mocks/stage0Home.mock';
 
 const icons = [Play, ListTodo, ClipboardList];
 
 export function TodaysPrioritiesPanel() {
+  const navigate = useNavigate();
+  const { activePersona } = usePersona();
+  const workspaceRoute = stage0WorkspaceRouteForPersona(activePersona.id);
+  const canOpenRequestStatus = ['associate', 'hra', 'admin', 'support'].includes(activePersona.id);
+
   const handleClick = (id: string) => {
     if (id === 'resume') {
-      toast.info('Opening REQ-2401 · Access & Permission Request for this prototype.');
+      navigate(canOpenRequestStatus ? '/requests/REQ-2401/status' : '/workspace/my-requests');
       return;
     }
     if (id === 'queue') {
-      toast.info('Opening My Work action queue filtered for today.');
+      navigate(workspaceRoute);
       return;
     }
-    toast.info('Opening pending reviews and handoffs for this prototype.');
+    navigate('/workspace/notifications');
   };
 
   return (

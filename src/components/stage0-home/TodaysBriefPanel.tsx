@@ -1,9 +1,14 @@
 import React from 'react';
 import { ChevronRight, Clock, RefreshCw, Sparkles } from 'lucide-react';
-import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+import { usePersona } from '../../context/PersonaContext';
 import { todaysBrief } from '../../mocks/stage0Home.mock';
 
 export function TodaysBriefPanel() {
+  const navigate = useNavigate();
+  const { activePersona } = usePersona();
+  const canOpenRequestStatus = ['associate', 'hra', 'admin', 'support'].includes(activePersona.id);
+
   return (
     <section className="mt-4 rounded-card border border-navy-100 bg-white p-5 shadow-sm lg:p-6">
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.45fr)_1px_minmax(280px,0.9fr)_minmax(220px,0.65fr)] lg:items-center">
@@ -17,9 +22,7 @@ export function TodaysBriefPanel() {
             <div className="mt-4 flex flex-wrap gap-5">
               <button
                 type="button"
-                onClick={() =>
-                  toast.info(`Opening recommended item ${todaysBrief.recommendedItemId} for this prototype.`)
-                }
+                onClick={() => navigate(canOpenRequestStatus ? '/requests/REQ-2401/status' : '/workspace/my-requests')}
                 className="inline-flex items-center gap-2 text-sm font-bold text-secondary hover:underline"
               >
                 Open recommended item
@@ -27,7 +30,7 @@ export function TodaysBriefPanel() {
               </button>
               <button
                 type="button"
-                onClick={() => toast.info("Today's full brief drawer opened for this prototype.")}
+                onClick={() => navigate('/workspace')}
                 className="inline-flex items-center gap-2 text-sm font-bold text-info-text hover:underline"
               >
                 View full brief

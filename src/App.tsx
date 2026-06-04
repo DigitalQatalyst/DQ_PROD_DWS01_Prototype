@@ -25,6 +25,8 @@ import { PlaceholderPage } from './components/PlaceholderPage';
 import { Stage0OrientationPage } from './pages/Stage0OrientationPage';
 import { OperatingGuidePage } from './pages/OperatingGuidePage';
 import { OnboardingPage } from './pages/OnboardingPage';
+import { Stage0ActionPage } from './pages/Stage0ActionPage';
+import { Stage0PlatformUpdatesPage } from './pages/Stage0PlatformUpdatesPage';
 
 // New Knowledge Pages
 import { KnowledgeDetailPage } from './pages/KnowledgeDetailPage';
@@ -244,6 +246,27 @@ function AppRoutes() {
           element={
           <RouteGuard>
               <OnboardingPage />
+            </RouteGuard>
+          } />
+        <Route
+          path="/stage-0/action/:actionId"
+          element={
+          <RouteGuard>
+              <Stage0ActionPage />
+            </RouteGuard>
+          } />
+        <Route
+          path="/stage-0/platform-updates"
+          element={
+          <RouteGuard>
+              <Stage0PlatformUpdatesPage />
+            </RouteGuard>
+          } />
+        <Route
+          path="/stage-0/platform-updates/:updateId"
+          element={
+          <RouteGuard>
+              <Stage0PlatformUpdatesPage />
             </RouteGuard>
           } />
       </Route>
