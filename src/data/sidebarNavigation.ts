@@ -2,19 +2,16 @@ import {
   BarChart3,
   Bot,
   CheckSquare,
-  ClipboardCheck,
   Gauge,
   GitBranch,
   HelpCircle,
   Home,
   LayoutDashboard,
   LifeBuoy,
-  ListChecks,
   Network,
   Settings,
   ShieldCheck,
   Store,
-  TimerReset,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -42,37 +39,18 @@ export const orientationItems: SidebarItem[] = [
 
 export const marketplaceItem: SidebarItem = { label: 'DWS Marketplace', route: '/marketplace', icon: Store };
 
-export const standardSidebarGroups: SidebarGroup[] = [
-  {
-    label: 'Workflow Control',
-    icon: GitBranch,
-    privileged: true,
-    items: [
-      { label: 'My Workflows', route: '/workflows/my-workflows', icon: GitBranch },
-      { label: 'Pending Approvals', route: '/workflows/pending-approvals', icon: ClipboardCheck, badge: '3' },
-      { label: 'SLA Risks', route: '/workflows/sla-risks', icon: TimerReset, badge: '4' },
-    ],
-  },
-  {
-    label: 'Tracker Operations',
-    icon: Network,
-    privileged: true,
-    items: [
-      { label: 'Tracker Hub', route: '/trackers', icon: Network },
-      { label: 'My Tracker Items', route: '/trackers/my-items', icon: ListChecks, badge: '12' },
-      { label: 'Governance Actions', route: '/trackers/governance-actions', icon: ShieldCheck, badge: '5' },
-    ],
-  },
-];
+export const standardSidebarGroups: SidebarGroup[] = [];
 
 export const utilityItems: SidebarItem[] = [
   { label: 'Help / Support', route: '/help-support', icon: HelpCircle },
 ];
 
-export const featureAreaSidebarOrder = ['tasks', 'services', 'performance', 'analytics', 'governance', 'administration'];
+export const featureAreaSidebarOrder = ['tasks', 'workflows', 'tracker', 'services', 'performance', 'analytics', 'governance', 'administration'];
 
 export const featureAreaIcons: Record<string, LucideIcon> = {
   tasks: CheckSquare,
+  workflows: GitBranch,
+  tracker: Network,
   services: LifeBuoy,
   performance: Gauge,
   analytics: BarChart3,

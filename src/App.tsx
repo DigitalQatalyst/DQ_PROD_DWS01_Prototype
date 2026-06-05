@@ -488,8 +488,16 @@ function AppRoutes() {
         <Route path="/people/roles" element={<Navigate to="/marketplace/work-directory" replace />} />
         <Route path="/performance/team" element={<Navigate to="/reports/team-unit-performance" replace />} />
         <Route path="/performance/unit" element={<Navigate to="/reports/team-unit-performance" replace />} />
-        <Route path="/workflows/centre" element={<Navigate to="/workflows/my-workflows" replace />} />
-        <Route path="/workflow/approvals" element={<Navigate to="/workflows/pending-approvals" replace />} />
+        <Route path="/trackers" element={<Navigate to="/tracker" replace />} />
+        <Route path="/trackers/my-items" element={<Navigate to="/tracker/tracker-hub/my-tracker-overview" replace />} />
+        <Route path="/trackers/governance-actions" element={<Navigate to="/tracker/decision-outcome-tracker/decision-log" replace />} />
+        <Route path="/trackers/strategic-initiatives" element={<Navigate to="/tracker/decision-outcome-tracker/outcome-progress" replace />} />
+        <Route path="/trackers/workload-distribution" element={<Navigate to="/tracker/tracker-hub/team-tracker-overview" replace />} />
+        <Route path="/workflows/centre" element={<Navigate to="/workflows/workflow-centre" replace />} />
+        <Route path="/workflows/my-workflows" element={<Navigate to="/workflows/workflow-centre/active-workflows" replace />} />
+        <Route path="/workflows/pending-approvals" element={<Navigate to="/workflows/workflow-inbox/my-pending-actions" replace />} />
+        <Route path="/workflows/sla-risks" element={<Navigate to="/workflows/workflow-routing-state-control/sla-timer-trigger" replace />} />
+        <Route path="/workflow/approvals" element={<Navigate to="/workflows/workflow-inbox/my-pending-actions" replace />} />
         <Route path="/tasks/my-tasks" element={<Navigate to="/workspace/my-tasks" replace />} />
         <Route path="/tasks/all" element={<RouteGuard><TasksAllPage /></RouteGuard>} />
         <Route path="/tasks/create" element={<RouteGuard><TasksCreatePage /></RouteGuard>} />
