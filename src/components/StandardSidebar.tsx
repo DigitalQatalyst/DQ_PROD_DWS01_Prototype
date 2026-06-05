@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWorkspaceRole } from '../context/WorkspaceRoleContext';
+import { featureAreas } from '../data/featureAreas';
 
 interface SidebarItem {
   label: string;
@@ -141,13 +142,19 @@ export function StandardSidebar() {
   const { activeRole } = useWorkspaceRole();
   const canSeeAdvanced = activeRole !== 'Associate';
   const visibleGroups = useMemo(
-    () => workspaceGroups.filter((group) => !group.privileged || canSeeAdvanced),
+    () => workspaceGroups.filter((group) => group.label !== 'Performance & Growth' && group.label !== 'Governance' && (!group.privileged || canSeeAdvanced)),
     [canSeeAdvanced]
   );
   const activeGroup = visibleGroups.find((group) => group.items.some((item) => location.pathname === item.route || location.pathname.startsWith(`${item.route}/`)))?.label;
+  const activeFeatureArea = featureAreas.find((area) => location.pathname === area.route || location.pathname.startsWith(`${area.route}/`));
+  const activeFeatureGroup = activeFeatureArea?.featureGroups.find((group) => location.pathname === group.route || location.pathname.startsWith(`${group.route}/`));
   const [expanded, setExpanded] = useState<string[]>(() => {
     const stored = localStorage.getItem('dws-standard-expanded');
-    return stored ? JSON.parse(stored) : ['Work Management', 'Requests & Support', 'Performance & Growth'];
+    return stored ? JSON.parse(stored) : ['Work Management', 'Requests & Support', 'Performance'];
+  });
+  const [expandedFeatureGroups, setExpandedFeatureGroups] = useState<string[]>(() => {
+    const stored = localStorage.getItem('dws-feature-groups-expanded');
+    return stored ? JSON.parse(stored) : [];
   });
 
   useEffect(() => {
@@ -155,10 +162,32 @@ export function StandardSidebar() {
   }, [activeGroup]);
 
   useEffect(() => {
+    if (activeFeatureArea) {
+      const featureAreaLabels = featureAreas.map((area) => area.label);
+      setExpanded((current) => {
+        const nonFeatureAreas = current.filter((item) => !featureAreaLabels.includes(item));
+        return [...nonFeatureAreas, activeFeatureArea.label];
+      });
+    }
+    if (activeFeatureGroup) setExpandedFeatureGroups((current) => current.includes(activeFeatureGroup.route) ? current : [...current, activeFeatureGroup.route]);
+  }, [activeFeatureArea, activeFeatureGroup]);
+
+  useEffect(() => {
     localStorage.setItem('dws-standard-expanded', JSON.stringify(expanded));
   }, [expanded]);
 
+  useEffect(() => {
+    localStorage.setItem('dws-feature-groups-expanded', JSON.stringify(expandedFeatureGroups));
+  }, [expandedFeatureGroups]);
+
   const toggle = (label: string) => setExpanded((current) => current.includes(label) ? current.filter((item) => item !== label) : [...current, label]);
+  const toggleFeatureGroup = (route: string) => setExpandedFeatureGroups((current) => current.includes(route) ? current.filter((item) => item !== route) : [...current, route]);
+  const featureAreaIcon = (areaId: string) => {
+    if (areaId === 'analytics') return BarChart3;
+    if (areaId === 'governance') return ShieldCheck;
+    if (areaId === 'administration') return Settings;
+    return Gauge;
+  };
 
   return (
     <aside className="fixed bottom-0 left-0 top-16 z-40 hidden w-[280px] border-r border-border-subtle bg-white lg:flex lg:flex-col" aria-label="Platform navigation">
@@ -195,11 +224,60 @@ export function StandardSidebar() {
                 </div>
               );
             })}
-          </section>
-
-          <section className="space-y-0.5 border-t border-border-subtle pt-4">
-            <SidebarLink item={{ label: 'Analytics', route: '/analytics', icon: BarChart3 }} />
-            {activeRole === 'Admin' && <SidebarLink item={{ label: 'Platform Admin', route: '/platform-admin', icon: Settings }} />}
+            {featureAreas.map((area) => {
+              const Icon = featureAreaIcon(area.id);
+              const isOpen = expanded.includes(area.label);
+              const isActive = activeFeatureArea?.id === area.id;
+              return (
+                <div key={area.id}>
+                  <button
+                    onClick={() => {
+                      toggle(area.label);
+                      navigate(area.route);
+                    }}
+                    aria-expanded={isOpen}
+                    className={`flex h-10 w-full items-center gap-3 rounded-lg px-3 text-left text-sm font-bold transition-colors ${
+                      isActive ? 'bg-navy-50 text-primary' : 'text-text-secondary hover:bg-surface hover:text-primary'
+                    }`}>
+                    <Icon size={17} strokeWidth={1.7} />
+                    <span className="min-w-0 flex-1 truncate">{area.label}</span>
+                    <ChevronDown size={15} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  {isOpen && (
+                    <div className="ml-4 mt-0.5 space-y-1 border-l border-border-subtle pl-2">
+                      {area.featureGroups.map((group) => {
+                        const isGroupOpen = expandedFeatureGroups.includes(group.route);
+                        const isGroupActive = activeFeatureGroup?.route === group.route;
+                        return (
+                          <div key={group.id}>
+                            <button
+                              onClick={() => {
+                                toggleFeatureGroup(group.route);
+                                navigate(group.route);
+                              }}
+                              aria-expanded={isGroupOpen}
+                              className={`flex min-h-9 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold transition-colors ${
+                                isGroupActive ? 'bg-primary text-white shadow-sm' : 'text-text-secondary hover:bg-surface hover:text-primary'
+                              }`}>
+                              <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
+                              <span className="min-w-0 flex-1 truncate">{group.label}</span>
+                              <ChevronDown size={14} className={`shrink-0 transition-transform ${isGroupOpen ? 'rotate-180' : ''}`} />
+                            </button>
+                            {isGroupOpen && (
+                              <div className="ml-3 mt-0.5 space-y-0.5 border-l border-border-subtle pl-2">
+                                {group.features.map((feature) => (
+                                  <SidebarLink key={feature.id} item={{ label: feature.label, route: feature.route, icon: Icon }} />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </section>
         </nav>
       </div>
