@@ -21,6 +21,8 @@ import { AppLayout } from './layouts/AppLayout';
 import { Stage02Layout } from './layouts/Stage02Layout';
 import { MarketplaceLayout } from './layouts/MarketplaceLayout';
 import { PlaceholderPage } from './components/PlaceholderPage';
+import { FeatureAreaRoute, FeatureGroupRoute, FeatureWorkspaceRoute } from './components/FeatureAreaPages';
+import { featureAreaIds } from './data/featureAreas';
 import { Stage0OrientationPage } from './pages/Stage0OrientationPage';
 import { OperatingGuidePage } from './pages/OperatingGuidePage';
 import { OnboardingPage } from './pages/OnboardingPage';
@@ -439,6 +441,13 @@ function AppRoutes() {
         <Route path="/stage02/tasks" element={<Stage02SectionPage section="tasks" />} />
         <Route path="/stage02/workflows" element={<Stage02SectionPage section="workflows" />} />
         <Route path="/stage02/trackers" element={<Stage02SectionPage section="trackers" />} />
+        {featureAreaIds.map((areaId) => (
+          <React.Fragment key={areaId}>
+            <Route path={`/${areaId}`} element={<RouteGuard><FeatureAreaRoute areaId={areaId} /></RouteGuard>} />
+            <Route path={`/${areaId}/:groupId`} element={<RouteGuard><FeatureGroupRoute areaId={areaId} /></RouteGuard>} />
+            <Route path={`/${areaId}/:groupId/:featureId`} element={<RouteGuard><FeatureWorkspaceRoute areaId={areaId} /></RouteGuard>} />
+          </React.Fragment>
+        ))}
         <Route path="/stage02/performance" element={<Navigate to="/performance/overview" replace />} />
         <Route path="/stage02/performance/overview" element={<Navigate to="/performance/overview" replace />} />
         <Route path="/stage02/performance/goals" element={<Navigate to="/performance/goals" replace />} />
@@ -453,7 +462,6 @@ function AppRoutes() {
         <Route path="/stage02/reports" element={<Stage02SectionPage section="reports" />} />
         <Route path="/workspace/my-work" element={<Navigate to="/workspace" replace />} />
         <Route path="/workspace/notifications" element={<Navigate to="/workspace/activity" replace />} />
-        <Route path="/performance" element={<Navigate to="/performance/overview" replace />} />
         <Route path="/knowledge" element={<Navigate to="/marketplace/knowledge-discovery" replace />} />
         <Route path="/knowledge/ghc" element={<Navigate to="/marketplace/knowledge-discovery" replace />} />
         <Route path="/knowledge/6xd" element={<Navigate to="/marketplace/knowledge-discovery" replace />} />
