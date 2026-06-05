@@ -14,6 +14,7 @@ import { useWorkspaceRole } from './context/WorkspaceRoleContext';
 import { ServiceLifecycleProvider } from './context/ServiceLifecycleContext';
 import { TaskLifecycleProvider } from './context/TaskLifecycleContext';
 import { KnowledgeLifecycleProvider } from './context/KnowledgeLifecycleContext';
+import { RequestsConsoleProvider } from './context/RequestsConsoleContext';
 import { navigationItems, getNavigationItem } from './config/navigation';
 import { hasAnyPermission } from './config/permissions';
 import { PortalLayout } from './layouts/PortalLayout';
@@ -151,6 +152,13 @@ import { ApproverQueuePage } from './pages/ApproverQueuePage';
 import { ExecutiveSignalPage } from './pages/ExecutiveSignalPage';
 import { Stage02WorkspacePage } from './pages/Stage02WorkspacePage';
 import { RequestsConsolePage } from './pages/requests-console/RequestsConsolePage';
+import { RequestFulfilmentDetailPage } from './pages/requests-console/RequestFulfilmentDetailPage';
+import { ProgressUpdateFlow } from './pages/requests-console/ProgressUpdateFlow';
+import { ReassignHandoffFlow } from './pages/requests-console/ReassignHandoffFlow';
+import { EscalateRequestFlow } from './pages/requests-console/EscalateRequestFlow';
+import { ClosureReviewReopenFlow } from './pages/requests-console/ClosureReviewReopenFlow';
+import { RequestsHealthSignalsPage } from './pages/requests-console/RequestsHealthSignalsPage';
+import { RequestConfigReferencePage } from './pages/requests-console/RequestConfigReferencePage';
 import { Stage02SectionPage } from './pages/Stage02SectionPage';
 import { Stage02PerformancePage } from './pages/Stage02PerformancePage';
 import { DwsSectionPage } from './pages/DwsSectionPage';
@@ -396,43 +404,31 @@ function AppRoutes() {
         <Route path="/stage-03/requests-console" element={<RequestsConsolePage />} />
         <Route
           path="/stage-03/requests-console/:requestId/progress"
-          element={
-            <PlaceholderPage
-              title="Progress Update Flow"
-              description="Update fulfilment status, notes, blocker state, evidence state, and next action for the selected request."
-              phase="Stage 03 — Requests Console"
-            />
-          }
+          element={<ProgressUpdateFlow />}
         />
         <Route
           path="/stage-03/requests-console/:requestId/handoff"
-          element={
-            <PlaceholderPage
-              title="Reassign / Handoff Flow"
-              description="Move the request between owners or queues with handoff reason and notes."
-              phase="Stage 03 — Requests Console"
-            />
-          }
+          element={<ReassignHandoffFlow />}
         />
         <Route
           path="/stage-03/requests-console/:requestId/escalate"
-          element={
-            <PlaceholderPage
-              title="Escalate Request Flow"
-              description="Record escalation reason, severity, SLA impact, and resolution path."
-              phase="Stage 03 — Requests Console"
-            />
-          }
+          element={<EscalateRequestFlow />}
+        />
+        <Route
+          path="/stage-03/requests-console/:requestId/closure"
+          element={<ClosureReviewReopenFlow />}
+        />
+        <Route
+          path="/stage-03/requests-health"
+          element={<RequestsHealthSignalsPage />}
+        />
+        <Route
+          path="/stage-03/requests-console/config-reference"
+          element={<RequestConfigReferencePage />}
         />
         <Route
           path="/stage-03/requests-console/:requestId"
-          element={
-            <PlaceholderPage
-              title="Request Fulfilment Detail"
-              description="Full fulfilment detail with requester context, SLA, evidence, linked work, and action rail."
-              phase="Stage 03 — Requests Console"
-            />
-          }
+          element={<RequestFulfilmentDetailPage />}
         />
         <Route path="/stage02/workspace" element={<Navigate to="/workspace" replace />} />
         <Route path="/stage02/tasks" element={<Stage02SectionPage section="tasks" />} />
@@ -1349,8 +1345,10 @@ export function App() {
             <ServiceLifecycleProvider>
               <TaskLifecycleProvider>
                 <KnowledgeLifecycleProvider>
-                  <AppRoutes />
-                  <Toaster position="top-right" richColors />
+                  <RequestsConsoleProvider>
+                    <AppRoutes />
+                    <Toaster position="top-right" richColors />
+                  </RequestsConsoleProvider>
                 </KnowledgeLifecycleProvider>
               </TaskLifecycleProvider>
             </ServiceLifecycleProvider>

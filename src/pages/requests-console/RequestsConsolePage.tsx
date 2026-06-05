@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Download, Settings } from 'lucide-react';
 import { toast } from 'sonner';
-import { fulfilmentRequestRows } from '../../mocks/requestsConsole.mock';
+import { useRequestsConsole } from '../../context/RequestsConsoleContext';
 import { RequestsConsoleKpiStrip } from '../../components/requests-console/RequestsConsoleKpiStrip';
 import { RequestsConsoleTabs } from '../../components/requests-console/RequestsConsoleTabs';
 import { QueueViewSelector } from '../../components/requests-console/QueueViewSelector';
@@ -35,6 +35,7 @@ function hasContextFilters(
 
 export function RequestsConsolePage() {
   const navigate = useNavigate();
+  const { state } = useRequestsConsole();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<RequestsConsoleTab>('All Requests');
   const [activeQueue, setActiveQueue] = useState<QueueViewId>('all');
@@ -45,17 +46,17 @@ export function RequestsConsolePage() {
     return () => clearTimeout(timer);
   }, []);
 
-  const categories = useMemo(() => [...new Set(fulfilmentRequestRows.map((r) => r.category))], []);
-  const owners = useMemo(() => [...new Set(fulfilmentRequestRows.map((r) => r.owner))], []);
-  const queues = useMemo(() => [...new Set(fulfilmentRequestRows.map((r) => r.queue))], []);
+  const categories = useMemo(() => [...new Set(state.requests.map((r) => r.category))], [state.requests]);
+  const owners = useMemo(() => [...new Set(state.requests.map((r) => r.owner))], [state.requests]);
+  const queues = useMemo(() => [...new Set(state.requests.map((r) => r.queue))], [state.requests]);
 
   const filteredRows = useMemo(() => {
-    let rows = fulfilmentRequestRows;
+    let rows = state.requests;
     rows = filterByTab(rows, activeTab);
     rows = filterByQueueView(rows, activeQueue);
     rows = applyPanelFilters(rows, filters);
     return rows;
-  }, [activeTab, activeQueue, filters]);
+  }, [state.requests, activeTab, activeQueue, filters]);
 
   const kpiValues = useMemo(() => {
     if (!hasContextFilters(activeTab, activeQueue, filters)) {
