@@ -224,7 +224,7 @@ function matchesRecordFilter(record: FeatureRecord, filter: string) {
 }
 
 export function RecordTable({ records, areaLabel, onOpen }: { records: FeatureRecord[]; areaLabel: string; onOpen: (record: FeatureRecord) => void }) {
-  const reviewHeader = areaLabel === 'Performance' ? 'Due Date' : 'Review Date';
+  const reviewHeader = areaLabel === 'Performance' || areaLabel === 'Tasks' || areaLabel === 'Services' ? 'Due Date' : 'Review Date';
   const priorityHeader = areaLabel === 'Governance' ? 'Severity / Priority' : 'Priority';
   const columns: Column<FeatureRecord>[] = [
     { header: 'ID', accessor: (record) => <MonoId value={record.id} />, width: '110px' },
@@ -344,6 +344,7 @@ function Field({ label, value, wide = false }: { label: string; value: string; w
 export function FeatureAreaLandingPage({ area }: { area: FeatureArea }) {
   return (
     <div className="min-h-[calc(100vh-64px)] bg-surface px-5 py-6 lg:px-8">
+      <Breadcrumbs items={[{ label: area.label }]} />
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-primary">{area.label}</h1>
@@ -476,7 +477,7 @@ function OverviewTab({ area, group, feature }: { area: FeatureArea; group: Featu
       body: `${feature.label} is tracked through ${feature.sampleRecords.length} current records across ${group.label.toLowerCase()} with owner, status, risk, and evidence visibility.`,
     },
     {
-      title: area.label === 'Analytics' ? 'Trend and Health' : area.label === 'Governance' ? 'Control and Discipline Health' : area.label === 'Administration' ? 'Configuration Health' : 'Performance Health',
+      title: area.label === 'Analytics' ? 'Trend and Health' : area.label === 'Governance' ? 'Control and Discipline Health' : area.label === 'Administration' ? 'Configuration Health' : area.label === 'Tasks' ? 'Task Health' : area.label === 'Services' ? 'Service Health' : 'Performance Health',
       icon: BarChart3,
       body: `${feature.status} status with ${feature.riskLevel.toLowerCase()} risk and a primary metric of ${feature.primaryMetric}.`,
     },
@@ -517,17 +518,20 @@ export function FeatureAreaRoute({ areaId: fixedAreaId }: { areaId?: string }) {
   return area ? <FeatureAreaLandingPage area={area} /> : <Navigate to="/home" replace />;
 }
 
-export function FeatureGroupRoute({ areaId: fixedAreaId }: { areaId?: string }) {
-  const { areaId: paramAreaId, groupId } = useParams();
+export function FeatureGroupRoute({ areaId: fixedAreaId, groupId: fixedGroupId }: { areaId?: string; groupId?: string }) {
+  const { areaId: paramAreaId, groupId: paramGroupId } = useParams();
   const areaId = fixedAreaId || paramAreaId;
+  const groupId = fixedGroupId || paramGroupId;
   const area = getFeatureArea(areaId);
   const group = getFeatureGroup(areaId, groupId);
   return area && group ? <FeatureGroupPage area={area} group={group} /> : <Navigate to={`/${areaId || 'home'}`} replace />;
 }
 
-export function FeatureWorkspaceRoute({ areaId: fixedAreaId }: { areaId?: string }) {
-  const { areaId: paramAreaId, groupId, featureId } = useParams();
+export function FeatureWorkspaceRoute({ areaId: fixedAreaId, groupId: fixedGroupId, featureId: fixedFeatureId }: { areaId?: string; groupId?: string; featureId?: string }) {
+  const { areaId: paramAreaId, groupId: paramGroupId, featureId: paramFeatureId } = useParams();
   const areaId = fixedAreaId || paramAreaId;
+  const groupId = fixedGroupId || paramGroupId;
+  const featureId = fixedFeatureId || paramFeatureId;
   const area = getFeatureArea(areaId);
   const group = getFeatureGroup(areaId, groupId);
   const feature = getFeature(areaId, groupId, featureId);

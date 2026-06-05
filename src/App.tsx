@@ -22,7 +22,7 @@ import { Stage02Layout } from './layouts/Stage02Layout';
 import { MarketplaceLayout } from './layouts/MarketplaceLayout';
 import { PlaceholderPage } from './components/PlaceholderPage';
 import { FeatureAreaRoute, FeatureGroupRoute, FeatureWorkspaceRoute } from './components/FeatureAreaPages';
-import { featureAreaIds } from './data/featureAreas';
+import { featureAreas } from './data/featureAreas';
 import { Stage0OrientationPage } from './pages/Stage0OrientationPage';
 import { OperatingGuidePage } from './pages/OperatingGuidePage';
 import { OnboardingPage } from './pages/OnboardingPage';
@@ -441,11 +441,21 @@ function AppRoutes() {
         <Route path="/stage02/tasks" element={<Stage02SectionPage section="tasks" />} />
         <Route path="/stage02/workflows" element={<Stage02SectionPage section="workflows" />} />
         <Route path="/stage02/trackers" element={<Stage02SectionPage section="trackers" />} />
-        {featureAreaIds.map((areaId) => (
-          <React.Fragment key={areaId}>
-            <Route path={`/${areaId}`} element={<RouteGuard><FeatureAreaRoute areaId={areaId} /></RouteGuard>} />
-            <Route path={`/${areaId}/:groupId`} element={<RouteGuard><FeatureGroupRoute areaId={areaId} /></RouteGuard>} />
-            <Route path={`/${areaId}/:groupId/:featureId`} element={<RouteGuard><FeatureWorkspaceRoute areaId={areaId} /></RouteGuard>} />
+        {featureAreas.map((area) => (
+          <React.Fragment key={area.id}>
+            <Route path={area.route} element={<RouteGuard><FeatureAreaRoute areaId={area.id} /></RouteGuard>} />
+            {area.featureGroups.map((group) => (
+              <React.Fragment key={group.id}>
+                <Route path={group.route} element={<RouteGuard><FeatureGroupRoute areaId={area.id} groupId={group.id} /></RouteGuard>} />
+                {group.features.map((feature) => (
+                  <Route
+                    key={feature.id}
+                    path={feature.route}
+                    element={<RouteGuard><FeatureWorkspaceRoute areaId={area.id} groupId={group.id} featureId={feature.id} /></RouteGuard>}
+                  />
+                ))}
+              </React.Fragment>
+            ))}
           </React.Fragment>
         ))}
         <Route path="/stage02/performance" element={<Navigate to="/performance/overview" replace />} />
