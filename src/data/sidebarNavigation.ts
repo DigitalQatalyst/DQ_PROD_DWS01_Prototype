@@ -6,7 +6,6 @@ import {
   GitBranch,
   HelpCircle,
   Home,
-  LayoutDashboard,
   LifeBuoy,
   Network,
   Settings,
@@ -32,8 +31,6 @@ export interface SidebarGroup {
 
 export const orientationItems: SidebarItem[] = [
   { label: 'Home', route: '/home', icon: Home, helper: 'Start here' },
-  { label: 'Dashboard', route: '/dashboard', icon: LayoutDashboard, helper: 'Track performance' },
-  { label: 'My Work', route: '/workspace', icon: CheckSquare, badge: '18', helper: 'Act on assigned work' },
   { label: 'AI Cockpit', route: '/ai-cockpit', icon: Bot, helper: 'Ask, automate, and analyze' },
 ];
 
