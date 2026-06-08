@@ -152,7 +152,7 @@ export function Stage0Hero({
                     </div>
                   </div>
                   <div className="rounded-pill border border-border-default bg-white px-3 py-1 text-[11px] font-semibold text-text-muted">
-                    Stage 00
+                    Orientation
                   </div>
                 </div>
 

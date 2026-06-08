@@ -19,6 +19,7 @@ import { hasAnyPermission } from './config/permissions';
 import { PortalLayout } from './layouts/PortalLayout';
 import { AppLayout } from './layouts/AppLayout';
 import { Stage02Layout } from './layouts/Stage02Layout';
+import { Stage0ShellLayout } from './layouts/Stage0ShellLayout';
 import { MarketplaceLayout } from './layouts/MarketplaceLayout';
 import { PlaceholderPage } from './components/PlaceholderPage';
 import { FeatureAreaRoute, FeatureGroupRoute, FeatureWorkspaceRoute } from './components/FeatureAreaPages';
@@ -26,6 +27,8 @@ import { featureAreas } from './data/featureAreas';
 import { Stage0OrientationPage } from './pages/Stage0OrientationPage';
 import { OperatingGuidePage } from './pages/OperatingGuidePage';
 import { OnboardingPage } from './pages/OnboardingPage';
+import { Stage0ActionPage } from './pages/Stage0ActionPage';
+import { Stage0PlatformUpdatesPage } from './pages/Stage0PlatformUpdatesPage';
 
 // New Knowledge Pages
 import { KnowledgeDetailPage } from './pages/KnowledgeDetailPage';
@@ -229,8 +232,8 @@ function AppRoutes() {
       <Route path="/tasks/create/:templateId" element={<RouteGuard><TaskCreationWorkflowPage /></RouteGuard>} />
       <Route path="/tasks/create/from-knowledge/:knowledgeId" element={<RouteGuard><KnowledgeStartTaskPage /></RouteGuard>} />
 
-      {/* Portal Layout Routes */}
-      <Route element={<PortalLayout />}>
+      {/* Stage 0 Orientation Shell Routes */}
+      <Route element={<Stage0ShellLayout />}>
         <Route
           path="/stage-0/orientation"
           element={<Navigate to="/home" replace />} />
@@ -250,6 +253,31 @@ function AppRoutes() {
               <OnboardingPage />
             </RouteGuard>
           } />
+        <Route
+          path="/stage-0/action/:actionId"
+          element={
+          <RouteGuard>
+              <Stage0ActionPage />
+            </RouteGuard>
+          } />
+        <Route
+          path="/stage-0/platform-updates"
+          element={
+          <RouteGuard>
+              <Stage0PlatformUpdatesPage />
+            </RouteGuard>
+          } />
+        <Route
+          path="/stage-0/platform-updates/:updateId"
+          element={
+          <RouteGuard>
+              <Stage0PlatformUpdatesPage />
+            </RouteGuard>
+          } />
+      </Route>
+
+      {/* Portal Layout Routes */}
+      <Route element={<PortalLayout />}>
         
         <Route
           path="/requests/start/:serviceId"
