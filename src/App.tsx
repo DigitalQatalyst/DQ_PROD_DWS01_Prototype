@@ -160,6 +160,14 @@ import { AiCockpitPage } from './pages/AiCockpitPage';
 import { AccessRestrictedPage } from './pages/AccessRestrictedPage';
 import { WorkspaceActivityPage, WorkspaceMyRequestsPage, WorkspaceMyWorkPage, WorkspaceWorkingSessionsPage } from './pages/WorkspaceSectionPages';
 import { TasksAllPage, TasksBlockedPage, TasksClosureQualityPage, TasksCreatePage, TasksEvidencePage, TasksMyTasksPage, TasksReviewPage, TasksTemplatesPage } from './pages/TasksSectionPages';
+
+// Task Feature Area Pages (purpose-built per DWS.01 BRS)
+import { AssignedTasksPage, MyDueActionsPage, MyTaskUpdatesPage, MyTaskBlockersPage, MyWorkingSessionsPage } from './pages/tasks/MyWorkPages';
+import { KanbanViewPage, ListViewPage, CalendarViewPage, PriorityViewPage, TeamTaskViewPage } from './pages/tasks/TaskBoardPages';
+import { CreateTaskPage, SelectTaskTemplatePage, DefinePurposeOutputPage, AssignOwnerContributorsPage, SetSlaDueDatePage } from './pages/tasks/TaskCreationPages';
+import { ProgressUpdatePage, EvidenceUploadPage, CommentThreadPage, BlockerUpdatePage, TaskHistoryTimelinePage } from './pages/tasks/TaskUpdatesPages';
+import { RequestClosureReviewPage, ClosureChecklistPage, EvidenceReviewPage, ReturnForReworkPage, CloseTaskPage } from './pages/tasks/ClosureReviewPages';
+
 // A wrapper to handle route guards
 function RouteGuard({ children }: {children: React.ReactNode;}) {
   const { activePersona, hasRouteAccess } = usePersona();
@@ -185,6 +193,37 @@ function DwsRouteGuard({ route, children }: { route: string; children: React.Rea
     return <AccessRestrictedPage />;
   }
   return <>{children}</>;
+}
+
+function renderTaskFeaturePage(route: string): React.ReactNode | null {
+  const taskFeatureMap: Record<string, React.ReactNode> = {
+    '/tasks/my-work/assigned-tasks': <AssignedTasksPage />,
+    '/tasks/my-work/my-due-actions': <MyDueActionsPage />,
+    '/tasks/my-work/my-updates': <MyTaskUpdatesPage />,
+    '/tasks/my-work/my-blockers': <MyTaskBlockersPage />,
+    '/tasks/my-work/my-working-sessions': <MyWorkingSessionsPage />,
+    '/tasks/task-board/kanban-view': <KanbanViewPage />,
+    '/tasks/task-board/list-view': <ListViewPage />,
+    '/tasks/task-board/calendar-view': <CalendarViewPage />,
+    '/tasks/task-board/priority-view': <PriorityViewPage />,
+    '/tasks/task-board/team-task-view': <TeamTaskViewPage />,
+    '/tasks/task-creation-templates/create-task': <CreateTaskPage />,
+    '/tasks/task-creation-templates/select-task-template': <SelectTaskTemplatePage />,
+    '/tasks/task-creation-templates/define-purpose-output': <DefinePurposeOutputPage />,
+    '/tasks/task-creation-templates/assign-owner-contributors': <AssignOwnerContributorsPage />,
+    '/tasks/task-creation-templates/set-sla-due-date': <SetSlaDueDatePage />,
+    '/tasks/task-updates-evidence/progress-update': <ProgressUpdatePage />,
+    '/tasks/task-updates-evidence/evidence-upload-link': <EvidenceUploadPage />,
+    '/tasks/task-updates-evidence/comment-thread': <CommentThreadPage />,
+    '/tasks/task-updates-evidence/blocker-update': <BlockerUpdatePage />,
+    '/tasks/task-updates-evidence/task-history-timeline': <TaskHistoryTimelinePage />,
+    '/tasks/closure-reviews/request-closure-review': <RequestClosureReviewPage />,
+    '/tasks/closure-reviews/closure-checklist': <ClosureChecklistPage />,
+    '/tasks/closure-reviews/evidence-review': <EvidenceReviewPage />,
+    '/tasks/closure-reviews/return-for-rework': <ReturnForReworkPage />,
+    '/tasks/closure-reviews/close-task': <CloseTaskPage />,
+  };
+  return taskFeatureMap[route] || null;
 }
 
 function renderDwsRoute(route: string) {
@@ -475,13 +514,16 @@ function AppRoutes() {
             {area.featureGroups.map((group) => (
               <React.Fragment key={group.id}>
                 <Route path={group.route} element={<RouteGuard><FeatureGroupRoute areaId={area.id} groupId={group.id} /></RouteGuard>} />
-                {group.features.map((feature) => (
-                  <Route
-                    key={feature.id}
-                    path={feature.route}
-                    element={<RouteGuard><FeatureWorkspaceRoute areaId={area.id} groupId={group.id} featureId={feature.id} /></RouteGuard>}
-                  />
-                ))}
+                {group.features.map((feature) => {
+                  const taskPage = area.id === 'tasks' ? renderTaskFeaturePage(feature.route) : null;
+                  return (
+                    <Route
+                      key={feature.id}
+                      path={feature.route}
+                      element={<RouteGuard>{taskPage || <FeatureWorkspaceRoute areaId={area.id} groupId={group.id} featureId={feature.id} />}</RouteGuard>}
+                    />
+                  );
+                })}
               </React.Fragment>
             ))}
           </React.Fragment>
