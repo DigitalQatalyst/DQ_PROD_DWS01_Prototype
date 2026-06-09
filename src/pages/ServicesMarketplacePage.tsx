@@ -36,20 +36,6 @@ export function ServicesMarketplacePage() {
   // ── Filter groups (spec §7 ServiceFilterPanel) ───────────────────
   const filterGroups: FilterGroup[] = [
     {
-      id: 'category',
-      label: 'Service Category',
-      options: [
-        { value: 'HRA Requests', label: 'HRA Requests' },
-        { value: 'IT & Access', label: 'IT & Access' },
-        { value: 'Platform Support', label: 'Platform Support' },
-        { value: 'Knowledge / Content', label: 'Knowledge / Content' },
-        { value: 'Task / Workflow', label: 'Task / Workflow' },
-        { value: 'Admin Requests', label: 'Admin Requests' },
-        { value: 'Approvals', label: 'Approvals' },
-        { value: 'Escalations', label: 'Escalations' },
-      ],
-    },
-    {
       id: 'sla',
       label: 'SLA',
       options: [
@@ -116,9 +102,6 @@ export function ServicesMarketplacePage() {
         s.category.toLowerCase().includes(q);
 
       // Panel filters
-      const matchesCategory =
-        !filterValues.category?.length ||
-        filterValues.category.includes(s.category);
       const matchesSla =
         !filterValues.sla?.length || filterValues.sla.includes(s.sla);
       const matchesApproval =
@@ -130,7 +113,6 @@ export function ServicesMarketplacePage() {
       return (
         matchesTab &&
         matchesSearch &&
-        matchesCategory &&
         matchesSla &&
         matchesApproval &&
         matchesOwner
