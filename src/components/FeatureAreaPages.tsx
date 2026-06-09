@@ -525,6 +525,9 @@ export function FeatureGroupRoute({ areaId: fixedAreaId, groupId: fixedGroupId }
   const groupId = fixedGroupId || paramGroupId;
   const area = getFeatureArea(areaId);
   const group = getFeatureGroup(areaId, groupId);
+  if (area?.id === 'tasks' && group?.features[0]?.route) {
+    return <Navigate to={group.features[0].route} replace />;
+  }
   return area && group ? <FeatureGroupPage area={area} group={group} /> : <Navigate to={`/${areaId || 'home'}`} replace />;
 }
 

@@ -92,12 +92,13 @@ export function StandardSidebar() {
             const GroupIcon = featureGroupIcons[area.id]?.[group.id] || fallbackFeatureGroupIcon;
             const isGroupOpen = expandedFeatureGroups.includes(group.route);
             const isGroupActive = activeFeatureGroup?.route === group.route;
+            const groupClickRoute = area.id === 'tasks' ? group.features[0]?.route || group.route : group.route;
             return (
               <div key={group.id}>
                 <button
                   onClick={() => {
                     toggleFeatureGroup(group.route);
-                    navigate(group.route);
+                    navigate(groupClickRoute);
                   }}
                   aria-expanded={isGroupOpen}
                   className={`sidebar-feature-group ${isGroupActive ? 'sidebar-feature-group-active' : ''}`}>
