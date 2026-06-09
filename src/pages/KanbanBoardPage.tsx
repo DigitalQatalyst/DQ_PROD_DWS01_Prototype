@@ -130,7 +130,7 @@ export function KanbanBoardPage() {
         <Breadcrumb items={['Tasks', 'Task Board', 'Kanban View']} />
         <div className="flex flex-col gap-4 2xl:flex-row 2xl:items-start 2xl:justify-between">
           <div>
-            <div className="dq-overline mb-2">TASK BOARD WORKSPACE</div>
+            {/* <div className="dq-overline mb-2">TASK BOARD WORKSPACE</div> */}
             <h1 className="dq-page-title">Kanban View</h1>
             <p className="mt-2 max-w-4xl text-sm leading-6 text-primary">
               Visualize and manage tasks across workflow stages. Track priority, blockers, due dates, and evidence readiness at a glance.
