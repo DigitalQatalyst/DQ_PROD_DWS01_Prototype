@@ -67,10 +67,10 @@ export function ServiceCard({ service }: ServiceCardProps) {
 
         {/* CTA */}
         <button
-          onClick={handleStartRequest}
+          onClick={handleCardClick}
           className="w-full py-2.5 bg-secondary text-white font-semibold text-sm rounded-button hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
         >
-          Start Request
+          View Details
           <ArrowRight size={16} strokeWidth={1.5} />
         </button>
       </div>
