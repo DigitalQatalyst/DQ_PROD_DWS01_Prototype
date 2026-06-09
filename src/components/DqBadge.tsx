@@ -23,10 +23,11 @@ function statusTone(status: string): BadgeTone {
 }
 
 function priorityTone(priority: Priority): BadgeTone {
-  if (priority === 'Critical') return 'danger';
-  if (priority === 'High') return 'danger';
-  if (priority === 'Medium') return 'warning';
-  if (priority === 'Low') return 'success';
+  const normalized = String(priority).toLowerCase();
+  if (normalized.includes('critical')) return 'danger';
+  if (normalized.includes('high')) return 'danger';
+  if (normalized.includes('medium')) return 'warning';
+  if (normalized.includes('low')) return 'success';
   return 'gray';
 }
 

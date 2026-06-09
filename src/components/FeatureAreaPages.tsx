@@ -18,6 +18,7 @@ import {
   type FeatureRecord,
   type RiskLevel,
 } from '../data/featureAreas';
+import { AssignedWorkPage } from '../pages/AssignedWorkPage';
 
 const filterChips = ['All', 'Healthy', 'Needs Attention', 'At Risk', 'Recently Updated'];
 const workspaceTabs = ['Overview', 'Records', 'Insights', 'Actions', 'Evidence'];
@@ -535,5 +536,6 @@ export function FeatureWorkspaceRoute({ areaId: fixedAreaId, groupId: fixedGroup
   const area = getFeatureArea(areaId);
   const group = getFeatureGroup(areaId, groupId);
   const feature = getFeature(areaId, groupId, featureId);
+  if (feature?.route === '/tasks/my-work/assigned-tasks') return <AssignedWorkPage />;
   return area && group && feature ? <FeatureWorkspacePage area={area} group={group} feature={feature} /> : <Navigate to={`/${areaId || 'home'}`} replace />;
 }
