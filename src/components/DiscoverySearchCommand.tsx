@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, X, Briefcase, FileText, BookOpen, CheckSquare, Inbox, BarChart2, User } from 'lucide-react';
 
@@ -109,21 +109,21 @@ export function DiscoverySearchCommand() {
     }
   };
   return <>
-      <button onClick={() => setIsOpen(true)} className="hidden h-10 w-52 items-center gap-2 rounded-button border border-border-subtle bg-surface px-4 text-text-muted transition-colors hover:bg-navy-50 md:flex xl:w-64">
-        <Search size={16} />
+      <button onClick={() => setIsOpen(true)} className="hidden h-10 w-52 items-center gap-2 rounded-button border-[1.5px] border-border-default bg-white px-4 text-text-muted transition-colors hover:bg-navy-50 focus:outline-none focus:ring-4 focus:ring-primary/10 md:flex xl:w-64">
+        <Search size={16} strokeWidth={1.5} />
         <span className="flex-1 text-left text-sm">Global search...</span>
         <kbd className="hidden sm:inline-flex h-5 items-center gap-1 rounded border border-border-strong bg-white px-1.5 font-mono text-[10px] font-medium text-text-muted">
           <span className="text-xs">⌘</span>K
         </kbd>
       </button>
 
-      {isOpen && <div className="fixed inset-0 z-[200] bg-navy-950/20 backdrop-blur-sm flex items-start justify-center pt-[10vh]">
-          <div className="w-full max-w-[720px] bg-white rounded-modal shadow-2xl border border-border-default overflow-hidden flex flex-col max-h-[80vh]" onClick={(e) => e.stopPropagation()}>
+      {isOpen && <div className="fixed inset-0 z-[200] bg-primary/20 backdrop-blur-sm flex items-start justify-center pt-[10vh]">
+          <div className="w-full max-w-[720px] bg-white rounded-modal shadow-xl border border-border-default overflow-hidden flex flex-col max-h-[80vh]" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center px-4 border-b border-border-subtle">
-              <Search size={20} className="text-text-muted shrink-0" />
+              <Search size={20} strokeWidth={1.5} className="text-text-muted shrink-0" />
               <input ref={inputRef} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search services, templates, knowledge, tasks..." className="flex-1 h-14 px-4 bg-transparent outline-none text-text-primary placeholder:text-text-muted" />
               <button onClick={() => setIsOpen(false)} className="p-2 rounded-button hover:bg-surface text-text-muted hover:text-text-primary">
-                <X size={20} />
+                <X size={20} strokeWidth={1.5} />
               </button>
             </div>
 
@@ -140,7 +140,7 @@ export function DiscoverySearchCommand() {
                   navigate(group.route);
                 }} className="flex items-center gap-3 p-3 rounded-button hover:bg-surface text-left">
                           <div className="text-primary">
-                            <Icon size={18} />
+                            <Icon size={18} strokeWidth={1.5} />
                           </div>
                           <span className="text-sm font-medium text-text-primary">
                             {group.label}

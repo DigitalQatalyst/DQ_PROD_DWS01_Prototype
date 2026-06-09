@@ -33,7 +33,7 @@ function SidebarLink({ item }: { item: SidebarItem }) {
       {({ isActive }) => (
         <>
           {isActive && <span className="absolute bottom-1.5 left-0 top-1.5 w-0.5 rounded-r bg-secondary" />}
-          <Icon size={17} strokeWidth={1.7} className="shrink-0" />
+          <Icon size={17} strokeWidth={1.5} className="shrink-0" />
           <span className="min-w-0 flex-1 truncate">{item.label}</span>
           {item.badge && <span className="rounded-pill bg-primary px-1.5 py-0.5 text-[10px] font-bold text-white">{item.badge}</span>}
         </>
@@ -101,9 +101,9 @@ export function StandardSidebar() {
                   }}
                   aria-expanded={isGroupOpen}
                   className={`sidebar-feature-group ${isGroupActive ? 'sidebar-feature-group-active' : ''}`}>
-                  <GroupIcon size={17} strokeWidth={1.7} className="shrink-0" />
+                  <GroupIcon size={17} strokeWidth={1.5} className="shrink-0" />
                   <span className="min-w-0 flex-1 truncate">{group.label}</span>
-                  <ChevronDown size={14} className={`shrink-0 transition-transform ${isGroupOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown size={14} strokeWidth={1.5} className={`shrink-0 transition-transform ${isGroupOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {isGroupOpen && (
                   <div className="sidebar-child-line">
@@ -125,12 +125,12 @@ export function StandardSidebar() {
       <div className="flex-1 overflow-y-auto px-3 py-4">
         <nav className="space-y-5">
           <section>
-            <h2 className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-info-text">ORIENTATION</h2>
+            <h2 className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-secondary">ORIENTATION</h2>
             <div className="space-y-0.5">{orientationItems.map((item) => <SidebarLink key={item.route} item={item} />)}</div>
           </section>
 
           <section className="border-t border-border-subtle pt-4">
-            <h2 className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-info-text">MARKETPLACE</h2>
+            <h2 className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-secondary">MARKETPLACE</h2>
             <SidebarLink item={marketplaceItem} />
           </section>
 
@@ -148,7 +148,7 @@ export function StandardSidebar() {
             navigate('/home');
           }}
           className="mt-0.5 flex min-h-9 w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-text-muted hover:bg-surface hover:text-primary">
-          <LogOut size={17} strokeWidth={1.7} />
+          <LogOut size={17} strokeWidth={1.5} />
           Logout
         </button>
       </div>
