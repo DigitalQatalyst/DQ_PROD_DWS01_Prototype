@@ -65,6 +65,7 @@ import { MyBlockersPage } from './pages/MyBlockersPage';
 import { KnowledgeContextPage } from './pages/KnowledgeContextPage';
 import { AssignedWorkPage } from './pages/AssignedWorkPage';
 import { TaskDetailsPage } from './pages/TaskDetailsPage';
+import { KanbanBoardPage } from './pages/KanbanBoardPage';
 import { RequestStatusPage } from './pages/RequestStatusPage';
 import { EvidenceQueuePage } from './pages/EvidenceQueuePage';
 import { ClosureRequestsPage } from './pages/ClosureRequestsPage';
@@ -444,6 +445,7 @@ function AppRoutes() {
         <Route path="/stage02/trackers" element={<Stage02SectionPage section="trackers" />} />
         <Route path="/tasks/my-work/assigned-tasks" element={<RouteGuard><AssignedWorkPage /></RouteGuard>} />
         <Route path="/tasks/my-work/assigned-tasks/:taskId" element={<RouteGuard><TaskDetailsPage /></RouteGuard>} />
+        <Route path="/tasks/task-board/kanban-view" element={<RouteGuard><KanbanBoardPage /></RouteGuard>} />
         {featureAreas.map((area) => (
           <React.Fragment key={area.id}>
             <Route path={area.route} element={<RouteGuard><FeatureAreaRoute areaId={area.id} /></RouteGuard>} />
