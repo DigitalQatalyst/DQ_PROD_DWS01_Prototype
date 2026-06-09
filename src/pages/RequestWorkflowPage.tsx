@@ -150,7 +150,7 @@ export function RequestWorkflowPage() {
 
   return (
     <div className="bg-[#F6F6FB] min-h-screen pb-12">
-      <div className="max-w-4xl mx-auto px-6 pt-8">
+      <div className="max-w-[1440px] mx-auto px-6 lg:px-8 pt-8">
 
         {/* Breadcrumbs */}
         <div className="flex items-center gap-2 text-[12px] font-medium text-text-muted mb-6">
@@ -163,6 +163,7 @@ export function RequestWorkflowPage() {
           <span className="text-text-primary">Start Request</span>
         </div>
 
+        <div className="max-w-4xl">
         <RequestWorkflowContextBanner service={service} />
 
         <div className="bg-white rounded-card border border-border-default shadow-sm overflow-hidden">
@@ -309,6 +310,7 @@ export function RequestWorkflowPage() {
             </div>
           </div>
 
+        </div>
         </div>
       </div>
     </div>

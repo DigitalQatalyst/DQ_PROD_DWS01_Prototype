@@ -16,7 +16,7 @@ import { TaskLifecycleProvider } from "./context/TaskLifecycleContext";
 import { KnowledgeLifecycleProvider } from "./context/KnowledgeLifecycleContext";
 import { navigationItems, getNavigationItem } from "./config/navigation";
 import { hasAnyPermission } from "./config/permissions";
-import { PortalLayout } from "./layouts/PortalLayout";
+
 import { AppLayout } from "./layouts/AppLayout";
 import { Stage02Layout } from "./layouts/Stage02Layout";
 import { Stage0ShellLayout } from "./layouts/Stage0ShellLayout";
@@ -508,8 +508,8 @@ function AppRoutes() {
         />
       </Route>
 
-      {/* Portal Layout Routes */}
-      <Route element={<PortalLayout />}>
+      {/* Marketplace Layout Routes */}
+      <Route element={<MarketplaceLayout />}>
         <Route
           path="/requests/start/:serviceId"
           element={
@@ -518,10 +518,6 @@ function AppRoutes() {
             </RouteGuard>
           }
         />
-      </Route>
-
-      {/* Marketplace Layout Routes */}
-      <Route element={<MarketplaceLayout />}>
         <Route
           path="/marketplace"
           element={
