@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Check, ChevronDown } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -47,10 +47,10 @@ export function RoleSelector() {
         onClick={() => setIsOpen((current) => !current)}
         aria-expanded={isOpen}
         aria-label="Select prototype validation role"
-        className="flex h-10 items-center gap-2 rounded-button border border-border-default bg-white px-3 text-left hover:bg-surface">
+        className="flex h-10 items-center gap-2 rounded-button border-[1.5px] border-border-default bg-white px-3 text-left hover:bg-navy-50 focus:outline-none focus:ring-4 focus:ring-primary/10">
         <span className="hidden text-[10px] font-bold uppercase tracking-wider text-text-muted xl:block">Role</span>
         <span className="max-w-36 truncate text-xs font-bold text-primary">{activeRole}</span>
-        <ChevronDown size={14} className="text-text-muted" />
+        <ChevronDown size={14} strokeWidth={1.5} className="text-text-muted" />
       </button>
 
       {isOpen && (
@@ -66,7 +66,7 @@ export function RoleSelector() {
                 role === activeRole ? 'bg-navy-50 font-bold text-primary' : 'text-text-secondary hover:bg-surface hover:text-primary'
               }`}>
               <span>{role}</span>
-              {role === activeRole && <Check size={15} className="text-success" />}
+              {role === activeRole && <Check size={15} strokeWidth={1.5} className="text-success" />}
             </button>
           ))}
         </div>

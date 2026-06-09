@@ -58,12 +58,13 @@
   --radius-pill: 9999px;
   --space-grid: 8px;
   --space-card: 24px;
-  --shadow-sm: 0 1px 2px rgba(3,15,53,0.05), 0 1px 3px rgba(3,15,53,0.08);
-  --shadow-md: 0 4px 6px rgba(3,15,53,0.07), 0 2px 4px rgba(3,15,53,0.06);
-  --shadow-lg: 0 10px 15px rgba(3,15,53,0.10), 0 4px 6px rgba(3,15,53,0.07);
+  --shadow-sm: 0 1px 3px rgba(3,15,53,0.06), 0 1px 2px rgba(3,15,53,0.04);
+  --shadow-md: 0 1px 3px rgba(3,15,53,0.06), 0 1px 2px rgba(3,15,53,0.04);
+  --shadow-lg: 0 8px 16px rgba(3,15,53,0.10), 0 2px 6px rgba(3,15,53,0.06);
   --shadow-xl: 0 20px 25px rgba(3,15,53,0.15), 0 10px 10px rgba(3,15,53,0.04);
   --focus-ring-orange: 0 0 0 3px rgba(251,85,53,0.30);
-  --focus-ring-navy: 0 0 0 3px rgba(3,15,53,0.18);
+  --focus-ring-navy: 0 0 0 3px rgba(3,15,53,0.12);
+  --focus-ring-error: 0 0 0 3px rgba(220,38,38,0.15);
   /* Required by shadcn/ui components if used */
   --background: 0 0% 100%;
   --foreground: 222.2 84% 4.9%;
@@ -101,12 +102,176 @@
     @apply bg-background text-foreground font-sans;
     color: var(--color-text-primary);
     background-color: var(--color-background);
+    font-feature-settings: "tnum" 0;
+  }
+
+  .lucide {
+    stroke-width: 1.5;
   }
 }
 
 @layer components {
+  .dq-overline {
+    @apply text-[11px] font-semibold uppercase tracking-[0.16em] text-secondary;
+  }
+
+  .dq-page-title {
+    @apply text-[32px] font-bold leading-tight text-primary md:text-[36px];
+  }
+
+  .dq-section-title {
+    @apply text-xl font-semibold text-primary;
+  }
+
+  .dq-card-title {
+    @apply text-base font-semibold text-primary;
+  }
+
+  .dq-card {
+    @apply rounded-card border border-border-default bg-white p-6 shadow-sm;
+  }
+
+  .dq-card-clickable {
+    @apply transition duration-200 hover:-translate-y-0.5 hover:shadow-lg;
+  }
+
+  .dq-btn {
+    @apply inline-flex h-10 items-center justify-center gap-2 rounded-button px-4 text-sm font-medium transition focus:outline-none active:translate-y-px;
+  }
+
+  .dq-btn-orange {
+    @apply bg-secondary text-white hover:bg-orange-600 focus:ring-4;
+    box-shadow: none;
+  }
+
+  .dq-btn-orange:focus {
+    box-shadow: var(--focus-ring-orange);
+  }
+
+  .dq-btn-orange:active {
+    background-color: #e04020;
+  }
+
+  .dq-btn-navy {
+    @apply bg-primary text-white hover:bg-[#050e4a];
+  }
+
+  .dq-btn-navy:focus {
+    box-shadow: 0 0 0 3px rgba(3,15,53,0.25);
+  }
+
+  .dq-btn-outline {
+    @apply border-[1.5px] border-primary bg-transparent text-primary hover:bg-navy-50;
+  }
+
+  .dq-btn-outline:focus,
+  .dq-btn-ghost:focus,
+  .dq-icon-btn:focus {
+    box-shadow: var(--focus-ring-navy);
+  }
+
+  .dq-btn-ghost {
+    @apply bg-transparent text-primary hover:bg-surface;
+  }
+
+  .dq-icon-btn {
+    @apply inline-flex h-10 w-10 items-center justify-center rounded-button border border-border-default bg-white text-primary transition hover:bg-navy-50 focus:outline-none active:translate-y-px;
+  }
+
+  .dq-input {
+    @apply h-10 w-full rounded-input border-[1.5px] border-border-default bg-white px-3 text-sm text-primary outline-none transition placeholder:text-text-muted focus:border-primary;
+  }
+
+  .dq-input:focus,
+  .dq-textarea:focus {
+    box-shadow: var(--focus-ring-navy);
+  }
+
+  .dq-textarea {
+    @apply w-full resize-y rounded-input border-[1.5px] border-border-default bg-white px-3 py-2 text-sm leading-6 text-primary outline-none transition placeholder:text-text-muted focus:border-primary;
+  }
+
+  .dq-input-error {
+    @apply border-danger;
+  }
+
+  .dq-input-error:focus {
+    box-shadow: var(--focus-ring-error);
+  }
+
+  .dq-field-label {
+    @apply mb-1.5 block text-xs font-bold text-primary;
+  }
+
+  .dq-chip {
+    @apply rounded-pill border border-border-default bg-surface px-3 py-1.5 text-xs font-semibold text-primary transition hover:bg-navy-50 focus:outline-none;
+  }
+
+  .dq-chip:focus {
+    box-shadow: var(--focus-ring-navy);
+  }
+
+  .dq-chip-add {
+    @apply border-dashed border-primary bg-white;
+  }
+
+  .dq-badge {
+    @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-pill border px-2.5 py-1 text-xs font-semibold;
+  }
+
+  .dq-badge-dot {
+    @apply h-1.5 w-1.5 rounded-full;
+    background-color: currentColor;
+  }
+
+  .dq-badge-success {
+    @apply bg-success-surface text-success-text;
+    border-color: rgba(22, 163, 74, 0.30);
+  }
+
+  .dq-badge-warning {
+    @apply bg-warning-surface text-warning-text;
+    border-color: rgba(217, 119, 6, 0.30);
+  }
+
+  .dq-badge-danger {
+    @apply bg-danger-surface text-danger-text;
+    border-color: rgba(220, 38, 38, 0.30);
+  }
+
+  .dq-badge-info {
+    @apply bg-info-surface text-info-text;
+    border-color: rgba(37, 99, 235, 0.30);
+  }
+
+  .dq-badge-gray {
+    @apply border-border-default bg-surface text-text-muted;
+  }
+
+  .dq-badge-orange {
+    @apply bg-orange-50 text-secondary;
+    border-color: rgba(251, 85, 53, 0.30);
+  }
+
+  .dq-badge-navy {
+    @apply bg-navy-50 text-primary;
+    border-color: rgba(3, 15, 53, 0.20);
+  }
+
+  .dq-tabs {
+    @apply border-b border-border-default bg-white;
+  }
+
+  .dq-tab {
+    @apply relative min-h-12 px-4 text-sm font-semibold text-text-muted transition hover:text-primary focus:outline-none;
+  }
+
+  .dq-tab-active {
+    @apply text-primary after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:rounded-full after:bg-secondary;
+  }
+
   .sidebar-feature-area {
-    @apply mt-3 px-3 pt-2 text-[11px] font-bold uppercase tracking-[0.16em] text-info-text;
+    @apply mt-3 px-3 pt-2 text-[11px] font-bold uppercase tracking-[0.16em] text-secondary;
   }
 
   .sidebar-feature-group {

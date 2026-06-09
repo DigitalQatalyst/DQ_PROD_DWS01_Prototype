@@ -1,37 +1,39 @@
-import React from 'react';
 import { ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 interface KpiTileProps {
   label: string;
   value: string;
   trend?: string;
   status: 'success' | 'warning' | 'danger' | 'info';
+  icon?: LucideIcon;
 }
 export function KpiTile({
   label,
   value,
   trend,
-  status
+  status,
+  icon: Icon
 }: KpiTileProps) {
   const statusConfig = {
     success: {
-      bg: 'bg-success-surface',
+      iconBg: 'bg-success-surface',
       text: 'text-success-text',
-      border: 'border-success/20'
+      accent: 'border-t-success'
     },
     warning: {
-      bg: 'bg-warning-surface',
+      iconBg: 'bg-warning-surface',
       text: 'text-warning-text',
-      border: 'border-warning/20'
+      accent: 'border-t-warning'
     },
     danger: {
-      bg: 'bg-danger-surface',
+      iconBg: 'bg-danger-surface',
       text: 'text-danger-text',
-      border: 'border-danger/20'
+      accent: 'border-t-danger'
     },
     info: {
-      bg: 'bg-info-surface',
+      iconBg: 'bg-info-surface',
       text: 'text-info-text',
-      border: 'border-info/20'
+      accent: 'border-t-info'
     }
   };
   const config = statusConfig[status];
@@ -48,15 +50,22 @@ export function KpiTile({
       Icon = ArrowDownRight;
       colorClass = 'text-danger';
     }
-    return <div className={`flex items-center gap-1 text-xs font-medium ${colorClass}`}>
-        <Icon size={14} />
+    return <div className={`mt-3 flex items-center gap-1 text-xs font-semibold ${colorClass}`}>
+        <Icon size={14} strokeWidth={1.5} />
         {trend}
       </div>;
   };
-  return <div className={`min-h-[108px] rounded-card p-4 flex flex-col justify-between border ${config.border} ${config.bg} transition-shadow hover:shadow-sm`}>
-      <div className="text-sm font-medium text-text-secondary">{label}</div>
-      <div className="flex items-end justify-between mt-2">
-        <div className={`text-2xl font-bold ${config.text}`}>{value}</div>
+  return <div className={`dq-card dq-card-clickable min-h-[124px] border-t-4 ${config.accent}`}>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <div className="text-[13px] font-semibold text-primary">{label}</div>
+          <div className="mt-2 text-3xl font-bold tabular-nums text-primary">{value}</div>
+        </div>
+        {Icon && <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-button ${config.iconBg} ${config.text}`}>
+            <Icon size={20} strokeWidth={1.5} />
+          </div>}
+      </div>
+      <div>
         {renderTrend()}
       </div>
     </div>;
