@@ -21,7 +21,6 @@ import {
   Inbox,
   Kanban,
   LayoutTemplate,
-  LayoutDashboard,
   LibraryBig,
   LineChart,
   ListChecks,
@@ -61,14 +60,6 @@ export const orientationNav: NavItem[] = [
     route: '/home',
     icon: Home,
     helper: 'Start here',
-    visibleTo: ALL_ROLES,
-  },
-  {
-    id: 'dashboard',
-    label: 'Dashboard',
-    route: '/dashboard',
-    icon: LayoutDashboard,
-    helper: 'Track performance',
     visibleTo: ALL_ROLES,
   },
   {
