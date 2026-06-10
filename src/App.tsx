@@ -71,6 +71,10 @@ import { MyUpdatesPage } from "./pages/MyUpdatesPage";
 import { MyBlockersPage } from "./pages/MyBlockersPage";
 import { KnowledgeContextPage } from "./pages/KnowledgeContextPage";
 import { AssignedWorkPage } from "./pages/AssignedWorkPage";
+import { TaskDetailsPage } from './pages/TaskDetailsPage';
+import { KanbanBoardPage } from './pages/KanbanBoardPage';
+import { TrackerHubPage } from './pages/TrackerHubPage';
+import { ActiveTrackerPage } from './pages/ActiveTrackerPage';
 import { RequestStatusPage } from "./pages/RequestStatusPage";
 import { EvidenceQueuePage } from "./pages/EvidenceQueuePage";
 import { ClosureRequestsPage } from "./pages/ClosureRequestsPage";
@@ -817,6 +821,11 @@ function AppRoutes() {
           path="/stage02/trackers"
           element={<Stage02SectionPage section="trackers" />}
         />
+        <Route path="/tasks/my-work/assigned-tasks" element={<RouteGuard><AssignedWorkPage /></RouteGuard>} />
+        <Route path="/tasks/my-work/assigned-tasks/:taskId" element={<RouteGuard><TaskDetailsPage /></RouteGuard>} />
+        <Route path="/tasks/task-board/kanban-view" element={<RouteGuard><KanbanBoardPage /></RouteGuard>} />
+        <Route path="/tracker/tracker-hub" element={<RouteGuard><TrackerHubPage /></RouteGuard>} />
+        <Route path="/tracker/active-tracker/:trackerSlug" element={<RouteGuard><ActiveTrackerPage /></RouteGuard>} />
         {featureAreas.map((area) => (
           <React.Fragment key={area.id}>
             <Route
@@ -1197,6 +1206,22 @@ function AppRoutes() {
             </RouteGuard>
           }
         />
+
+        <Route
+          path="/tasks/my-work/assigned-tasks"
+          element={
+          <RouteGuard>
+              <AssignedWorkPage />
+            </RouteGuard>
+          } />
+
+        <Route
+          path="/tasks/my-work/assigned-tasks/:taskId"
+          element={
+          <RouteGuard>
+              <TaskDetailsPage />
+            </RouteGuard>
+          } />
 
         <Route
           path="/workspace/evidence-queue"

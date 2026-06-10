@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getUsers } from '../services/platform.service';
 import type { User } from '../types/platform';
 interface OwnerBadgeProps {
@@ -26,7 +26,7 @@ export function OwnerBadge({
   }
   const initials = user.name.split(' ').map((n) => n[0]).join('').substring(0, 2);
   return <div className="flex items-center gap-2">
-      <div className="w-6 h-6 rounded-full bg-navy-100 text-primary flex items-center justify-center shrink-0">
+      <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center shrink-0">
         <span className="text-[10px] font-bold">{initials}</span>
       </div>
       <div className="flex flex-col">
