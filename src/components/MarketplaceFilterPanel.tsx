@@ -23,6 +23,7 @@ export interface MarketplaceFilterPanelProps {
   visibleCount: number;
   onClearAll: () => void;
   persona?: string;
+  hideSearch?: boolean;
 }
 export function MarketplaceFilterPanel(props: MarketplaceFilterPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -54,14 +55,16 @@ export function MarketplaceFilterPanel(props: MarketplaceFilterPanelProps) {
               Clear all
             </button>}
         </div>
-        <p className="text-[12px] text-[#5F607F] leading-snug mb-4">
+        <p className={`text-[12px] text-[#5F607F] leading-snug ${props.hideSearch ? '' : 'mb-4'}`}>
           {props.helperText}
         </p>
 
-        <div className="relative">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5F607F]" strokeWidth={1.5} />
-          <input type="text" value={props.searchValue} onChange={(e) => props.onSearchChange(e.target.value)} placeholder={props.searchPlaceholder} className="w-full h-9 pl-9 pr-3 rounded-[8px] border border-[#D8D9E6] text-[13px] text-[#111118] placeholder:text-[#5F607F] focus:outline-none focus:border-[#030F35] focus:ring-1 focus:ring-[#030F35]" />
-        </div>
+        {!props.hideSearch && (
+          <div className="relative">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5F607F]" strokeWidth={1.5} />
+            <input type="text" value={props.searchValue} onChange={(e) => props.onSearchChange(e.target.value)} placeholder={props.searchPlaceholder} className="w-full h-9 pl-9 pr-3 rounded-[8px] border border-[#D8D9E6] text-[13px] text-[#111118] placeholder:text-[#5F607F] focus:outline-none focus:border-[#030F35] focus:ring-1 focus:ring-[#030F35]" />
+          </div>
+        )}
 
         {props.onRecommendedChange && <label className="flex items-center gap-2 mt-4 cursor-pointer group">
             <div className={`w-4 h-4 rounded-[4px] border flex items-center justify-center transition-colors ${props.recommendedActive ? 'bg-[#030F35] border-[#030F35]' : 'border-[#D8D9E6] bg-white group-hover:border-[#030F35]'}`}>

@@ -1,79 +1,55 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Briefcase, Clock, Users, ArrowRight } from 'lucide-react';
-import { CategoryBadge } from './CategoryBadge';
-import { ApprovalBadge } from './ApprovalBadge';
+import { ShieldAlert } from 'lucide-react';
 import type { Service } from '../types/serviceLifecycle';
+import { getServiceCategoryCode } from '../utils/serviceCategoryCodes';
+import { MarketplaceCatalogCard } from './marketplace/MarketplaceCatalogCard';
 
-interface ServiceCardProps {
-  service: Service;
-}
+function RiskBadge({ risk }: { risk: Service['risk'] }) {
+  if (risk === 'Standard') return null;
 
-export function ServiceCard({ service }: ServiceCardProps) {
-  const navigate = useNavigate();
+  const config = {
+    'Governance-sensitive': {
+      label: 'Governed',
+      className: 'bg-warning-surface text-warning-text',
+    },
+    'Review-sensitive': {
+      label: 'Review',
+      className: 'bg-info-surface text-info-text',
+    },
+    'At Risk': {
+      label: 'Priority',
+      className: 'bg-orange-100 text-orange-600',
+    },
+  }[risk];
 
-  const handleCardClick = () => {
-    navigate(`/marketplaces/services/${service.id}`);
-  };
-
-  const handleStartRequest = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    navigate(`/requests/start/${service.id}`);
-  };
+  if (!config) return null;
 
   return (
-    <div
-      onClick={handleCardClick}
-      className="flex flex-col bg-white rounded-card border border-border-default overflow-hidden hover:shadow-md hover:border-border-strong transition-all cursor-pointer group"
+    <span
+      className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-mono text-[9.5px] font-semibold uppercase tracking-[0.16em] ${config.className}`}
     >
-      {/* Top accent line */}
-      <div className="h-1 w-full bg-secondary" />
+      {risk === 'At Risk' && <ShieldAlert className="h-3 w-3" />}
+      {config.label}
+    </span>
+  );
+}
 
-      <div className="flex flex-col flex-1 p-6">
-        {/* Header: icon + category */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="w-10 h-10 rounded-full bg-navy-50 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
-            <Briefcase size={20} strokeWidth={1.5} />
-          </div>
-          <CategoryBadge category={service.category} />
-        </div>
+export function ServiceCard({ service }: { service: Service }) {
+  const navigate = useNavigate();
 
-        {/* Title */}
-        <h3 className="text-lg font-semibold text-primary mb-2 leading-snug">
-          {service.title}
-        </h3>
-
-        {/* Description */}
-        <p className="text-sm text-text-secondary mb-5 flex-1 leading-relaxed line-clamp-2">
-          {service.description}
-        </p>
-
-        {/* Metadata */}
-        <div className="space-y-2 mb-5">
-          <div className="flex items-center gap-2 text-xs text-text-muted">
-            <Clock size={14} strokeWidth={1.5} />
-            <span>SLA: {service.sla}</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-text-muted">
-            <Users size={14} strokeWidth={1.5} />
-            <span>{service.owner}</span>
-          </div>
-        </div>
-
-        {/* Badges */}
-        <div className="flex flex-wrap items-center gap-2 mb-5">
-          <ApprovalBadge requirement={service.approval} label={service.approvalDetail} />
-        </div>
-
-        {/* CTA */}
-        <button
-          onClick={handleCardClick}
-          className="w-full py-2.5 bg-secondary text-white font-semibold text-sm rounded-button hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
-        >
-          View Details
-          <ArrowRight size={16} strokeWidth={1.5} />
-        </button>
-      </div>
-    </div>
+  return (
+    <MarketplaceCatalogCard
+      typeLabel={`${getServiceCategoryCode(service.category)} · Service`}
+      metaLabel={`SLA ${service.sla} · ${service.approval}`}
+      title={service.title}
+      description={service.description}
+      footerId={service.id}
+      badge={<RiskBadge risk={service.risk} />}
+      highlighted={
+        service.risk !== 'Standard' || service.approval === 'Required'
+      }
+      onClick={() => navigate(`/marketplace/services/${service.id}`)}
+    />
   );
 }

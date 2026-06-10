@@ -54,7 +54,10 @@ import { KnowledgeMarketplacePage } from "./pages/KnowledgeMarketplacePage";
 import { WorkDirectoryMarketplacePage } from "./pages/WorkDirectoryMarketplacePage";
 import { AnalyticsMarketplacePage } from "./pages/AnalyticsMarketplacePage";
 import { MarketplaceFeedbackPage } from "./pages/MarketplaceFeedbackPage";
-import { D4MarketplaceLandingPage } from "./pages/D4MarketplaceLandingPage";
+import {
+  DEFAULT_MARKETPLACE_ROUTE,
+  MARKETPLACE_4D_DESTINATIONS,
+} from "./config/marketplace4dRoutes";
 import { MyTasksPage } from "./pages/MyTasksPage";
 import { MyRequestsPage } from "./pages/MyRequestsPage";
 import { AgileExecutionPage } from "./pages/AgileExecutionPage";
@@ -524,11 +527,7 @@ function AppRoutes() {
         />
         <Route
           path="/marketplace"
-          element={
-            <RouteGuard>
-              <D4MarketplaceLandingPage />
-            </RouteGuard>
-          }
+          element={<Navigate to={DEFAULT_MARKETPLACE_ROUTE} replace />}
         />
         <Route
           path="/marketplaces"
@@ -621,35 +620,19 @@ function AppRoutes() {
 
         <Route
           path="/marketplace/discern"
-          element={
-            <RouteGuard>
-              <D4MarketplaceLandingPage />
-            </RouteGuard>
-          }
+          element={<Navigate to={MARKETPLACE_4D_DESTINATIONS.discern} replace />}
         />
         <Route
           path="/marketplace/design"
-          element={
-            <RouteGuard>
-              <D4MarketplaceLandingPage />
-            </RouteGuard>
-          }
+          element={<Navigate to={MARKETPLACE_4D_DESTINATIONS.design} replace />}
         />
         <Route
           path="/marketplace/deploy"
-          element={
-            <RouteGuard>
-              <D4MarketplaceLandingPage />
-            </RouteGuard>
-          }
+          element={<Navigate to={MARKETPLACE_4D_DESTINATIONS.deploy} replace />}
         />
         <Route
           path="/marketplace/drive"
-          element={
-            <RouteGuard>
-              <D4MarketplaceLandingPage />
-            </RouteGuard>
-          }
+          element={<Navigate to={MARKETPLACE_4D_DESTINATIONS.drive} replace />}
         />
 
         <Route
