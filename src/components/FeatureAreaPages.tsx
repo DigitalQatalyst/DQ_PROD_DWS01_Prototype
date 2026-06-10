@@ -20,6 +20,7 @@ import {
 } from '../data/featureAreas';
 import { AssignedWorkPage } from '../pages/AssignedWorkPage';
 import { KanbanBoardPage } from '../pages/KanbanBoardPage';
+import { TrackerHubPage } from '../pages/TrackerHubPage';
 
 const filterChips = ['All', 'Healthy', 'Needs Attention', 'At Risk', 'Recently Updated'];
 const workspaceTabs = ['Overview', 'Records', 'Insights', 'Actions', 'Evidence'];
@@ -526,6 +527,7 @@ export function FeatureGroupRoute({ areaId: fixedAreaId, groupId: fixedGroupId }
   const groupId = fixedGroupId || paramGroupId;
   const area = getFeatureArea(areaId);
   const group = getFeatureGroup(areaId, groupId);
+  if (group?.route === '/tracker/tracker-hub') return <TrackerHubPage />;
   if (area?.id === 'tasks' && group?.features[0]?.route) {
     return <Navigate to={group.features[0].route} replace />;
   }
