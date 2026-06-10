@@ -62,7 +62,7 @@ export const orientationItems: SidebarItem[] = [
   { label: 'AI Cockpit', route: '/ai-cockpit', icon: Bot, helper: 'Ask, automate, and analyze' },
 ];
 
-export const marketplaceItem: SidebarItem = { label: 'DWS Marketplace', route: '/marketplace', icon: Store };
+export const marketplaceItem: SidebarItem = { label: '4D Marketplaces', route: '/marketplace', icon: Store };
 
 export const standardSidebarGroups: SidebarGroup[] = [];
 

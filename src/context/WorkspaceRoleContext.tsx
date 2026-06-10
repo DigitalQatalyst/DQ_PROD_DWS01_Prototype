@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { getRoleFamily, getSegmentForRole, segments, type RoleFamily, type SegmentDefinition, type WorkspaceRole } from '../config/segments';
+import { normalizeRole, getDefaultRouteForRole, type DwsRole } from '../types/roles';
 
 interface WorkspaceRoleContextType {
   activeRole: WorkspaceRole;
@@ -9,6 +10,9 @@ interface WorkspaceRoleContextType {
   activeSegment: SegmentDefinition;
   segments: SegmentDefinition[];
   roleFamily: RoleFamily;
+  // DWS role system
+  activeDwsRole: DwsRole;
+  getDefaultRoute: (role: WorkspaceRole) => string;
 }
 
 const roles = segments.map((segment) => segment.label);
@@ -22,13 +26,28 @@ export function WorkspaceRoleProvider({ children }: { children: React.ReactNode 
   });
   const activeSegment = getSegmentForRole(activeRole);
   const roleFamily = getRoleFamily(activeRole);
+  const activeDwsRole = normalizeRole(activeRole);
+
+  const getDefaultRoute = (role: WorkspaceRole): string => {
+    const dwsRole = normalizeRole(role);
+    return getDefaultRouteForRole(dwsRole);
+  };
 
   useEffect(() => {
     localStorage.setItem('dws-active-role', activeRole);
   }, [activeRole]);
 
   return (
-    <WorkspaceRoleContext.Provider value={{ activeRole, setActiveRole, roles, activeSegment, segments, roleFamily }}>
+    <WorkspaceRoleContext.Provider value={{ 
+      activeRole, 
+      setActiveRole, 
+      roles, 
+      activeSegment, 
+      segments, 
+      roleFamily,
+      activeDwsRole,
+      getDefaultRoute,
+    }}>
       {children}
     </WorkspaceRoleContext.Provider>
   );

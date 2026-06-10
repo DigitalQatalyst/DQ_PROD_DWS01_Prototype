@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Lock, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWorkspaceRole } from '../context/WorkspaceRoleContext';
-import { getDefaultRouteForRole } from '../config/navigation';
 
 function RequestAccessModal({ onClose }: { onClose: () => void }) {
   const [reason, setReason] = useState('');
@@ -49,7 +48,7 @@ function RequestAccessModal({ onClose }: { onClose: () => void }) {
 
 export function AccessRestrictedPage() {
   const [requestOpen, setRequestOpen] = useState(false);
-  const { activeRole } = useWorkspaceRole();
+  const { activeRole, getDefaultRoute } = useWorkspaceRole();
   const navigate = useNavigate();
 
   return (
@@ -64,7 +63,7 @@ export function AccessRestrictedPage() {
         </p>
         <div className="mt-7 flex flex-wrap justify-center gap-3">
           <button onClick={() => setRequestOpen(true)} className="rounded-button bg-primary px-4 py-2 text-sm font-bold text-white">Request Access</button>
-          <button onClick={() => navigate(getDefaultRouteForRole(activeRole))} className="rounded-button border border-border-default bg-white px-4 py-2 text-sm font-bold text-primary hover:bg-surface">Back to My Workspace</button>
+          <button onClick={() => navigate(getDefaultRoute(activeRole))} className="rounded-button border border-border-default bg-white px-4 py-2 text-sm font-bold text-primary hover:bg-surface">Back to My Workspace</button>
         </div>
       </section>
       {requestOpen && <RequestAccessModal onClose={() => setRequestOpen(false)} />}

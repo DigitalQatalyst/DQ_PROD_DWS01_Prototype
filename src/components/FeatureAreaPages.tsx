@@ -18,6 +18,9 @@ import {
   type FeatureRecord,
   type RiskLevel,
 } from '../data/featureAreas';
+import { AssignedWorkPage } from '../pages/AssignedWorkPage';
+import { KanbanBoardPage } from '../pages/KanbanBoardPage';
+import { TrackerHubPage } from '../pages/TrackerHubPage';
 
 const filterChips = ['All', 'Healthy', 'Needs Attention', 'At Risk', 'Recently Updated'];
 const workspaceTabs = ['Overview', 'Records', 'Insights', 'Actions', 'Evidence'];
@@ -524,6 +527,10 @@ export function FeatureGroupRoute({ areaId: fixedAreaId, groupId: fixedGroupId }
   const groupId = fixedGroupId || paramGroupId;
   const area = getFeatureArea(areaId);
   const group = getFeatureGroup(areaId, groupId);
+  if (group?.route === '/tracker/tracker-hub') return <TrackerHubPage />;
+  if (area?.id === 'tasks' && group?.features[0]?.route) {
+    return <Navigate to={group.features[0].route} replace />;
+  }
   return area && group ? <FeatureGroupPage area={area} group={group} /> : <Navigate to={`/${areaId || 'home'}`} replace />;
 }
 
@@ -535,5 +542,7 @@ export function FeatureWorkspaceRoute({ areaId: fixedAreaId, groupId: fixedGroup
   const area = getFeatureArea(areaId);
   const group = getFeatureGroup(areaId, groupId);
   const feature = getFeature(areaId, groupId, featureId);
+  if (feature?.route === '/tasks/my-work/assigned-tasks') return <AssignedWorkPage />;
+  if (feature?.route === '/tasks/task-board/kanban-view') return <KanbanBoardPage />;
   return area && group && feature ? <FeatureWorkspacePage area={area} group={group} feature={feature} /> : <Navigate to={`/${areaId || 'home'}`} replace />;
 }
