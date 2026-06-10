@@ -1,37 +1,45 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { FilterBar } from '../components/FilterBar';
-import { MarketplaceTopFilterBar } from '../components/MarketplaceTopFilterBar';
 import { useKnowledgeLifecycle } from '../context/KnowledgeLifecycleContext';
 import { KnowledgeCard } from '../components/KnowledgeCard';
+import { MarketplaceCatalogLayout } from '../components/marketplace/MarketplaceCatalogLayout';
 import type { FilterGroup } from '../components/MarketplaceFilterPanel';
-import { BookOpen } from 'lucide-react';
 import { KnowledgeAssetType } from '../types/knowledgeDiscovery';
 import { getMarketplaceCategoryLabel } from '../utils/marketplaceBreadcrumbs';
+import { ALL_TAB_ID } from '../utils/marketplaceCatalogTabs';
 
-const ALL_TABS: { label: string; value: KnowledgeAssetType | 'All' }[] = [
-  { label: 'All',                value: 'All' },
-  { label: 'Guidelines',         value: 'Guideline' },
-  { label: 'Operating Standards',value: 'Operating Standard' },
-  { label: 'Process References', value: 'Process Reference' },
-  { label: 'Evidence Standards', value: 'Evidence Standard' },
-  { label: 'Playbooks',          value: 'Playbook' },
-  { label: 'Templates',          value: 'Template' },
-  { label: 'GHC References',     value: 'GHC Reference' },
-  { label: '6xD References',     value: '6xD Reference' },
-  { label: 'Workspace Guides',   value: 'Workspace Guide' },
-  { label: 'Learning References',value: 'Learning Reference' },
+const KNOWLEDGE_TABS: { id: KnowledgeAssetType | typeof ALL_TAB_ID; label: string }[] = [
+  { id: ALL_TAB_ID, label: 'All' },
+  { id: 'Guideline', label: 'Guidelines' },
+  { id: 'Operating Standard', label: 'Operating Standards' },
+  { id: 'Process Reference', label: 'Process References' },
+  { id: 'Evidence Standard', label: 'Evidence Standards' },
+  { id: 'Playbook', label: 'Playbooks' },
+  { id: 'Template', label: 'Templates' },
+  { id: 'GHC Reference', label: 'GHC References' },
+  { id: '6xD Reference', label: '6xD References' },
+  { id: 'Workspace Guide', label: 'Workspace Guides' },
+  { id: 'Learning Reference', label: 'Learning References' },
 ];
 
-const TAB_LABELS = ALL_TABS.map(t => t.label);
+const TAB_DESCRIPTIONS: Partial<Record<string, string>> = {
+  Playbook: 'Step-by-step operating playbooks for repeatable work patterns.',
+  Template: 'Reusable content and document templates for governed delivery.',
+  'GHC Reference': 'Global Handbook of Compliance references and standards.',
+  '6xD Reference': '6xD lifecycle references aligned to DWS execution stages.',
+};
 
 export function KnowledgeMarketplacePage() {
   const [searchParams] = useSearchParams();
   const { assets, isLoading } = useKnowledgeLifecycle();
-  const breadcrumbCategory = getMarketplaceCategoryLabel(searchParams.get('from'), 'discern');
-  const initialTabLabel = searchParams.get('focus') === 'playbooks-templates' ? 'Playbooks' : 'All';
+  const breadcrumbCategory = getMarketplaceCategoryLabel(
+    searchParams.get('from'),
+    'discern',
+  );
+  const initialTab =
+    searchParams.get('focus') === 'playbooks-templates' ? 'Playbook' : ALL_TAB_ID;
 
-  const [activeTabLabel, setActiveTabLabel] = useState(initialTabLabel);
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [search, setSearch] = useState('');
   const [filterValues, setFilterValues] = useState<Record<string, string[]>>({});
   const [recommendedActive, setRecommendedActive] = useState(false);
@@ -40,140 +48,127 @@ export function KnowledgeMarketplacePage() {
     {
       id: 'type',
       label: 'Knowledge Type',
-      options: [
-        { value: 'Guideline',          label: 'Guideline' },
-        { value: 'Operating Standard',  label: 'Operating Standard' },
-        { value: 'Process Reference',   label: 'Process Reference' },
-        { value: 'Evidence Standard',   label: 'Evidence Standard' },
-        { value: 'Playbook',            label: 'Playbook' },
-        { value: 'Template',            label: 'Template' },
-        { value: 'GHC Reference',       label: 'GHC Reference' },
-        { value: '6xD Reference',       label: '6xD Reference' },
-        { value: 'Workspace Guide',     label: 'Workspace Guide' },
-        { value: 'Learning Reference',  label: 'Learning Reference' },
-      ]
+      options: KNOWLEDGE_TABS.filter((tab) => tab.id !== ALL_TAB_ID).map(
+        (tab) => ({
+          value: tab.id,
+          label: tab.label,
+        }),
+      ),
     },
     {
       id: 'status',
       label: 'Status',
       options: [
-        { value: 'Effective',     label: 'Effective' },
-        { value: 'Under Review',  label: 'Under Review' },
-        { value: 'Draft',         label: 'Draft' },
-        { value: 'Needs Update',  label: 'Needs Update' },
-        { value: 'Deprecated',    label: 'Deprecated' },
-      ]
+        { value: 'Effective', label: 'Effective' },
+        { value: 'Under Review', label: 'Under Review' },
+        { value: 'Draft', label: 'Draft' },
+        { value: 'Needs Update', label: 'Needs Update' },
+        { value: 'Deprecated', label: 'Deprecated' },
+      ],
     },
     {
       id: 'ack',
       label: 'Acknowledgement',
       options: [
-        { value: 'required',     label: 'Required' },
+        { value: 'required', label: 'Required' },
         { value: 'not-required', label: 'Not Required' },
-      ]
-    }
+      ],
+    },
   ];
 
+  const categoryTabs = useMemo(
+    () =>
+      KNOWLEDGE_TABS.map((tab) => ({
+        id: tab.id,
+        label: tab.label,
+        count:
+          tab.id === ALL_TAB_ID
+            ? assets.length
+            : assets.filter((asset) => asset.type === tab.id).length,
+      })),
+    [assets],
+  );
+
   const handleFilterChange = (groupId: string, values: string[]) => {
-    setFilterValues(prev => ({ ...prev, [groupId]: values }));
+    setFilterValues((prev) => ({ ...prev, [groupId]: values }));
   };
 
   const handleClearAll = () => {
     setFilterValues({});
     setSearch('');
     setRecommendedActive(false);
-    setActiveTabLabel('All');
+    setActiveTab(ALL_TAB_ID);
   };
 
-  const activeTab = ALL_TABS.find(t => t.label === activeTabLabel);
-
-  const filteredAssets = assets.filter(a => {
-    const matchesTab = !activeTab || activeTab.value === 'All' || a.type === activeTab.value;
-    const matchesSearch = search === '' ||
-      a.title.toLowerCase().includes(search.toLowerCase()) ||
-      a.tags.some(t => t.toLowerCase().includes(search.toLowerCase())) ||
-      a.summary.toLowerCase().includes(search.toLowerCase());
-    const matchesType = !filterValues.type?.length || filterValues.type.includes(a.type);
-    const matchesStatus = !filterValues.status?.length || filterValues.status.includes(a.status);
-    const matchesAck = !filterValues.ack?.length || (
-      (filterValues.ack.includes('required') && a.acknowledgementRequired) ||
-      (filterValues.ack.includes('not-required') && !a.acknowledgementRequired)
+  const filteredAssets = assets.filter((asset) => {
+    const matchesTab = activeTab === ALL_TAB_ID || asset.type === activeTab;
+    const query = search.toLowerCase();
+    const matchesSearch =
+      !query ||
+      asset.title.toLowerCase().includes(query) ||
+      asset.tags.some((tag) => tag.toLowerCase().includes(query)) ||
+      asset.summary.toLowerCase().includes(query) ||
+      asset.id.toLowerCase().includes(query);
+    const matchesType =
+      !filterValues.type?.length || filterValues.type.includes(asset.type);
+    const matchesStatus =
+      !filterValues.status?.length ||
+      filterValues.status.includes(asset.status);
+    const matchesAck =
+      !filterValues.ack?.length ||
+      (filterValues.ack.includes('required') && asset.acknowledgementRequired) ||
+      (filterValues.ack.includes('not-required') &&
+        !asset.acknowledgementRequired);
+    const matchesRecommended = !recommendedActive || asset.linkedWorkCount > 5;
+    return (
+      matchesTab &&
+      matchesSearch &&
+      matchesType &&
+      matchesStatus &&
+      matchesAck &&
+      matchesRecommended
     );
-    const matchesRecommended = !recommendedActive || a.linkedWorkCount > 5;
-    return matchesTab && matchesSearch && matchesType && matchesStatus && matchesAck && matchesRecommended;
   });
 
-  const totalAssets = assets.length;
+  const activeTabMeta = KNOWLEDGE_TABS.find((tab) => tab.id === activeTab);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <div className="mb-2 text-xs font-bold uppercase tracking-wider text-text-muted">Marketplace / {breadcrumbCategory} / Knowledge Discovery</div>
-          <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight text-primary">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
-              <BookOpen size={24} />
-            </div>
-            Knowledge Hub
-          </h1>
-          <p className="mt-2 text-base text-text-secondary">
-            Browse GHC references, 6xD playbooks, guidelines, templates, and operating standards to support your work.
-          </p>
-        </div>
+    <MarketplaceCatalogLayout
+      eyebrow={`DWS.01 / ${breadcrumbCategory} / Knowledge Discovery`}
+      title="Governed discovery for playbooks, standards, and workspace knowledge."
+      lede="Organised through the DWS knowledge taxonomy — guidelines, operating standards, playbooks, templates, and references. Discovery layer only; opening an asset shows applicability, status, and linked work context."
+      searchPlaceholder="Search by title, tag, keyword, or asset ID…"
+      search={search}
+      onSearchChange={setSearch}
+      itemLabel="assets"
+      totalCount={assets.length}
+      visibleCount={filteredAssets.length}
+      tabs={categoryTabs}
+      activeTabId={activeTab}
+      onTabChange={setActiveTab}
+      toneStrip={
+        activeTabMeta && activeTab !== ALL_TAB_ID && TAB_DESCRIPTIONS[activeTab]
+          ? { code: activeTab, description: TAB_DESCRIPTIONS[activeTab]! }
+          : null
+      }
+      filterHelperText="Refine by knowledge type, lifecycle status, and acknowledgement requirement."
+      filterGroups={filterGroups}
+      filterValues={filterValues}
+      onFilterChange={handleFilterChange}
+      onClearAll={handleClearAll}
+      recommendedActive={recommendedActive}
+      onRecommendedChange={setRecommendedActive}
+      isLoading={isLoading}
+      loadingMessage="Loading knowledge assets…"
+      showEmpty={!isLoading && filteredAssets.length === 0}
+      emptyTitle="No knowledge assets match your filters"
+      emptyMessage="Try adjusting your search or filters, or clear all filters to see all available assets."
+    >
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {filteredAssets.map((asset) => (
+          <KnowledgeCard key={asset.id} asset={asset} />
+        ))}
       </div>
-
-      {/* Category Tabs */}
-      <FilterBar tabs={TAB_LABELS} activeTab={activeTabLabel} onTabChange={setActiveTabLabel} />
-
-      {/* Filters */}
-      <div className="mt-4">
-        <MarketplaceTopFilterBar
-          searchPlaceholder="Search by title, tag, or keyword..."
-          searchValue={search}
-          onSearchChange={setSearch}
-          groups={filterGroups}
-          values={filterValues}
-          onChange={handleFilterChange}
-          recommendedActive={recommendedActive}
-          onRecommendedChange={setRecommendedActive}
-          onClearAll={handleClearAll}
-        />
-      </div>
-
-      {/* Results count */}
-      {!isLoading && (
-        <p className="mt-4 text-sm text-text-muted">
-          Showing <strong className="text-text-primary">{filteredAssets.length}</strong> of <strong className="text-text-primary">{totalAssets}</strong> knowledge assets
-        </p>
-      )}
-
-      {/* Grid */}
-      {isLoading ? (
-        <div className="mt-8 flex h-64 items-center justify-center text-text-muted">
-          Loading knowledge assets...
-        </div>
-      ) : filteredAssets.length > 0 ? (
-        <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredAssets.map(asset => (
-            <KnowledgeCard key={asset.id} asset={asset} />
-          ))}
-        </div>
-      ) : (
-        <div className="mt-8 flex flex-col items-center justify-center rounded-xl border border-dashed border-border-default bg-surface py-16 text-center">
-          <BookOpen size={48} className="mb-4 text-text-muted opacity-40" />
-          <h3 className="mb-2 text-lg font-bold text-text-primary">No assets found</h3>
-          <p className="mb-6 max-w-sm text-sm text-text-secondary">
-            No knowledge assets match your current search or filters. Try adjusting your criteria.
-          </p>
-          <button
-            onClick={handleClearAll}
-            className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm ring-1 ring-inset ring-border-subtle hover:bg-surface"
-          >
-            Clear all filters
-          </button>
-        </div>
-      )}
-    </div>
+    </MarketplaceCatalogLayout>
   );
 }

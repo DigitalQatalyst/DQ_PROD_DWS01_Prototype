@@ -1,67 +1,51 @@
 import React from 'react';
-import { TaskTemplateFull } from '../types/taskLibrary';
-import { TemplateCategoryBadge } from './TemplateCategoryBadge';
-import { ListChecks, Paperclip, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { TaskTemplateFull } from '../types/taskLibrary';
+import { MarketplaceCatalogCard } from './marketplace/MarketplaceCatalogCard';
 
-interface TemplateCardProps {
-  template: TaskTemplateFull;
-  onClick?: () => void;
+function ReviewBadge({ reviewPath }: { reviewPath: string }) {
+  if (reviewPath === 'No review') return null;
+
+  return (
+    <span className="inline-flex items-center rounded bg-info-surface px-1.5 py-0.5 font-mono text-[9.5px] font-semibold uppercase tracking-[0.16em] text-info-text">
+      {reviewPath === 'Approval required' ? 'Approval' : 'Review'}
+    </span>
+  );
 }
 
-export function TemplateCard({ template, onClick }: TemplateCardProps) {
+export function TemplateCard({
+  template,
+  onClick,
+}: {
+  template: TaskTemplateFull;
+  onClick?: () => void;
+}) {
   const navigate = useNavigate();
 
   const handleCardClick = () => {
     if (onClick) onClick();
-    else navigate(`/marketplaces/task-templates/${template.id}`);
+    else navigate(`/marketplace/task-library/${template.id}`);
   };
 
-  return (
-    <div 
-      onClick={handleCardClick}
-      className="group relative flex cursor-pointer flex-col overflow-hidden rounded-xl border border-border-subtle bg-white shadow-sm transition-all hover:border-primary/30 hover:shadow-md"
-    >
-      <div className="flex flex-1 flex-col p-5">
-        <div className="mb-3 flex items-start justify-between gap-4">
-          <TemplateCategoryBadge category={template.category} />
-          {template.reviewPath !== 'No review' && (
-            <span className="flex items-center gap-1 text-[11px] font-bold text-navy-600">
-              <ShieldCheck size={12} />
-              {template.reviewPath}
-            </span>
-          )}
-        </div>
-        
-        <h3 className="mb-2 text-base font-bold text-text-primary group-hover:text-primary">
-          {template.title}
-        </h3>
-        
-        <p className="mb-4 line-clamp-2 text-sm text-text-secondary">
-          {template.description}
-        </p>
+  const categoryCode = template.category
+    .split(' ')
+    .map((word) => word[0])
+    .join('')
+    .slice(0, 4)
+    .toUpperCase();
 
-        <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-2 text-[12px] font-semibold text-text-muted">
-          <div className="flex items-center gap-1.5" title="Checklist depth">
-            <ListChecks size={14} />
-            {template.checklistDepth || 'Standard'} Checklist
-          </div>
-          {template.evidenceRequired && (
-            <div className="flex items-center gap-1.5" title="Evidence Required">
-              <Paperclip size={14} />
-              Evidence Req
-            </div>
-          )}
-        </div>
-      </div>
-      
-      {/* Footer bar */}
-      <div className="border-t border-border-subtle bg-surface px-5 py-3 flex items-center justify-between text-xs font-semibold text-text-secondary">
-        <span className="truncate pr-4">Owner: {template.ownerType}</span>
-        <span className="shrink-0 text-primary opacity-0 transition-opacity group-hover:opacity-100">
-          View Template &rarr;
-        </span>
-      </div>
-    </div>
+  return (
+    <MarketplaceCatalogCard
+      typeLabel={`${categoryCode} · Template`}
+      metaLabel={`${template.checklistDepth || 'Standard'} checklist · ${template.evidenceRequired ? 'Evidence req' : 'Evidence opt'}`}
+      title={template.title}
+      description={template.description}
+      footerId={template.id}
+      badge={<ReviewBadge reviewPath={template.reviewPath} />}
+      highlighted={
+        template.reviewPath === 'Approval required' || template.evidenceRequired
+      }
+      onClick={handleCardClick}
+    />
   );
 }
