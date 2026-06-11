@@ -16,6 +16,8 @@ import {
   Users,
 } from 'lucide-react';
 import { MARKETPLACE_4D_DESTINATIONS } from '../config/marketplace4dRoutes';
+import { MarketplaceEyebrowTrail } from '../components/marketplace/MarketplaceEyebrowTrail';
+import { buildMarketplaceHubTrail } from '../utils/marketplaceBreadcrumbs';
 
 interface MarketplaceFeature {
   name: string;
@@ -176,11 +178,11 @@ export function MarketplaceFeatureGroupPage() {
 
   return (
     <div className="mx-auto max-w-[1280px] px-6 py-8">
-      <div className="mb-8">
-        <div className="text-xs font-bold uppercase tracking-wider text-text-muted">Marketplace</div>
-        <h1 className="mt-1 text-3xl font-bold text-primary">{group.title}</h1>
+      <header className="mb-8">
+        <MarketplaceEyebrowTrail items={buildMarketplaceHubTrail(group.title)} />
+        <h1 className="dq-page-title">{group.title}</h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">{group.description}</p>
-      </div>
+      </header>
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
         {group.features.map((feature) => {

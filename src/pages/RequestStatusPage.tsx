@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Clock, User, Copy, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useServiceLifecycle } from '../context/ServiceLifecycleContext';
@@ -14,9 +14,15 @@ import { ClosureOutcomeCard } from '../components/ClosureOutcomeCard';
 import { AuditTrailCue } from '../components/AuditTrailCue';
 import { ServiceEmptyState } from '../components/ServiceEmptyState';
 import { WorkItemLinkedKnowledgeCard } from '../components/WorkItemLinkedKnowledgeCard';
+import {
+  buildRequestStatusTrail,
+  resolveMarketplaceStage,
+} from '../utils/marketplaceBreadcrumbs';
 
 export function RequestStatusPage() {
   const { requestId } = useParams<{ requestId: string }>();
+  const [searchParams] = useSearchParams();
+  const stage = resolveMarketplaceStage(searchParams.get('from'), 'deploy');
   const { getRequestById, updateRequestStatus } = useServiceLifecycle();
 
   const [loading, setLoading] = useState(true);
@@ -91,11 +97,11 @@ export function RequestStatusPage() {
         </button>
 
         <MarketplaceDetailHeader
-          breadcrumbs={[
-            { label: 'Marketplaces', href: '/marketplaces/services' },
-            { label: 'Services', href: '/marketplaces/services' },
-            { label: request.service },
-          ]}
+          breadcrumbItems={buildRequestStatusTrail(
+            stage,
+            request.service,
+            request.serviceId,
+          )}
           eyebrow={
             <button
               type="button"

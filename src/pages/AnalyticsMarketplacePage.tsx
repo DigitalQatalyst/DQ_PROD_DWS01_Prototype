@@ -6,7 +6,7 @@ import { MarketplaceCatalogLayout } from '../components/marketplace/MarketplaceC
 import type { FilterGroup } from '../components/MarketplaceFilterPanel';
 import { MarketplaceActionRouter } from '../components/MarketplaceActionRouter';
 import { RequestIntakeWizard } from '../components/RequestIntakeWizard';
-import { getMarketplaceCategoryLabel } from '../utils/marketplaceBreadcrumbs';
+import { buildCatalogTrail, resolveMarketplaceStage } from '../utils/marketplaceBreadcrumbs';
 import {
   ALL_TAB_ID,
   buildCatalogTabs,
@@ -92,10 +92,7 @@ const dashboards = [
 export function AnalyticsMarketplacePage() {
   const [searchParams] = useSearchParams();
   const { activePersona, hasRouteAccess } = usePersona();
-  const breadcrumbCategory = getMarketplaceCategoryLabel(
-    searchParams.get('from'),
-    'drive',
-  );
+  const stage = resolveMarketplaceStage(searchParams.get('from'), 'drive');
 
   const [activeTab, setActiveTab] = useState(ALL_TAB_ID);
   const [search, setSearch] = useState('');
@@ -211,7 +208,7 @@ export function AnalyticsMarketplacePage() {
 
   return (
     <MarketplaceCatalogLayout
-      eyebrow={`DWS.01 / ${breadcrumbCategory} / Analytics Discovery`}
+      breadcrumbItems={buildCatalogTrail(stage, 'Analytics Discovery')}
       title="Governed discovery for dashboards, SLA views, and performance surfaces."
       lede="Organised through the DWS analytics taxonomy — personal, team, unit, SLA, governance, and executive views. Discovery layer only; access is governed by your active role and permission scope."
       searchPlaceholder="Search dashboards, metrics, reports, or visibility areas…"

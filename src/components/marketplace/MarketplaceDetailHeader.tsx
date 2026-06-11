@@ -1,11 +1,11 @@
 import React from 'react';
 import {
-  MarketplaceBreadcrumbs,
+  MarketplaceEyebrowTrail,
   type MarketplaceBreadcrumbItem,
-} from './MarketplaceBreadcrumbs';
+} from './MarketplaceEyebrowTrail';
 
 interface MarketplaceDetailHeaderProps {
-  breadcrumbs: MarketplaceBreadcrumbItem[];
+  breadcrumbItems: MarketplaceBreadcrumbItem[];
   title: string;
   badges?: React.ReactNode;
   lede?: string;
@@ -14,7 +14,7 @@ interface MarketplaceDetailHeaderProps {
 }
 
 export function MarketplaceDetailHeader({
-  breadcrumbs,
+  breadcrumbItems,
   title,
   badges,
   lede,
@@ -23,7 +23,7 @@ export function MarketplaceDetailHeader({
 }: MarketplaceDetailHeaderProps) {
   return (
     <header className="mb-8">
-      <MarketplaceBreadcrumbs items={breadcrumbs} />
+      <MarketplaceEyebrowTrail items={breadcrumbItems} className="mb-3" />
 
       {eyebrow && <div className="mb-3">{eyebrow}</div>}
 

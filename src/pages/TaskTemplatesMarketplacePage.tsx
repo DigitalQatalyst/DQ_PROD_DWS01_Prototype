@@ -5,7 +5,7 @@ import { TemplateCard } from '../components/TemplateCard';
 import { MarketplaceCatalogLayout } from '../components/marketplace/MarketplaceCatalogLayout';
 import type { FilterGroup } from '../components/MarketplaceFilterPanel';
 import { usePersona } from '../context/PersonaContext';
-import { getMarketplaceCategoryLabel } from '../utils/marketplaceBreadcrumbs';
+import { buildCatalogTrail, resolveMarketplaceStage } from '../utils/marketplaceBreadcrumbs';
 import {
   ALL_TAB_ID,
   buildCatalogTabs,
@@ -31,10 +31,7 @@ export function TaskTemplatesMarketplacePage() {
   const [searchParams] = useSearchParams();
   const { activePersona } = usePersona();
   const { templates, isLoading } = useTaskLifecycle();
-  const breadcrumbCategory = getMarketplaceCategoryLabel(
-    searchParams.get('from'),
-    'design',
-  );
+  const stage = resolveMarketplaceStage(searchParams.get('from'), 'design');
 
   const [activeTab, setActiveTab] = useState(ALL_TAB_ID);
   const [search, setSearch] = useState('');
@@ -140,7 +137,7 @@ export function TaskTemplatesMarketplacePage() {
 
   return (
     <MarketplaceCatalogLayout
-      eyebrow={`DWS.01 / ${breadcrumbCategory} / Task Library`}
+      breadcrumbItems={buildCatalogTrail(stage, 'Task Library')}
       title="Governed discovery for task templates and reusable work patterns."
       lede="Organised through the DWS task taxonomy — execution, review, governance, and closure templates with checklist depth, evidence rules, and approval paths."
       searchPlaceholder="Search templates, checklist rules, evidence, or closure criteria…"
