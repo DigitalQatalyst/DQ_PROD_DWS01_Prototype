@@ -1,21 +1,23 @@
 import React from 'react';
+import {
+  MarketplaceEyebrowTrail,
+  type MarketplaceBreadcrumbItem,
+} from './MarketplaceEyebrowTrail';
 
 interface MarketplaceCatalogHeaderProps {
-  eyebrow: string;
+  breadcrumbItems: MarketplaceBreadcrumbItem[];
   title: string;
   lede: string;
 }
 
 export function MarketplaceCatalogHeader({
-  eyebrow,
+  breadcrumbItems,
   title,
   lede,
 }: MarketplaceCatalogHeaderProps) {
   return (
     <header className="mb-8">
-      <div className="mb-3 font-mono text-[10.5px] font-medium uppercase tracking-[0.22em] text-secondary">
-        {eyebrow}
-      </div>
+      <MarketplaceEyebrowTrail items={breadcrumbItems} />
       <h1 className="max-w-4xl text-[28px] font-bold leading-tight tracking-tight text-primary sm:text-[32px]">
         {title}
       </h1>

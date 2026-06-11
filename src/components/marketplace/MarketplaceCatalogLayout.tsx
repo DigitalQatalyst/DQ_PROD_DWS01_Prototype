@@ -3,6 +3,7 @@ import { Search } from 'lucide-react';
 import { MarketplaceFilterPanel } from '../MarketplaceFilterPanel';
 import type { FilterGroup } from '../MarketplaceFilterPanel';
 import { MarketplaceCatalogHeader } from './MarketplaceCatalogHeader';
+import type { MarketplaceBreadcrumbItem } from './MarketplaceEyebrowTrail';
 import {
   MarketplaceCatalogTabs,
   type MarketplaceCatalogTab,
@@ -10,7 +11,7 @@ import {
 import { ServiceEmptyState } from '../ServiceEmptyState';
 
 export interface MarketplaceCatalogLayoutProps {
-  eyebrow: string;
+  breadcrumbItems: MarketplaceBreadcrumbItem[];
   title: string;
   lede: string;
   searchPlaceholder: string;
@@ -40,7 +41,7 @@ export interface MarketplaceCatalogLayoutProps {
 }
 
 export function MarketplaceCatalogLayout({
-  eyebrow,
+  breadcrumbItems,
   title,
   lede,
   searchPlaceholder,
@@ -70,7 +71,7 @@ export function MarketplaceCatalogLayout({
 }: MarketplaceCatalogLayoutProps) {
   return (
     <div className="mx-auto max-w-[1440px] px-6 py-8 lg:px-8">
-      <MarketplaceCatalogHeader eyebrow={eyebrow} title={title} lede={lede} />
+      <MarketplaceCatalogHeader breadcrumbItems={breadcrumbItems} title={title} lede={lede} />
 
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <div className="flex h-11 min-w-[260px] max-w-xl flex-1 items-center gap-2 rounded-md border border-border-default bg-surface px-3.5">

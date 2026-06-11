@@ -6,7 +6,7 @@ import { MarketplaceCatalogCard } from '../components/marketplace/MarketplaceCat
 import type { FilterGroup } from '../components/MarketplaceFilterPanel';
 import { usePersona } from '../context/PersonaContext';
 import { MarketplaceActionRouter } from '../components/MarketplaceActionRouter';
-import { getMarketplaceCategoryLabel } from '../utils/marketplaceBreadcrumbs';
+import { buildCatalogTrail, resolveMarketplaceStage } from '../utils/marketplaceBreadcrumbs';
 
 const FEEDBACK_TABS = [
   { id: 'All Feedback', label: 'All Feedback' },
@@ -55,10 +55,7 @@ const recentFeedback = [
 export function MarketplaceFeedbackPage() {
   const [searchParams] = useSearchParams();
   const { activePersona } = usePersona();
-  const breadcrumbCategory = getMarketplaceCategoryLabel(
-    searchParams.get('from'),
-    'drive',
-  );
+  const stage = resolveMarketplaceStage(searchParams.get('from'), 'drive');
 
   const [activeTab, setActiveTab] = useState('All Feedback');
   const [search, setSearch] = useState('');
@@ -161,7 +158,7 @@ export function MarketplaceFeedbackPage() {
 
   return (
     <MarketplaceCatalogLayout
-      eyebrow={`DWS.01 / ${breadcrumbCategory} / Marketplace Feedback`}
+      breadcrumbItems={buildCatalogTrail(stage, 'Marketplace Feedback')}
       title="Governed discovery for marketplace improvement signals."
       lede="Raise and track feedback on unclear services, missing templates, outdated knowledge, incorrect owners, or broken navigation paths. Submissions route to accountable marketplace owners."
       searchPlaceholder="Search feedback, affected items, owners, or statuses…"

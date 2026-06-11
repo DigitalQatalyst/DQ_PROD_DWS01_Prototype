@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useServiceLifecycle } from '../context/ServiceLifecycleContext';
 import { MarketplaceDetailHeader } from '../components/marketplace/MarketplaceDetailHeader';
 import { CategoryBadge } from '../components/CategoryBadge';
@@ -12,9 +12,15 @@ import { ApprovalPathCard } from '../components/ApprovalPathCard';
 import { RelatedItemsCard } from '../components/RelatedItemsCard';
 import { AuditNoteCard } from '../components/AuditNoteCard';
 import { ServiceEmptyState } from '../components/ServiceEmptyState';
+import {
+  buildServiceDetailTrail,
+  resolveMarketplaceStage,
+} from '../utils/marketplaceBreadcrumbs';
 
 export function ServiceDetailPage() {
   const { serviceId } = useParams<{ serviceId: string }>();
+  const [searchParams] = useSearchParams();
+  const stage = resolveMarketplaceStage(searchParams.get('from'), 'deploy');
   const { getServiceById, getServiceDetailByServiceId } = useServiceLifecycle();
 
   const [loading, setLoading] = useState(true);
@@ -70,11 +76,7 @@ export function ServiceDetailPage() {
     <div className="min-h-screen bg-surface pb-12">
       <div className="mx-auto max-w-[1440px] px-6 pt-8 lg:px-8">
         <MarketplaceDetailHeader
-          breadcrumbs={[
-            { label: 'Marketplaces', href: '/marketplaces/services' },
-            { label: 'Services', href: '/marketplaces/services' },
-            { label: service.title },
-          ]}
+          breadcrumbItems={buildServiceDetailTrail(stage, service.title, service.id)}
           badges={<CategoryBadge category={service.category} />}
           title={service.title}
           lede={detail.purpose}

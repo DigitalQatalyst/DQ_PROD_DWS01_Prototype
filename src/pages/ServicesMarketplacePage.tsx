@@ -4,7 +4,11 @@ import { ServiceCard } from '../components/ServiceCard';
 import { MarketplaceCatalogLayout } from '../components/marketplace/MarketplaceCatalogLayout';
 import type { FilterGroup } from '../components/MarketplaceFilterPanel';
 import { useServiceLifecycle } from '../context/ServiceLifecycleContext';
-import { getMarketplaceCategoryLabel } from '../utils/marketplaceBreadcrumbs';
+import {
+  buildCatalogTrail,
+  resolveMarketplaceStage,
+  SERVICES_CATALOG_LABEL,
+} from '../utils/marketplaceBreadcrumbs';
 import {
   ALL_TAB_ID,
   buildCatalogTabs,
@@ -13,10 +17,7 @@ import {
 export function ServicesMarketplacePage() {
   const [searchParams] = useSearchParams();
   const { services, serviceCategories } = useServiceLifecycle();
-  const breadcrumbCategory = getMarketplaceCategoryLabel(
-    searchParams.get('from'),
-    'deploy',
-  );
+  const stage = resolveMarketplaceStage(searchParams.get('from'), 'deploy');
 
   const [activeTab, setActiveTab] = useState(ALL_TAB_ID);
   const [search, setSearch] = useState('');
@@ -121,7 +122,7 @@ export function ServicesMarketplacePage() {
 
   return (
     <MarketplaceCatalogLayout
-      eyebrow={`DWS.01 / ${breadcrumbCategory} / Services Marketplace`}
+      breadcrumbItems={buildCatalogTrail(stage, SERVICES_CATALOG_LABEL)}
       title="Governed discovery for support, access, and governance services."
       lede="Organised through the DWS service taxonomy — request domains, approval rules, and fulfilment paths. Discovery layer only; starting a request creates a tracked record with owner, SLA, and audit trail."
       searchPlaceholder="Search services, owners, SLAs, or request types…"

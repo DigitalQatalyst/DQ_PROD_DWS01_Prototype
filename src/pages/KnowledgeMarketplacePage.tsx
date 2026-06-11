@@ -5,7 +5,7 @@ import { KnowledgeCard } from '../components/KnowledgeCard';
 import { MarketplaceCatalogLayout } from '../components/marketplace/MarketplaceCatalogLayout';
 import type { FilterGroup } from '../components/MarketplaceFilterPanel';
 import { KnowledgeAssetType } from '../types/knowledgeDiscovery';
-import { getMarketplaceCategoryLabel } from '../utils/marketplaceBreadcrumbs';
+import { buildCatalogTrail, resolveMarketplaceStage } from '../utils/marketplaceBreadcrumbs';
 import { ALL_TAB_ID } from '../utils/marketplaceCatalogTabs';
 
 const KNOWLEDGE_TABS: { id: KnowledgeAssetType | typeof ALL_TAB_ID; label: string }[] = [
@@ -32,10 +32,7 @@ const TAB_DESCRIPTIONS: Partial<Record<string, string>> = {
 export function KnowledgeMarketplacePage() {
   const [searchParams] = useSearchParams();
   const { assets, isLoading } = useKnowledgeLifecycle();
-  const breadcrumbCategory = getMarketplaceCategoryLabel(
-    searchParams.get('from'),
-    'discern',
-  );
+  const stage = resolveMarketplaceStage(searchParams.get('from'), 'discern');
   const initialTab =
     searchParams.get('focus') === 'playbooks-templates' ? 'Playbook' : ALL_TAB_ID;
 
@@ -134,7 +131,7 @@ export function KnowledgeMarketplacePage() {
 
   return (
     <MarketplaceCatalogLayout
-      eyebrow={`DWS.01 / ${breadcrumbCategory} / Knowledge Discovery`}
+      breadcrumbItems={buildCatalogTrail(stage, 'Knowledge Discovery')}
       title="Governed discovery for playbooks, standards, and workspace knowledge."
       lede="Organised through the DWS knowledge taxonomy — guidelines, operating standards, playbooks, templates, and references. Discovery layer only; opening an asset shows applicability, status, and linked work context."
       searchPlaceholder="Search by title, tag, keyword, or asset ID…"

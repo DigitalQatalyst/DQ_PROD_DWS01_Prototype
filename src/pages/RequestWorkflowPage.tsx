@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Save, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useServiceLifecycle } from '../context/ServiceLifecycleContext';
@@ -14,10 +14,17 @@ import { ReviewSubmitSummary } from '../components/ReviewSubmitSummary';
 import { ConfirmationCard } from '../components/ConfirmationCard';
 import { EvidenceUploadStub } from '../components/EvidenceUploadStub';
 import { ServiceEmptyState } from '../components/ServiceEmptyState';
+import { RequestWorkflowContextRail } from '../components/RequestWorkflowContextRail';
+import {
+  buildStartRequestTrail,
+  resolveMarketplaceStage,
+} from '../utils/marketplaceBreadcrumbs';
 
 export function RequestWorkflowPage() {
   const { serviceId } = useParams<{ serviceId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const stage = resolveMarketplaceStage(searchParams.get('from'), 'deploy');
   const { getServiceById, getServiceDetailByServiceId, submitRequest } = useServiceLifecycle();
 
   const [loading, setLoading] = useState(true);
@@ -44,10 +51,13 @@ export function RequestWorkflowPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-surface py-8">
-        <div className="mx-auto max-w-4xl px-6">
-          <div className="mb-6 h-4 w-48 animate-pulse rounded bg-border-default" />
-          <div className="mb-6 h-24 animate-pulse rounded bg-border-default/60" />
-          <div className="dq-card h-96 animate-pulse" />
+        <div className="mx-auto max-w-[1440px] px-6 lg:px-8">
+          <div className="mb-6 h-4 w-64 animate-pulse rounded bg-border-default" />
+          <div className="mb-8 h-24 animate-pulse rounded bg-border-default/60" />
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+            <div className="dq-card h-96 animate-pulse lg:col-span-8" />
+            <div className="dq-card h-96 animate-pulse lg:col-span-4" />
+          </div>
         </div>
       </div>
     );
@@ -61,7 +71,7 @@ export function RequestWorkflowPage() {
             title="Service Context Missing"
             message="We could not initiate the request workflow because the selected service details are missing."
             ctaLabel="Return to Catalogue"
-            onCtaClick={() => navigate('/marketplaces/services')}
+            onCtaClick={() => navigate(`/marketplace/services?from=${stage}`)}
           />
         </div>
       </div>
@@ -119,7 +129,7 @@ export function RequestWorkflowPage() {
       setCurrentStep(prev => prev - 1);
       window.scrollTo(0, 0);
     } else {
-      navigate(`/marketplaces/services/${service.id}`);
+      navigate(`/marketplace/services/${service.id}?from=${stage}`);
     }
   };
 
@@ -153,25 +163,21 @@ export function RequestWorkflowPage() {
   return (
     <div className="min-h-screen bg-surface pb-12">
       <div className="mx-auto max-w-[1440px] px-6 pt-8 lg:px-8">
-        <div className="max-w-4xl">
-          <MarketplaceDetailHeader
-            breadcrumbs={[
-              { label: 'Marketplaces', href: '/marketplaces/services' },
-              { label: 'Services', href: '/marketplaces/services' },
-              { label: service.title, href: `/marketplaces/services/${service.id}` },
-              { label: 'Start Request' },
-            ]}
-            badges={
-              <>
-                <CategoryBadge category={service.category} />
-                <StatusBadge status="Draft" />
-              </>
-            }
-            title={service.title}
-            lede={detail.purpose}
-          />
+        <MarketplaceDetailHeader
+          breadcrumbItems={buildStartRequestTrail(stage, service.title, service.id)}
+          badges={
+            <>
+              <CategoryBadge category={service.category} />
+              <StatusBadge status="Draft" />
+            </>
+          }
+          title={service.title}
+          lede={detail.purpose}
+        />
 
-          <div className="dq-card overflow-hidden p-0">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+          <div className="lg:col-span-8">
+            <div className="dq-card overflow-hidden p-0">
             <div className="border-b border-border-default bg-surface/50 px-6 py-6">
               <h2 className="dq-section-title mb-6">New Request</h2>
 
@@ -331,6 +337,17 @@ export function RequestWorkflowPage() {
                 )}
               </div>
             </div>
+          </div>
+          </div>
+
+          <div className="lg:col-span-4">
+            <RequestWorkflowContextRail
+              detail={detail}
+              steps={steps}
+              currentStep={currentStep}
+              stage={stage}
+              formData={formData}
+            />
           </div>
         </div>
       </div>

@@ -5,7 +5,7 @@ import { getUsers, getUnits, getTeams, getQueues } from '../services/platform.se
 import { MarketplaceCatalogLayout } from '../components/marketplace/MarketplaceCatalogLayout';
 import { MarketplaceCatalogCard } from '../components/marketplace/MarketplaceCatalogCard';
 import type { FilterGroup } from '../components/MarketplaceFilterPanel';
-import { getMarketplaceCategoryLabel } from '../utils/marketplaceBreadcrumbs';
+import { buildCatalogTrail, resolveMarketplaceStage } from '../utils/marketplaceBreadcrumbs';
 
 const DIRECTORY_TABS = [
   { id: 'Teams', label: 'Teams' },
@@ -36,10 +36,7 @@ type DirectoryEntry = {
 
 export function WorkDirectoryMarketplacePage() {
   const [searchParams] = useSearchParams();
-  const breadcrumbCategory = getMarketplaceCategoryLabel(
-    searchParams.get('from'),
-    'discern',
-  );
+  const stage = resolveMarketplaceStage(searchParams.get('from'), 'discern');
   const [activeTab, setActiveTab] = useState('Teams');
   const [search, setSearch] = useState('');
   const [users, setUsers] = useState<any[]>([]);
@@ -213,7 +210,7 @@ export function WorkDirectoryMarketplacePage() {
   return (
     <>
       <MarketplaceCatalogLayout
-        eyebrow={`DWS.01 / ${breadcrumbCategory} / Work Directory`}
+        breadcrumbItems={buildCatalogTrail(stage, 'Work Directory')}
         title="Governed discovery for teams, owners, experts, and fulfilment contacts."
         lede="Organised through the DWS work directory taxonomy — teams, units, owners, experts, and support queues. Discovery layer only; use contacts to route work to the right accountable party."
         searchPlaceholder="Search owners, teams, queues, units, or expertise…"
