@@ -264,12 +264,29 @@ export const trackerRecords: TrackerRecord[] = [
   record({ id: 'RSK-1005', trackerId: 'risk-issue', title: 'Open risk without mitigation', owner: '', teamOrSquad: 'Risk Office', priority: 'Critical', status: 'Open', dueDate: '16 May', rag: 'Red', lastUpdated: '3 days ago', nextAction: 'Assign risk owner', missingOwner: true, isOverdue: true, notUpdatedRecently: true }),
 ];
 
+const customTrackerStorageKey = 'dws-tracker-hub-custom-trackers';
+
+function getCustomTrackers(): TrackerDefinition[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = window.localStorage.getItem(customTrackerStorageKey);
+    return raw ? JSON.parse(raw) as TrackerDefinition[] : [];
+  } catch {
+    return [];
+  }
+}
+
+function getAllTrackerDefinitions() {
+  const customTrackers = getCustomTrackers();
+  return [...customTrackers, ...trackerDefinitions.filter((tracker) => !customTrackers.some((customTracker) => customTracker.slug === tracker.slug))];
+}
+
 export function getTrackerBySlug(slug?: string) {
-  return trackerDefinitions.find((tracker) => tracker.slug === slug);
+  return getAllTrackerDefinitions().find((tracker) => tracker.slug === slug);
 }
 
 export function getTrackerByName(name: string) {
-  return trackerDefinitions.find((tracker) => tracker.name === name);
+  return getAllTrackerDefinitions().find((tracker) => tracker.name === name);
 }
 
 export function getRecordsForTracker(trackerId: string) {

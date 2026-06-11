@@ -2,783 +2,822 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Activity,
-  AlertTriangle,
-  BarChart3,
+  Bookmark,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  ClipboardCheck,
-  FileText,
-  Folder,
-  LayoutGrid,
+  Download,
+  FileSearch,
+  HelpCircle,
+  History,
   Plus,
-  Save,
+  RotateCcw,
   Search,
   Settings,
-  ShieldAlert,
-  Target,
-  UserCheck,
+  SlidersHorizontal,
   X,
 } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { DqButton, DqIconButton } from '../components/DqButton';
-import { DqBadge, StatusBadge } from '../components/DqBadge';
-import { getTrackerByName, trackerDefinitions } from '../mocks/trackers.mock';
+import { DqBadge } from '../components/DqBadge';
+import type { TrackerDefinition, TrackerHealth } from '../types/tracker';
 
-type TrackerHealth = 'Green' | 'Amber' | 'Red';
-type TrackerStatus = 'In Progress' | 'Overdue' | 'Awaiting Review' | 'Blocked' | 'Needs Update' | 'Completed';
-type TrackerPriority = 'Low' | 'Medium' | 'High' | 'Critical';
+type HubTab = 'All Trackers' | 'Recently Opened' | 'Owned by My Team' | 'Favorites';
+type SortKey = 'name' | 'activeRecords' | 'overdueRecords' | 'lastUpdated' | 'healthStatus';
+type SortDirection = 'asc' | 'desc';
 
-interface TrackerCardModel {
-  slug: string;
-  name: string;
-  purpose?: string;
-  owner: string;
-  active: number;
-  overdue: number;
-  lastUpdated?: string;
-  status: TrackerHealth;
-  icon: LucideIcon;
-}
-
-interface TrackerItem {
-  id: string;
-  tracker: string;
-  title: string;
-  owner: string;
-  status: TrackerStatus;
-  priority: TrackerPriority;
-  dueDate: string;
-  rag: TrackerHealth;
-  lastUpdated: string;
-  nextAction: string;
-  description: string;
-  latestUpdate: string;
-  comments: string[];
-  evidence: string[];
-  activity: string[];
-}
-
-const trackerIcons: Record<string, LucideIcon> = {
-  'workload-distribution-tracker': Folder,
-  'squad-backlog-tracker': ClipboardCheck,
-  'project-backlog-tracker': FileText,
-  'strategic-initiatives-tracker': Target,
-  'project-health-tracker': Activity,
-  'governance-follow-up-tracker': ShieldAlert,
-  'decision-tracker': FileText,
-  'action-log-tracker': UserCheck,
-  'risk-issue-tracker': AlertTriangle,
+type HubTracker = TrackerDefinition & {
+  favorite: boolean;
+  recentlyOpened: boolean;
+  lastOpened?: string;
 };
 
-const trackers: TrackerCardModel[] = trackerDefinitions.map((tracker) => ({
-  slug: tracker.slug,
-  name: tracker.name,
-  purpose: tracker.purpose.replace(/\.$/, ''),
-  owner: tracker.owner,
-  active: tracker.activeRecords,
-  overdue: tracker.overdueRecords,
-  lastUpdated: tracker.lastUpdated,
-  status: tracker.healthStatus,
-  icon: trackerIcons[tracker.slug] || Folder,
-}));
+type FilterState = {
+  search: string;
+  trackerType: string;
+  owner: string;
+  health: string;
+  updateFrequency: string;
+};
 
-const seededItems: TrackerItem[] = [
-  {
-    id: 'TRK-1042',
-    tracker: 'Project Health Tracker',
-    title: 'Update vendor risk workstream',
-    owner: 'Bilal Waqar',
-    status: 'In Progress',
-    priority: 'High',
-    dueDate: 'Today',
-    rag: 'Amber',
-    lastUpdated: '09:30 AM',
-    nextAction: 'Add weekly update',
-    description: 'Vendor risk workstream needs the latest status, delivery confidence, and mitigation note before Friday governance review.',
-    latestUpdate: 'Risk owner confirmed mitigation plan; evidence links still need to be attached.',
-    comments: ['Bilal Waqar: Weekly update drafted.', 'Sara Khan: Please include evidence links.'],
-    evidence: ['Vendor risk register', 'Weekly workstream update'],
-    activity: ['Created 15 May 2025', 'Assigned to Bilal Waqar', 'RAG moved to Amber today'],
-  },
-  {
-    id: 'ACT-224',
-    tracker: 'Action Log Tracker',
-    title: 'Close leadership follow-up on service review',
-    owner: 'Sara Khan',
-    status: 'Overdue',
-    priority: 'High',
-    dueDate: '16 May',
-    rag: 'Red',
-    lastUpdated: 'Yesterday',
-    nextAction: 'Upload evidence',
-    description: 'Leadership action requires closure evidence from the service review cycle.',
-    latestUpdate: 'Owner awaiting final evidence attachment from service operations.',
-    comments: ['Ali Raza: Evidence still pending.'],
-    evidence: ['Service review notes'],
-    activity: ['Created 12 May 2025', 'Due date missed 16 May', 'Escalated to Red'],
-  },
-  {
-    id: 'DEC-077',
-    tracker: 'Decision Tracker',
-    title: 'Confirm Q3 delivery sequencing',
-    owner: 'Ali Raza',
-    status: 'Awaiting Review',
-    priority: 'Medium',
-    dueDate: '18 May',
-    rag: 'Amber',
-    lastUpdated: 'Today',
-    nextAction: 'Review decision note',
-    description: 'Decision note needs review before Q3 sequencing can be confirmed.',
-    latestUpdate: 'Draft decision note submitted to delivery leadership.',
-    comments: ['Hina Adam: Add dependency note.'],
-    evidence: ['Decision note draft'],
-    activity: ['Decision drafted', 'Sent for review today'],
-  },
-  {
-    id: 'RSK-119',
-    tracker: 'Risk / Issue Tracker',
-    title: 'Dependency blocking security rollout',
-    owner: 'Hina Adam',
-    status: 'Blocked',
-    priority: 'Critical',
-    dueDate: '17 May',
-    rag: 'Red',
-    lastUpdated: 'Today',
-    nextAction: 'Resolve blocker',
-    description: 'Security rollout is blocked by an unresolved dependency across integration owners.',
-    latestUpdate: 'Blocker remains open after escalation.',
-    comments: ['Bilal Waqar: Escalated to integration owner.'],
-    evidence: ['Dependency log', 'Escalation note'],
-    activity: ['Risk opened', 'Owner changed to Hina Adam', 'Marked blocked today'],
-  },
-  {
-    id: 'GOV-305',
-    tracker: 'Governance Follow-up Tracker',
-    title: 'Submit governance review evidence',
-    owner: 'Bilal Waqar',
-    status: 'Needs Update',
-    priority: 'Medium',
-    dueDate: '19 May',
-    rag: 'Amber',
-    lastUpdated: '08:45 AM',
-    nextAction: 'Add comment',
-    description: 'Governance review evidence requires a final owner comment and upload confirmation.',
-    latestUpdate: 'Evidence collected; final comment not yet posted.',
-    comments: ['Governance Office: Please add owner comment.'],
-    evidence: ['Review checklist'],
-    activity: ['Evidence requested', 'Owner reminder sent 08:45 AM'],
-  },
+type SavedView = {
+  activeTab: HubTab;
+  filters: FilterState;
+  sort: SortState;
+};
+
+type SortState = {
+  key: SortKey | null;
+  direction: SortDirection;
+};
+
+type SettingsState = {
+  compactDensity: boolean;
+  showBottomGuide: boolean;
+  showRightRail: boolean;
+  defaultTab: HubTab;
+  defaultSort: string;
+  redAlerts: boolean;
+  overdueAlerts: boolean;
+};
+
+type CreateTrackerDraft = {
+  name: string;
+  purpose: string;
+  owner: string;
+  trackerType: string;
+  updateFrequency: string;
+  healthStatus: TrackerHealth;
+  requiredFields: string;
+  optionalFields: string;
+  defaultStatuses: string;
+  governanceRules: string;
+};
+
+const currentUserTeam = 'DQ Operations';
+const customTrackerStorageKey = 'dws-tracker-hub-custom-trackers';
+const savedViewStorageKey = 'dws-tracker-hub-saved-view';
+const recentStorageKey = 'dws-tracker-hub-recently-opened';
+
+const defaultFilters: FilterState = {
+  search: '',
+  trackerType: 'All',
+  owner: 'All',
+  health: 'All',
+  updateFrequency: 'All',
+};
+
+const defaultSort: SortState = {
+  key: null,
+  direction: 'asc',
+};
+
+const defaultSettings: SettingsState = {
+  compactDensity: false,
+  showBottomGuide: true,
+  showRightRail: true,
+  defaultTab: 'All Trackers',
+  defaultSort: 'None',
+  redAlerts: true,
+  overdueAlerts: true,
+};
+
+const baseTrackers: HubTracker[] = [
+  tracker('workload-distribution', 'workload-distribution-tracker', 'Workload Distribution Tracker', 'Balance workload across squads', 'PMO', 'Workload Tracker', 22, 3, 'Today', 'Green', 'Weekly', false, false),
+  tracker('squad-backlog', 'squad-backlog-tracker', 'Squad Backlog Tracker', 'Track squad backlog and aging', 'Delivery Ops', 'Backlog Tracker', 31, 5, 'Today', 'Amber', 'Twice weekly', true, false),
+  tracker('project-backlog', 'project-backlog-tracker', 'Project Backlog Tracker', 'Monitor project backlog health', 'DQ Operations', 'Project Backlog Tracker', 18, 4, 'Today', 'Amber', 'Weekly', false, false),
+  tracker('strategic-initiatives', 'strategic-initiatives-tracker', 'Strategic Initiatives Tracker', 'Track strategic initiatives', 'Strategy Office', 'Strategic Initiative Tracker', 12, 2, 'Yesterday', 'Green', 'Fortnightly', true, false),
+  tracker('project-health', 'project-health-tracker', 'Project Health Tracker', 'Monitor project health signals', 'DQ Operations', 'Project Health Tracker', 18, 4, 'Today', 'Amber', 'Weekly', true, true, 'Today, 9:42 AM'),
+  tracker('governance-follow-up', 'governance-follow-up-tracker', 'Governance Follow-up Tracker', 'Track governance follow-ups', 'Governance Office', 'Governance Follow-up Tracker', 19, 6, 'Today', 'Red', 'Weekly', false, false),
+  tracker('action-log', 'action-log-tracker', 'Action Log Tracker', 'Track actions from meetings and reviews', 'Delivery Ops', 'Action Log Tracker', 28, 5, 'Today', 'Amber', 'Daily', false, true, 'Yesterday, 10:11 AM'),
+  tracker('decision', 'decision-tracker', 'Decision Tracker', 'Track decisions and supporting evidence', 'DQ Operations', 'Decision Tracker', 16, 3, 'Today', 'Amber', 'Weekly', false, false),
+  tracker('risk-issue', 'risk-issue-tracker', 'Risk / Issue Tracker', 'Track risks, issues, and mitigations', 'Risk Office', 'Risk / Issue Tracker', 25, 6, 'Today', 'Red', 'Weekly', true, false),
 ];
 
-const tabs = [
-  { label: 'Overview', icon: LayoutGrid },
-  { label: 'My Tracker Items', icon: UserCheck },
-  { label: 'Active Tracker', icon: Folder },
-  { label: 'Health', icon: BarChart3 },
-  { label: 'About Tracker', icon: ShieldAlert },
+const fallbackRecentRows = [
+  { slug: 'project-health-tracker', name: 'Project Health Tracker', owner: 'DQ Operations', lastOpened: 'Today, 9:42 AM', healthStatus: 'Amber' as TrackerHealth, available: true },
+  { slug: 'request-status-tracker', name: 'Request Status Tracker', owner: 'DQ Operations', lastOpened: 'Yesterday, 4:15 PM', healthStatus: 'Green' as TrackerHealth, available: false },
+  { slug: 'action-log-tracker', name: 'Action Log Tracker', owner: 'Delivery Ops', lastOpened: 'Yesterday, 10:11 AM', healthStatus: 'Amber' as TrackerHealth, available: true },
 ];
+
+const trackerTypeOptions = ['All', 'Workload Tracker', 'Backlog Tracker', 'Project Backlog Tracker', 'Strategic Initiative Tracker', 'Project Health Tracker', 'Governance Follow-up Tracker', 'Action Log Tracker', 'Decision Tracker', 'Risk / Issue Tracker'];
+const ownerOptions = ['All', 'PMO', 'Delivery Ops', 'DQ Operations', 'Strategy Office', 'Governance Office', 'Risk Office'];
+const healthOptions = ['All', 'Green', 'Amber', 'Red'];
+const updateFrequencyOptions = ['All', 'Daily', 'Weekly', 'Twice weekly', 'Fortnightly'];
+const tabs: HubTab[] = ['All Trackers', 'Recently Opened', 'Owned by My Team', 'Favorites'];
 
 export function TrackerHubPage() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('Overview');
-  const [items, setItems] = useState<TrackerItem[]>(seededItems);
-  const [selectedItem, setSelectedItem] = useState<TrackerItem | null>(null);
-  const [activeFilter, setActiveFilter] = useState<string | null>(null);
-  const [filters, setFilters] = useState({
-    search: '',
-    tracker: 'All Tracker Types',
-    owner: 'All Owners',
-    status: 'All Statuses',
-    priority: 'All Priorities',
-    rag: 'All RAG',
-    dueDate: 'All Due Dates',
-  });
+  const savedView = readJson<SavedView>(savedViewStorageKey);
+  const [trackers, setTrackers] = useState<HubTracker[]>(() => [...readCustomTrackers(), ...baseTrackers]);
+  const [activeTab, setActiveTab] = useState<HubTab>(savedView?.activeTab || 'All Trackers');
+  const [filters, setFilters] = useState<FilterState>(savedView?.filters || defaultFilters);
+  const [sort, setSort] = useState<SortState>(savedView?.sort || defaultSort);
+  const [savedViewApplied] = useState(Boolean(savedView));
+  const [createOpen, setCreateOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [recentOpen, setRecentOpen] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
+  const [settings, setSettings] = useState<SettingsState>(defaultSettings);
 
-  const filteredItems = useMemo(() => {
-    const query = filters.search.trim().toLowerCase();
-    return items
-      .filter((item) => !query || `${item.id} ${item.tracker} ${item.title} ${item.owner} ${item.nextAction}`.toLowerCase().includes(query))
-      .filter((item) => filters.tracker === 'All Tracker Types' || item.tracker === filters.tracker)
-      .filter((item) => filters.owner === 'All Owners' || item.owner === filters.owner)
-      .filter((item) => filters.status === 'All Statuses' || item.status === filters.status)
-      .filter((item) => filters.priority === 'All Priorities' || item.priority === filters.priority)
-      .filter((item) => filters.rag === 'All RAG' || item.rag === filters.rag)
-      .filter((item) => filters.dueDate === 'All Due Dates' || item.dueDate === filters.dueDate || (filters.dueDate === 'Today' && item.dueDate === 'Today'));
-  }, [filters, items]);
+  const visibleTrackers = useMemo(
+    () => applyTrackerView(trackers, activeTab, filters, sort),
+    [trackers, activeTab, filters, sort]
+  );
 
-  const updateFilter = (key: keyof typeof filters, value: string) => setFilters((current) => ({ ...current, [key]: value }));
+  const recentRows = useMemo(() => {
+    const storedRecent = readJson<Array<{ slug: string; lastOpened: string }>>(recentStorageKey) || [];
+    const customRows = storedRecent
+      .map((entry) => trackers.find((item) => item.slug === entry.slug))
+      .filter(Boolean)
+      .map((item) => ({
+        slug: item!.slug,
+        name: item!.name,
+        owner: item!.owner,
+        lastOpened: storedRecent.find((entry) => entry.slug === item!.slug)?.lastOpened || item!.lastOpened || 'Today',
+        healthStatus: item!.healthStatus,
+        available: true,
+      }));
+    const merged = [...customRows, ...fallbackRecentRows];
+    return merged.filter((row, index, list) => list.findIndex((item) => item.slug === row.slug) === index);
+  }, [trackers]);
+
+  const updateFilter = (key: keyof FilterState, value: string) => {
+    setFilters((current) => ({ ...current, [key]: value }));
+  };
+
   const clearFilters = () => {
-    setFilters({ search: '', tracker: 'All Tracker Types', owner: 'All Owners', status: 'All Statuses', priority: 'All Priorities', rag: 'All RAG', dueDate: 'All Due Dates' });
-    setActiveFilter(null);
+    setActiveTab('All Trackers');
+    setFilters(defaultFilters);
+    setSort(defaultSort);
   };
-  const applyKpiFilter = (filter: string) => {
-    setActiveFilter(filter);
-    if (filter === 'assigned') updateFilter('owner', 'Bilal Waqar');
-    if (filter === 'overdue') updateFilter('status', 'Overdue');
-    if (filter === 'review') updateFilter('status', 'Awaiting Review');
-    if (filter === 'rag') updateFilter('rag', 'Red');
-    if (filter === 'active') toast.info('Active tracker filter applied');
+
+  const saveView = () => {
+    localStorage.setItem(savedViewStorageKey, JSON.stringify({ activeTab, filters, sort }));
+    toast.success('Tracker view saved');
   };
-  const openTracker = (name: string) => {
-    const tracker = getTrackerByName(name);
-    if (!tracker) {
-      toast.info(`${name} opened`);
+
+  const exportTrackers = () => {
+    if (visibleTrackers.length === 0) {
+      toast.info('No trackers to export');
       return;
     }
-    navigate(`/tracker/active-tracker/${tracker.slug}`);
+    const rows = visibleTrackers.map((item) => [
+      item.name,
+      item.purpose,
+      item.owner,
+      item.trackerType,
+      item.activeRecords,
+      item.overdueRecords,
+      item.lastUpdated,
+      item.healthStatus,
+      item.updateFrequency,
+    ]);
+    downloadCsv('tracker-hub-overview.csv', ['Tracker Name', 'Purpose', 'Owner', 'Tracker Type', 'Active Records', 'Overdue', 'Last Updated', 'Health', 'Update Frequency'], rows);
+    toast.success('Tracker overview exported');
   };
 
+  const openTracker = (item: { slug: string; available?: boolean }) => {
+    if (item.available === false) {
+      toast.info('Request Status Tracker is not available in this MVP view');
+      return;
+    }
+    const lastOpened = 'Today, 9:42 AM';
+    const nextTrackers = trackers.map((trackerItem) => trackerItem.slug === item.slug ? { ...trackerItem, recentlyOpened: true, lastOpened } : trackerItem);
+    setTrackers(nextTrackers);
+    const recent = [{ slug: item.slug, lastOpened }, ...(readJson<Array<{ slug: string; lastOpened: string }>>(recentStorageKey) || []).filter((entry) => entry.slug !== item.slug)].slice(0, 8);
+    localStorage.setItem(recentStorageKey, JSON.stringify(recent));
+    navigate(`/tracker/active-tracker/${item.slug}`);
+  };
+
+  const createTracker = (draft: CreateTrackerDraft) => {
+    const nextTracker: HubTracker = {
+      id: slugify(draft.name).replace(/-tracker$/, ''),
+      slug: slugify(draft.name),
+      name: draft.name.trim(),
+      purpose: draft.purpose.trim(),
+      owner: draft.owner,
+      trackerType: draft.trackerType,
+      requiredFields: splitList(draft.requiredFields),
+      optionalFields: splitList(draft.optionalFields),
+      defaultStatuses: splitList(draft.defaultStatuses, ['Open', 'In Progress', 'Closed']),
+      ownershipModel: `${draft.owner} ownership`,
+      updateFrequency: draft.updateFrequency,
+      governanceRules: draft.governanceRules.trim() || 'Governance rules not configured.',
+      healthStatus: draft.healthStatus,
+      activeRecords: 0,
+      overdueRecords: 0,
+      lastUpdated: 'Today',
+      favorite: false,
+      recentlyOpened: false,
+    };
+    const nextTrackers = [nextTracker, ...trackers.filter((item) => item.slug !== nextTracker.slug)];
+    setTrackers(nextTrackers);
+    persistCustomTrackers(nextTrackers.filter((item) => !baseTrackers.some((base) => base.slug === item.slug)));
+    setCreateOpen(false);
+    toast.success('Tracker created');
+  };
+
+  const applySettings = (nextSettings: SettingsState) => {
+    setSettings(nextSettings);
+    setActiveTab(nextSettings.defaultTab);
+    setSort(sortFromSetting(nextSettings.defaultSort));
+    setSettingsOpen(false);
+    toast.success('Tracker settings applied');
+  };
+
+  const summary = {
+    total: trackers.length,
+    healthy: trackers.filter((item) => item.healthStatus === 'Green').length,
+    attention: trackers.filter((item) => item.healthStatus === 'Amber').length,
+    critical: trackers.filter((item) => item.healthStatus === 'Red').length,
+  };
+
+  const hasRightRail = settings.showRightRail;
+
   return (
-    <div className="w-full px-5 py-6 pb-12 sm:px-6 lg:px-8">
-      <header className="mb-6">
-        <Breadcrumb items={['Tracker', 'Tracker Hub']} />
-        <div className="flex flex-col gap-4 2xl:flex-row 2xl:items-start 2xl:justify-between">
-          <div>
-            {/* <div className="dq-overline mb-2">TRACKER WORKSPACE</div> */}
-            <h1 className="dq-page-title">My Tracker Overview</h1>
-            <p className="mt-2 max-w-4xl text-sm leading-6 text-primary">
-              Monitor live trackers, assigned records, overdue items, health signals, and follow-up actions across DWS.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <DqButton variant="orange" onClick={() => toast.success('Create tracker item opened')}><Plus size={16} strokeWidth={1.5} /> Create Tracker Item</DqButton>
-            <DqButton variant="navy" onClick={() => toast.success('Tracker view saved')}><Save size={16} strokeWidth={1.5} /> Save View</DqButton>
-            <DqIconButton label="Tracker settings" onClick={() => toast.info('Tracker settings opened')}><Settings size={18} strokeWidth={1.5} /></DqIconButton>
-          </div>
+    <div className="w-full px-6 py-6 pb-12 lg:px-8">
+      <header className="mb-4 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+        <div className="min-w-0">
+          <div className="dq-overline mb-2">TRACKER HUB</div>
+          <h1 className="dq-page-title">My Tracker Overview</h1>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-primary">Browse available trackers, review their health, and open a tracker to manage its records.</p>
+          {savedViewApplied && <div className="mt-2 text-xs font-semibold text-text-muted">Saved view applied</div>}
+        </div>
+        <div className="flex shrink-0 flex-wrap items-center justify-start gap-2 xl:justify-end">
+          <DqButton variant="orange" onClick={() => setCreateOpen(true)} className="h-12 px-5"><Plus size={18} strokeWidth={1.5} /> Create Tracker</DqButton>
+          <DqButton variant="navy" onClick={saveView} className="h-12 px-5"><Bookmark size={17} strokeWidth={1.5} /> Save View</DqButton>
+          <DqButton variant="navy" onClick={exportTrackers} className="h-12 px-5"><Download size={17} strokeWidth={1.5} /> Export Tracker</DqButton>
+          <DqIconButton label="Tracker Hub settings" onClick={() => setSettingsOpen(true)} className="h-12 w-12"><Settings size={19} strokeWidth={1.5} /></DqIconButton>
         </div>
       </header>
-{/* 
-      <section className="mb-4 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-        <KpiCard active={activeFilter === 'active'} label="Active Trackers" value="9" trend="↗ -2 this week" icon={Folder} accent="blue" onClick={() => applyKpiFilter('active')} />
-        <KpiCard active={activeFilter === 'assigned'} label="My Assigned Items" value="26" trend="↘ -4 due today" icon={UserCheck} accent="green" onClick={() => applyKpiFilter('assigned')} />
-        <KpiCard active={activeFilter === 'overdue'} label="Overdue Records" value="7" trend="↘ -1 vs yesterday" icon={AlertTriangle} accent="red" onClick={() => applyKpiFilter('overdue')} />
-        <KpiCard active={activeFilter === 'review'} label="Awaiting My Review" value="5" trend="↔ +1 pending" icon={ClipboardCheck} accent="purple" onClick={() => applyKpiFilter('review')} />
-        <KpiCard active={activeFilter === 'rag'} label="RAG Alerts" value="11" trend="3 red / 8 amber" icon={ShieldAlert} accent="orange" onClick={() => applyKpiFilter('rag')} />
-      </section> */}
 
-      <div className="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_360px]">
-        <main className="min-w-0">
+      <div className={`grid gap-6 ${hasRightRail ? '2xl:grid-cols-[minmax(0,1fr)_360px]' : 'grid-cols-1'}`}>
+        <main className="min-w-0 space-y-4">
           <section className="overflow-hidden rounded-card border border-border-default bg-white shadow-sm">
-            <div className="dq-tabs flex overflow-x-auto px-4" role="tablist" aria-label="Tracker Hub tabs">
-              {tabs.map(({ label, icon: Icon }) => (
-                <button
-                  key={label}
-                  role="tab"
-                  aria-selected={activeTab === label}
-                  onClick={() => setActiveTab(label)}
-                  className={`dq-tab inline-flex items-center gap-2 whitespace-nowrap ${activeTab === label ? 'dq-tab-active text-secondary' : ''}`}>
-                  <Icon size={16} strokeWidth={1.5} />
-                  {label}
-                </button>
-              ))}
+            <div className="px-5 pt-5">
+              <h2 className="text-lg font-semibold text-primary">Available Trackers</h2>
             </div>
-
-            <div className="p-4">
-              {activeTab === 'Overview' && (
-                <>
-                  <TrackerOverview trackers={trackers} onOpenTracker={openTracker} />
-                  <TrackerItemsSection
-                    filters={filters}
-                    items={filteredItems}
-                    onFilter={updateFilter}
-                    onClear={clearFilters}
-                    onOpenItem={setSelectedItem}
-                  />
-                </>
-              )}
-              {activeTab === 'My Tracker Items' && (
-                <TrackerItemsSection
-                  filters={filters}
-                  items={filteredItems}
-                  onFilter={updateFilter}
-                  onClear={clearFilters}
-                  onOpenItem={setSelectedItem}
-                />
-              )}
-              {activeTab === 'Active Tracker' && <ActiveTrackerPreview onOpen={() => navigate('/tracker/active-tracker/project-health-tracker')} />}
-              {activeTab === 'Health' && <HealthPreview />}
-              {activeTab === 'About Tracker' && <AboutTrackerPanel />}
-            </div>
+            <Tabs activeTab={activeTab} onChange={setActiveTab} />
+            <FilterBar filters={filters} onFilter={updateFilter} onClear={clearFilters} />
+            <TrackerTable
+              trackers={visibleTrackers}
+              sort={sort}
+              compact={settings.compactDensity}
+              onSort={(key) => setSort((current) => ({ key, direction: current.key === key && current.direction === 'asc' ? 'desc' : 'asc' }))}
+              onOpen={openTracker}
+              onClear={clearFilters}
+            />
           </section>
+
+          {settings.showBottomGuide && <BottomGuide />}
         </main>
 
-        <RightRail onOpenTracker={() => navigate('/tracker/active-tracker/project-health-tracker')} />
+        {hasRightRail && (
+          <RightRail
+            summary={summary}
+            recentRows={recentRows}
+            onHealthFilter={(health) => {
+              setActiveTab('All Trackers');
+              setFilters((current) => ({ ...current, health }));
+            }}
+            onOpen={openTracker}
+            onViewAll={() => setRecentOpen(true)}
+            onInfo={() => setInfoOpen(true)}
+          />
+        )}
       </div>
 
-      <TrackerDetailDrawer
-        item={selectedItem}
-        onClose={() => setSelectedItem(null)}
-        onSave={(updated) => {
-          setItems((current) => current.map((item) => item.id === updated.id ? updated : item));
-          setSelectedItem(updated);
-          toast.success('Tracker record updated');
-        }}
-      />
+      <CreateTrackerModal open={createOpen} onClose={() => setCreateOpen(false)} onCreate={createTracker} />
+      <SettingsModal open={settingsOpen} settings={settings} onClose={() => setSettingsOpen(false)} onApply={applySettings} />
+      <RecentlyOpenedModal open={recentOpen} rows={recentRows} onClose={() => setRecentOpen(false)} onOpen={openTracker} />
+      <InfoModal open={infoOpen} onClose={() => setInfoOpen(false)} />
     </div>
   );
 }
 
-function Breadcrumb({ items }: { items: string[] }) {
+function Tabs({ activeTab, onChange }: { activeTab: HubTab; onChange: (tab: HubTab) => void }) {
   return (
-    <nav className="mb-3 flex items-center gap-2 text-sm font-semibold text-primary" aria-label="Breadcrumb">
-      {items.map((item, index) => (
-        <span key={item} className="inline-flex items-center gap-2">
-          {index > 0 && <span className="text-text-muted">/</span>}
-          <span className={index === items.length - 1 ? 'font-bold' : ''}>{item}</span>
-        </span>
-      ))}
-    </nav>
-  );
-}
-
-function KpiCard({ label, value, trend, icon: Icon, accent, active, onClick }: { label: string; value: string; trend: string; icon: LucideIcon; accent: 'blue' | 'orange' | 'red' | 'purple' | 'green'; active?: boolean; onClick: () => void }) {
-  const styles = {
-    blue: 'border-t-info text-info-text bg-info-surface',
-    orange: 'border-t-secondary text-secondary bg-orange-50',
-    red: 'border-t-danger text-danger-text bg-danger-surface',
-    purple: 'border-t-[#7c3aed] text-[#6d28d9] bg-[#f3e8ff]',
-    green: 'border-t-success text-success-text bg-success-surface',
-  }[accent];
-  const [borderClass, textClass, bgClass] = styles.split(' ');
-  return (
-    <button onClick={onClick} className={`dq-card dq-card-clickable min-h-[124px] border-t-4 text-left ${borderClass} ${active ? 'ring-2 ring-secondary/40' : ''}`}>
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="text-[13px] font-semibold text-primary">{label}</div>
-          <div className="mt-2 text-3xl font-bold tabular-nums text-primary">{value}</div>
-          <div className="mt-3 text-xs font-semibold text-primary">{trend}</div>
-        </div>
-        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-button ${bgClass} ${textClass}`}>
-          <Icon size={22} strokeWidth={1.5} />
-        </div>
-      </div>
-    </button>
-  );
-}
-
-function TrackerOverview({ trackers: trackerCards, onOpenTracker }: { trackers: TrackerCardModel[]; onOpenTracker: (name: string) => void }) {
-  return (
-    <section>
-      <div className="mb-3 flex items-center gap-3">
-        <span className="grid h-6 w-6 place-items-center rounded-button border border-border-default bg-white text-xs font-bold text-primary">1</span>
-        <h2 className="dq-card-title">Tracker Overview Dashboard</h2>
-      </div>
-      <div className="grid gap-3 xl:grid-cols-3">
-        {trackerCards.slice(0, 6).map((tracker) => <TrackerCard key={tracker.name} tracker={tracker} onOpen={() => onOpenTracker(tracker.name)} />)}
-      </div>
-      <div className="mt-3 grid gap-3 xl:grid-cols-4">
-        {trackerCards.slice(6).map((tracker) => <TrackerMiniCard key={tracker.name} tracker={tracker} onOpen={() => onOpenTracker(tracker.name)} />)}
-        <button onClick={() => toast.info('All trackers opened')} className="dq-card dq-card-clickable flex min-h-[92px] items-center justify-center text-center">
-          <span>
-            <span className="block text-lg font-bold text-primary">+ 6 more trackers</span>
-            <span className="mt-1 block text-sm font-bold text-info-text">View all trackers →</span>
-          </span>
+    <div className="dq-tabs mt-2 flex overflow-x-auto px-3" role="tablist" aria-label="Tracker Hub tabs">
+      {tabs.map((tab) => (
+        <button
+          key={tab}
+          role="tab"
+          aria-selected={activeTab === tab}
+          onClick={() => onChange(tab)}
+          className={`dq-tab whitespace-nowrap ${activeTab === tab ? 'dq-tab-active text-secondary' : ''}`}>
+          {tab}
         </button>
-      </div>
-    </section>
-  );
-}
-
-function TrackerCard({ tracker, onOpen }: { tracker: TrackerCardModel; onOpen: () => void }) {
-  const Icon = tracker.icon;
-  return (
-    <article className="dq-card dq-card-clickable flex min-h-[164px] flex-col">
-      <div className="flex items-start gap-3">
-        <span className={`grid h-10 w-10 place-items-center rounded-button ${tracker.status === 'Red' ? 'bg-danger-surface text-danger-text' : tracker.status === 'Amber' ? 'bg-warning-surface text-warning-text' : 'bg-success-surface text-success-text'}`}>
-          <Icon size={20} strokeWidth={1.5} />
-        </span>
-        <div className="min-w-0">
-          <h3 className="text-sm font-bold text-primary">{tracker.name}</h3>
-          <p className="mt-1 text-xs font-semibold text-text-secondary">Purpose: {tracker.purpose}</p>
-          <p className="text-xs font-semibold text-primary">Owner: {tracker.owner}</p>
-        </div>
-      </div>
-      <div className="mt-4 grid grid-cols-3 gap-2 border-y border-border-subtle py-3 text-xs">
-        <Metric label="Active" value={tracker.active} />
-        <Metric label="Overdue" value={tracker.overdue} danger />
-        <Metric label="Last Updated" value={tracker.lastUpdated || 'Today'} />
-      </div>
-      <div className="mt-auto flex items-center justify-between pt-3">
-        <HealthDot status={tracker.status} />
-        <button onClick={onOpen} className="text-xs font-bold text-info-text hover:text-primary">Open tracker →</button>
-      </div>
-    </article>
-  );
-}
-
-function TrackerMiniCard({ tracker, onOpen }: { tracker: TrackerCardModel; onOpen: () => void }) {
-  const Icon = tracker.icon;
-  return (
-    <article className="dq-card dq-card-clickable min-h-[92px]">
-      <div className="flex items-start gap-3">
-        <span className="grid h-9 w-9 place-items-center rounded-button bg-navy-50 text-primary"><Icon size={18} strokeWidth={1.5} /></span>
-        <div className="min-w-0 flex-1">
-          <h3 className="truncate text-sm font-bold text-primary">{tracker.name}</h3>
-          <p className="text-xs font-semibold text-primary">Owner: {tracker.owner}</p>
-          <div className="mt-2 flex flex-wrap gap-3 text-xs font-bold text-primary">
-            <span>Active {tracker.active}</span>
-            <span>Overdue <span className="text-danger">{tracker.overdue}</span></span>
-            <HealthDot status={tracker.status} />
-          </div>
-        </div>
-      </div>
-      <button onClick={onOpen} className="mt-2 text-xs font-bold text-info-text hover:text-primary">Open tracker →</button>
-    </article>
-  );
-}
-
-function Metric({ label, value, danger }: { label: string; value: number | string; danger?: boolean }) {
-  return (
-    <div>
-      <div className="text-[11px] font-bold text-text-muted">{label}</div>
-      <div className={`mt-1 font-mono text-sm font-bold ${danger ? 'text-danger' : 'text-primary'}`}>{value}</div>
+      ))}
     </div>
   );
 }
 
-function HealthDot({ status }: { status: TrackerHealth }) {
-  const color = status === 'Red' ? 'bg-danger text-danger' : status === 'Amber' ? 'bg-warning text-warning' : 'bg-success text-success';
-  return <span className="inline-flex items-center gap-1.5 text-xs font-bold"><span className={`h-2 w-2 rounded-full ${color.split(' ')[0]}`} />Status: <span className={color.split(' ')[1]}>{status}</span></span>;
-}
-
-function TrackerItemsSection({ filters, items, onFilter, onClear, onOpenItem }: { filters: Record<string, string>; items: TrackerItem[]; onFilter: (key: keyof typeof filters, value: string) => void; onClear: () => void; onOpenItem: (item: TrackerItem) => void }) {
+function FilterBar({ filters, onFilter, onClear }: { filters: FilterState; onFilter: (key: keyof FilterState, value: string) => void; onClear: () => void }) {
   return (
-    <section className="mt-4 rounded-card border border-border-default bg-white shadow-sm">
-      <div className="border-b border-border-subtle p-4">
-        <div className="mb-3 flex items-center gap-3">
-          <span className="grid h-6 w-6 place-items-center rounded-button border border-border-default bg-white text-xs font-bold text-primary">2</span>
-          <h2 className="dq-card-title">My Tracker Items</h2>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative min-w-[260px] flex-1">
-            <Search size={16} strokeWidth={1.5} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
-            <input value={filters.search} onChange={(event) => onFilter('search', event.target.value)} placeholder="Search my items..." className="dq-input pl-9" />
-          </div>
-          <FilterSelect value={filters.tracker} onChange={(value) => onFilter('tracker', value)} options={['All Tracker Types', ...Array.from(new Set(seededItems.map((item) => item.tracker)))]} />
-          <FilterSelect value={filters.owner} onChange={(value) => onFilter('owner', value)} options={['All Owners', ...Array.from(new Set(seededItems.map((item) => item.owner)))]} />
-          <FilterSelect value={filters.status} onChange={(value) => onFilter('status', value)} options={['All Statuses', 'In Progress', 'Overdue', 'Awaiting Review', 'Blocked', 'Needs Update']} />
-          <FilterSelect value={filters.priority} onChange={(value) => onFilter('priority', value)} options={['All Priorities', 'Critical', 'High', 'Medium', 'Low']} />
-          <FilterSelect value={filters.rag} onChange={(value) => onFilter('rag', value)} options={['All RAG', 'Red', 'Amber', 'Green']} />
-          <FilterSelect value={filters.dueDate} onChange={(value) => onFilter('dueDate', value)} options={['All Due Dates', 'Today', '16 May', '17 May', '18 May', '19 May']} />
-          <button onClick={onClear} className="px-2 text-sm font-bold text-secondary hover:text-danger">Clear</button>
-          <DqButton variant="outline" onClick={() => toast.info('Tracker filters opened')}><LayoutGrid size={15} strokeWidth={1.5} /> Filters</DqButton>
-        </div>
+    <div className="grid gap-3 border-b border-border-subtle bg-white p-4 xl:grid-cols-[minmax(220px,1.4fr)_repeat(4,minmax(150px,1fr))_auto]">
+      <div className="relative">
+        <Search size={17} strokeWidth={1.5} className="absolute left-3 top-1/2 -translate-y-1/2 text-primary" />
+        <input value={filters.search} onChange={(event) => onFilter('search', event.target.value)} placeholder="Search trackers..." className="dq-input h-11 pl-10" />
       </div>
-      <div className="overflow-x-auto">
-        <table className="min-w-[1100px] w-full border-collapse text-left">
-          <thead>
-            <tr className="border-b border-border-subtle bg-surface">
-              {['Record ID', 'Tracker', 'Title', 'Owner', 'Status', 'Due Date', 'RAG', 'Last Updated', 'Next Action', ''].map((header) => (
-                <th key={header || 'action'} className="px-4 py-3 text-xs font-bold uppercase text-[#454560]">{header}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border-subtle bg-white">
-            {items.map((item) => (
-              <tr key={item.id} onClick={() => onOpenItem(item)} className="cursor-pointer hover:bg-navy-50">
-                <td className="px-4 py-3 font-mono text-xs font-bold text-primary">{item.id}</td>
-                <td className="px-4 py-3 text-sm font-semibold text-primary">{item.tracker}</td>
-                <td className="max-w-[260px] px-4 py-3 text-sm font-semibold text-primary">{item.title}</td>
-                <td className="px-4 py-3"><OwnerBadge owner={item.owner} /></td>
-                <td className="px-4 py-3"><StatusBadge status={item.status} /></td>
-                <td className={`px-4 py-3 text-sm font-bold ${item.dueDate === 'Today' ? 'text-secondary' : 'text-primary'}`}>{item.dueDate}</td>
-                <td className="px-4 py-3"><RagBadge rag={item.rag} /></td>
-                <td className="px-4 py-3 text-sm text-text-secondary">{item.lastUpdated}</td>
-                <td className="px-4 py-3 text-sm font-semibold text-primary">{item.nextAction}</td>
-                <td className="px-4 py-3"><ChevronRight size={17} strokeWidth={1.5} className="text-primary" /></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border-subtle px-4 py-3 text-sm text-text-muted">
-        <span>Showing 1 to {items.length} of 26 results</span>
-        <div className="flex items-center gap-2">
-          <PagerButton><ChevronLeft size={15} strokeWidth={1.5} /></PagerButton>
-          {['1', '2', '3'].map((page) => <PagerButton key={page} active={page === '1'}>{page}</PagerButton>)}
-          <span className="px-2">...</span>
-          <PagerButton>6</PagerButton>
-          <PagerButton><ChevronRight size={15} strokeWidth={1.5} /></PagerButton>
-        </div>
-        <button className="inline-flex h-9 items-center gap-2 rounded-button border border-border-default px-3 font-semibold text-primary">10 / page <ChevronDown size={14} strokeWidth={1.5} /></button>
-      </div>
-    </section>
+      <FilterSelect label="Tracker Type" value={filters.trackerType} options={trackerTypeOptions} onChange={(value) => onFilter('trackerType', value)} />
+      <FilterSelect label="Owner" value={filters.owner} options={ownerOptions} onChange={(value) => onFilter('owner', value)} />
+      <FilterSelect label="Health" value={filters.health} options={healthOptions} onChange={(value) => onFilter('health', value)} />
+      <FilterSelect label="Update Frequency" value={filters.updateFrequency} options={updateFrequencyOptions} onChange={(value) => onFilter('updateFrequency', value)} />
+      <DqButton variant="outline" onClick={onClear} className="h-11 whitespace-nowrap border-border-default px-4">
+        <RotateCcw size={16} strokeWidth={1.5} /> Clear Filters
+      </DqButton>
+    </div>
   );
 }
 
-function FilterSelect({ value, onChange, options }: { value: string; onChange: (value: string) => void; options: string[] }) {
+function FilterSelect({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (value: string) => void }) {
   return (
-    <label className="relative inline-flex h-10 min-w-[128px] items-center">
-      <select value={value} onChange={(event) => onChange(event.target.value)} className="h-10 w-full appearance-none rounded-button border-[1.5px] border-border-default bg-white px-3 pr-8 text-sm font-semibold text-primary outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10">
+    <label className="relative block">
+      <span className="absolute left-3 top-1.5 z-10 text-[11px] font-semibold text-text-muted">{label}</span>
+      <select value={value} onChange={(event) => onChange(event.target.value)} className="h-11 w-full appearance-none rounded-button border-[1.5px] border-border-default bg-white px-3 pb-1.5 pt-5 text-sm font-semibold text-primary outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10">
         {options.map((option) => <option key={option} value={option}>{option}</option>)}
       </select>
-      <ChevronDown size={15} strokeWidth={1.5} className="pointer-events-none absolute right-3 text-text-muted" />
+      <ChevronDown size={15} strokeWidth={1.5} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-primary" />
     </label>
   );
 }
 
-function OwnerBadge({ owner }: { owner: string }) {
-  const initials = owner.split(' ').map((part) => part[0]).join('').slice(0, 2);
+function TrackerTable({ trackers, sort, compact, onSort, onOpen, onClear }: { trackers: HubTracker[]; sort: SortState; compact: boolean; onSort: (key: SortKey) => void; onOpen: (tracker: HubTracker) => void; onClear: () => void }) {
+  const rowPadding = compact ? 'px-4 py-2.5' : 'px-4 py-3.5';
   return (
-    <span className="inline-flex items-center gap-2">
-      <span className="grid h-7 w-7 place-items-center rounded-full bg-primary text-[10px] font-bold text-white">{initials}</span>
-      <span className="text-sm font-semibold text-primary">{owner}</span>
-    </span>
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[1080px] table-fixed border-collapse text-left">
+        <thead>
+          <tr className="border-b border-border-subtle bg-surface">
+            <SortableTh label="Tracker Name" sortKey="name" sort={sort} onSort={onSort} className="w-[200px]" />
+            <th className="w-[250px] px-4 py-3 text-xs font-semibold uppercase text-[#454560]">Purpose</th>
+            <th className="w-[145px] px-4 py-3 text-xs font-semibold uppercase text-[#454560]">Owner</th>
+            <SortableTh label="Active Records" sortKey="activeRecords" sort={sort} onSort={onSort} className="w-[90px]" />
+            <SortableTh label="Overdue" sortKey="overdueRecords" sort={sort} onSort={onSort} className="w-[80px]" />
+            <SortableTh label="Last Updated" sortKey="lastUpdated" sort={sort} onSort={onSort} className="w-[100px]" />
+            <SortableTh label="Health" sortKey="healthStatus" sort={sort} onSort={onSort} className="w-[95px]" />
+            <th className="w-[120px] px-4 py-3 text-xs font-semibold uppercase text-[#454560]">Action</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-border-subtle bg-white">
+          {trackers.map((item) => (
+            <tr key={item.slug} onClick={() => onOpen(item)} className="cursor-pointer transition hover:bg-navy-50">
+              <td className={`${rowPadding} text-sm font-bold text-info-text`}>
+                <button onClick={(event) => { event.stopPropagation(); onOpen(item); }} className="text-left hover:text-primary">{item.name}</button>
+              </td>
+              <td className={`${rowPadding} max-w-[280px] text-sm font-medium text-primary`}>{item.purpose}</td>
+              <td className={`${rowPadding} text-sm font-semibold text-primary`}>{item.owner}</td>
+              <td className={`${rowPadding} text-center font-mono text-sm font-semibold text-primary`}>{item.activeRecords}</td>
+              <td className={`${rowPadding} text-center font-mono text-sm font-bold text-danger`}>{item.overdueRecords}</td>
+              <td className={`${rowPadding} text-sm font-medium text-primary`}>{item.lastUpdated}</td>
+              <td className={rowPadding}><HealthBadge health={item.healthStatus} /></td>
+              <td className={`${rowPadding} text-sm`}>
+                <button onClick={(event) => { event.stopPropagation(); onOpen(item); }} className="whitespace-nowrap font-bold text-info-text hover:text-primary">Open tracker →</button>
+              </td>
+            </tr>
+          ))}
+          {trackers.length === 0 && (
+            <tr>
+              <td colSpan={8} className="px-4 py-14">
+                <div className="mx-auto flex max-w-md flex-col items-center text-center">
+                  <FileSearch size={38} strokeWidth={1.5} className="text-text-muted" />
+                  <h3 className="mt-3 text-lg font-bold text-primary">No trackers found</h3>
+                  <p className="mt-1 text-sm text-text-secondary">Try adjusting your search or filters.</p>
+                  <DqButton variant="outline" onClick={onClear} className="mt-4">Clear Filters</DqButton>
+                </div>
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
-function RagBadge({ rag }: { rag: TrackerHealth }) {
-  const tone = rag === 'Red' ? 'danger' : rag === 'Amber' ? 'warning' : 'success';
-  return <DqBadge label={rag} tone={tone} dot={false} />;
-}
-
-function PagerButton({ children, active }: { children: ReactNode; active?: boolean }) {
-  return <button className={`grid h-8 min-w-8 place-items-center rounded-button border text-sm font-bold ${active ? 'border-primary bg-primary text-white' : 'border-border-default bg-white text-primary hover:bg-navy-50'}`}>{children}</button>;
-}
-
-function RightRail({ onOpenTracker }: { onOpenTracker: () => void }) {
+function SortableTh({ label, sortKey, sort, onSort, className = '' }: { label: string; sortKey: SortKey; sort: SortState; onSort: (key: SortKey) => void; className?: string }) {
+  const marker = sort.key === sortKey ? (sort.direction === 'asc' ? '↑' : '↓') : '↕';
   return (
-    <aside className="space-y-4">
-      <RailCard title="Active Tracker Workspace" icon={Activity}>
-        <div className="mb-4 flex items-center gap-3">
-          <span className="grid h-10 w-10 place-items-center rounded-full bg-info-surface text-info-text"><Target size={19} strokeWidth={1.5} /></span>
-          <div>
-            <div className="text-base font-bold text-primary">Project Health Tracker</div>
-            <p className="text-xs font-semibold text-text-muted">Monitor project health signals and risks</p>
-          </div>
+    <th className={`px-4 py-3 text-xs font-semibold uppercase text-[#454560] ${className}`}>
+      <button onClick={() => onSort(sortKey)} className="inline-flex items-center gap-1 hover:text-primary">
+        {label} <span className="text-[11px]">{marker}</span>
+      </button>
+    </th>
+  );
+}
+
+function HealthBadge({ health }: { health: TrackerHealth }) {
+  const tone = health === 'Green' ? 'success' : health === 'Amber' ? 'warning' : 'danger';
+  return <DqBadge label={health} tone={tone} />;
+}
+
+function RightRail({ summary, recentRows, onHealthFilter, onOpen, onViewAll, onInfo }: { summary: { total: number; healthy: number; attention: number; critical: number }; recentRows: Array<{ slug: string; name: string; owner: string; lastOpened: string; healthStatus: TrackerHealth; available: boolean }>; onHealthFilter: (health: string) => void; onOpen: (tracker: { slug: string; available?: boolean }) => void; onViewAll: () => void; onInfo: () => void }) {
+  return (
+    <aside className="space-y-5">
+      <RailCard title="Tracker Summary" action={<span className="h-6 w-6 rounded-full border-[3px] border-secondary border-l-info border-b-warning" />}>
+        <div className="space-y-1">
+          <SummaryRow label="Total Trackers" value={summary.total} />
+          <button onClick={() => onHealthFilter('Green')} className="flex w-full items-center justify-between gap-3 rounded-button px-2 py-2 text-left text-sm font-semibold text-primary hover:bg-navy-50">
+            <span className="inline-flex items-center gap-2"><Dot color="bg-success" />Healthy</span><span>{summary.healthy}</span>
+          </button>
+          <button onClick={() => onHealthFilter('Amber')} className="flex w-full items-center justify-between gap-3 rounded-button px-2 py-2 text-left text-sm font-semibold text-primary hover:bg-navy-50">
+            <span className="inline-flex items-center gap-2"><Dot color="bg-warning" />Attention Needed</span><span>{summary.attention}</span>
+          </button>
+          <button onClick={() => onHealthFilter('Red')} className="flex w-full items-center justify-between gap-3 rounded-button px-2 py-2 text-left text-sm font-semibold text-primary hover:bg-navy-50">
+            <span className="inline-flex items-center gap-2"><Dot color="bg-danger" />Critical</span><span>{summary.critical}</span>
+          </button>
         </div>
-        <div className="grid grid-cols-3 gap-px overflow-hidden rounded-card border border-border-subtle bg-border-subtle">
-          {[
-            ['Total Records', '18'],
-            ['Open', '12'],
-            ['Closed', '6'],
-            ['Overdue', '4'],
-            ['Missing Owner', '1'],
-            ['Not Updated Recently', '3'],
-          ].map(([label, value]) => (
-            <div key={label} className="bg-white p-3">
-              <div className="text-[11px] font-bold text-text-muted">{label}</div>
-              <div className="mt-1 font-mono text-lg font-bold text-primary">{value}</div>
-            </div>
+      </RailCard>
+
+      <RailCard title="Recently Opened" action={<History size={20} strokeWidth={1.5} />}>
+        <div className="space-y-4">
+          {recentRows.slice(0, 3).map((row) => (
+            <button key={row.slug} onClick={() => onOpen(row)} className="block w-full rounded-button text-left hover:bg-navy-50">
+              <div className="text-sm font-bold text-info-text">{row.name}</div>
+              <div className="mt-1 text-sm font-medium text-primary">{row.lastOpened}</div>
+            </button>
           ))}
         </div>
-        <DqButton variant="outline" onClick={onOpenTracker} className="mt-4 w-full">Open tracker →</DqButton>
+        <button onClick={onViewAll} className="mt-5 border-t border-border-subtle pt-4 text-sm font-bold text-info-text hover:text-primary">View all recently opened →</button>
       </RailCard>
 
-      <RailCard title="Tracker Health Summary" icon={BarChart3}>
-        <div className="space-y-3">
-          <RailBar label="Open Records" value={64} color="bg-info" max={70} />
-          <RailBar label="Closed Records" value={38} color="bg-success" max={70} />
-          <RailBar label="Overdue Records" value={15} color="bg-danger" max={70} />
-          <RailBar label="Blocked Records" value={7} color="bg-[#7c3aed]" max={70} />
-        </div>
-        <div className="mt-5">
-          <div className="mb-3 text-sm font-bold text-primary">RAG Split</div>
-          <div className="flex items-center gap-4">
-            <div className="h-20 w-20 rounded-full" style={{ background: 'conic-gradient(#dc2626 0 18%, #d97706 18% 65%, #16a34a 65% 100%)' }}>
-              <div className="m-auto mt-3 h-14 w-14 rounded-full bg-white" />
-            </div>
-            <div className="flex-1 space-y-2 text-xs font-semibold text-primary">
-              <RagLegend color="bg-danger" label="Red" value="3 (18%)" />
-              <RagLegend color="bg-warning" label="Amber" value="8 (47%)" />
-              <RagLegend color="bg-success" label="Green" value="7 (35%)" />
-            </div>
-          </div>
-        </div>
-      </RailCard>
-
-      <RailCard title="About this Tracker" icon={ShieldAlert}>
-        <AboutTrackerPanel compact />
+      <RailCard title="How it works" action={<button onClick={onInfo} aria-label="How Tracker Hub works" className="text-primary hover:text-secondary"><HelpCircle size={20} strokeWidth={1.5} /></button>}>
+        <p className="text-sm font-medium leading-6 text-primary">Open tracker to view its records. On the tracker details page, the left panel will list all trackers and the right panel will show the records/items in the selected tracker.</p>
       </RailCard>
     </aside>
   );
 }
 
-function RailCard({ title, icon: Icon, children }: { title: string; icon: LucideIcon; children: ReactNode }) {
+function RailCard({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
   return (
-    <section className="rounded-card border border-border-default bg-white p-4 shadow-sm">
-      <div className="mb-4 flex items-center gap-3">
-        <span className="grid h-8 w-8 place-items-center rounded-button bg-navy-50 text-primary"><Icon size={17} strokeWidth={1.5} /></span>
+    <section className="rounded-card border border-border-default bg-white shadow-sm">
+      <div className="flex items-center justify-between gap-3 border-b border-border-subtle px-5 py-4">
         <h2 className="dq-card-title">{title}</h2>
+        {action}
       </div>
-      {children}
+      <div className="p-5">{children}</div>
     </section>
   );
 }
 
-function RailBar({ label, value, color, max }: { label: string; value: number; color: string; max: number }) {
-  return (
-    <div className="grid grid-cols-[112px_42px_1fr] items-center gap-2 text-xs font-semibold text-primary">
-      <span>{label}</span>
-      <span className="font-mono font-bold">{value}</span>
-      <span className="h-2 rounded-full bg-border-subtle"><span className={`block h-full rounded-full ${color}`} style={{ width: `${Math.round((value / max) * 100)}%` }} /></span>
-    </div>
-  );
+function SummaryRow({ label, value }: { label: string; value: number }) {
+  return <div className="flex items-center justify-between gap-3 px-2 py-2 text-sm font-semibold text-primary"><span>{label}</span><span>{value}</span></div>;
 }
 
-function RagLegend({ color, label, value }: { color: string; label: string; value: string }) {
-  return <div className="flex justify-between gap-3"><span className="inline-flex items-center gap-2"><span className={`h-2 w-2 rounded-full ${color}`} />{label}</span><span>{value}</span></div>;
+function Dot({ color }: { color: string }) {
+  return <span className={`h-2 w-2 rounded-full ${color}`} />;
 }
 
-function ActiveTrackerPreview({ onOpen }: { onOpen: () => void }) {
+function BottomGuide() {
   return (
-    <section className="dq-card">
-      <h2 className="dq-card-title">Project Health Tracker</h2>
-      <p className="mt-2 text-sm text-text-secondary">Monitor project health signals and risks with governed RAG status, ownership, and update cadence.</p>
-      <DqButton variant="outline" onClick={onOpen} className="mt-4">Open tracker →</DqButton>
-    </section>
-  );
-}
-
-function HealthPreview() {
-  return (
-    <section className="dq-card">
-      <h2 className="dq-card-title">Tracker Health Summary</h2>
-      <div className="mt-4 grid gap-3 md:grid-cols-4">
-        {['Open Records 64', 'Closed Records 38', 'Overdue Records 15', 'Blocked Records 7'].map((item) => <div key={item} className="rounded-card bg-surface p-4 text-sm font-bold text-primary">{item}</div>)}
-      </div>
-    </section>
-  );
-}
-
-function AboutTrackerPanel({ compact }: { compact?: boolean }) {
-  const rows = [
-    ['Type', 'Project Health Tracker'],
-    ['Required Fields', 'Title, Owner, Status, Due Date, RAG, Last Update'],
-    ['Optional Fields', 'Impact, Priority, Notes, Links, Attachments'],
-    ['Default Statuses', 'In Progress, Blocked, On Hold, Completed'],
-    ['Ownership Model', 'Functional Ownership (DQ Operations)'],
-    ['Update Frequency', 'Weekly'],
-    ['Governance Rules', 'Review every Friday'],
-  ];
-  return (
-    <div className={`grid gap-3 ${compact ? '' : 'md:grid-cols-2'}`}>
-      {rows.map(([label, value]) => (
-        <div key={label} className={compact ? '' : 'rounded-card border border-border-subtle p-3'}>
-          <div className="text-xs font-bold text-text-muted">{label}</div>
-          <div className="mt-1 text-sm font-semibold text-primary">{value}</div>
+    <section className="rounded-card border border-border-default bg-white p-6 shadow-sm">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(420px,1fr)] xl:items-center">
+        <div className="flex gap-4">
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-orange-50 text-secondary"><SlidersHorizontal size={24} strokeWidth={1.5} /></span>
+          <div>
+            <h2 className="dq-card-title">Next step after opening a tracker</h2>
+            <p className="mt-2 text-sm leading-6 text-primary">Click “Open tracker” to go to the tracker details page. Use the left panel to switch between trackers and the right panel to view and manage records.</p>
+          </div>
         </div>
-      ))}
-    </div>
+        <div className="grid grid-cols-[1fr_120px_2fr_1fr] items-center gap-4 text-xs font-semibold text-primary">
+          <div className="text-right"><b>Left panel</b><br />All trackers in<br />your workspace</div>
+          <div className="relative h-28 rounded-button border border-border-default bg-white shadow-sm">
+            <div className="mx-3 mt-5 h-3 rounded-full bg-surface" />
+            <div className="mx-3 mt-3 h-3 rounded-full bg-surface" />
+            <div className="mx-3 mt-3 h-3 w-2/3 rounded-full bg-surface" />
+          </div>
+          <div className="rounded-button bg-surface p-4">
+            <div className="mb-3 h-5 rounded bg-white" />
+            <div className="grid grid-cols-3 gap-2">
+              {Array.from({ length: 12 }).map((_, index) => <span key={index} className="h-3 rounded bg-white" />)}
+            </div>
+          </div>
+          <div><b>Right panel</b><br />Records / items in<br />the selected tracker</div>
+        </div>
+      </div>
+    </section>
   );
 }
 
-function TrackerDetailDrawer({ item, onClose, onSave }: { item: TrackerItem | null; onClose: () => void; onSave: (item: TrackerItem) => void }) {
-  const [draft, setDraft] = useState<TrackerItem | null>(item);
-  const [comment, setComment] = useState('');
+function CreateTrackerModal({ open, onClose, onCreate }: { open: boolean; onClose: () => void; onCreate: (draft: CreateTrackerDraft) => void }) {
+  const [draft, setDraft] = useState<CreateTrackerDraft>({
+    name: '',
+    purpose: '',
+    owner: 'DQ Operations',
+    trackerType: 'Workload Tracker',
+    updateFrequency: 'Weekly',
+    healthStatus: 'Green',
+    requiredFields: 'Title, Owner, Status, Due Date',
+    optionalFields: 'Notes, Links, Attachments',
+    defaultStatuses: 'Open, In Progress, Closed',
+    governanceRules: '',
+  });
+  const [errors, setErrors] = useState<Partial<Record<keyof CreateTrackerDraft, string>>>({});
 
-  useEffect(() => setDraft(item), [item]);
   useEffect(() => {
-    if (!item) return undefined;
+    if (!open) return;
+    setErrors({});
+  }, [open]);
+
+  if (!open) return null;
+  const update = (key: keyof CreateTrackerDraft, value: string) => setDraft((current) => ({ ...current, [key]: value }));
+  const submit = () => {
+    const nextErrors: Partial<Record<keyof CreateTrackerDraft, string>> = {};
+    (['name', 'purpose', 'owner', 'trackerType', 'updateFrequency'] as const).forEach((key) => {
+      if (!draft[key].trim()) nextErrors[key] = 'Required';
+    });
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
+    onCreate(draft);
+    setDraft((current) => ({ ...current, name: '', purpose: '', governanceRules: '' }));
+  };
+
+  return (
+    <ModalFrame title="Create Tracker" onClose={onClose} width="max-w-3xl">
+      <div className="grid gap-4 md:grid-cols-2">
+        <ModalField label="Tracker Name" value={draft.name} error={errors.name} onChange={(value) => update('name', value)} />
+        <ModalSelect label="Owner" value={draft.owner} options={ownerOptions.filter((item) => item !== 'All')} error={errors.owner} onChange={(value) => update('owner', value)} />
+        <ModalField label="Purpose" value={draft.purpose} error={errors.purpose} onChange={(value) => update('purpose', value)} className="md:col-span-2" />
+        <ModalSelect label="Tracker Type" value={draft.trackerType} options={trackerTypeOptions.filter((item) => item !== 'All')} error={errors.trackerType} onChange={(value) => update('trackerType', value)} />
+        <ModalSelect label="Update Frequency" value={draft.updateFrequency} options={updateFrequencyOptions.filter((item) => item !== 'All')} error={errors.updateFrequency} onChange={(value) => update('updateFrequency', value)} />
+        <ModalSelect label="Health" value={draft.healthStatus} options={['Green', 'Amber', 'Red']} onChange={(value) => update('healthStatus', value as TrackerHealth)} />
+        <ModalField label="Required Fields" value={draft.requiredFields} onChange={(value) => update('requiredFields', value)} />
+        <ModalField label="Optional Fields" value={draft.optionalFields} onChange={(value) => update('optionalFields', value)} />
+        <ModalField label="Default Statuses" value={draft.defaultStatuses} onChange={(value) => update('defaultStatuses', value)} />
+        <label className="block md:col-span-2">
+          <span className="dq-field-label">Governance Rules</span>
+          <textarea value={draft.governanceRules} onChange={(event) => update('governanceRules', event.target.value)} rows={3} className="dq-textarea" />
+        </label>
+      </div>
+      <div className="mt-6 flex justify-end gap-2">
+        <DqButton variant="outline" onClick={onClose}>Cancel</DqButton>
+        <DqButton variant="orange" onClick={submit}>Create Tracker</DqButton>
+      </div>
+    </ModalFrame>
+  );
+}
+
+function SettingsModal({ open, settings, onClose, onApply }: { open: boolean; settings: SettingsState; onClose: () => void; onApply: (settings: SettingsState) => void }) {
+  const [draft, setDraft] = useState(settings);
+  useEffect(() => {
+    if (open) setDraft(settings);
+  }, [open, settings]);
+  if (!open) return null;
+  const toggle = (key: keyof SettingsState) => setDraft((current) => ({ ...current, [key]: !current[key] }));
+  return (
+    <ModalFrame title="Tracker Hub Settings" onClose={onClose} width="max-w-2xl">
+      <SettingsSection title="Display">
+        <Toggle label="Compact table density" checked={draft.compactDensity} onChange={() => toggle('compactDensity')} />
+        <Toggle label="Show bottom guide card" checked={draft.showBottomGuide} onChange={() => toggle('showBottomGuide')} />
+        <Toggle label="Show right rail" checked={draft.showRightRail} onChange={() => toggle('showRightRail')} />
+      </SettingsSection>
+      <SettingsSection title="Defaults">
+        <ModalSelect label="Default tab" value={draft.defaultTab} options={tabs} onChange={(value) => setDraft((current) => ({ ...current, defaultTab: value as HubTab }))} />
+        <ModalSelect label="Default sort" value={draft.defaultSort} options={['None', 'Tracker Name', 'Active Records', 'Overdue', 'Last Updated', 'Health']} onChange={(value) => setDraft((current) => ({ ...current, defaultSort: value }))} />
+      </SettingsSection>
+      <SettingsSection title="Notifications">
+        <Toggle label="Alert me when a tracker becomes Red" checked={draft.redAlerts} onChange={() => toggle('redAlerts')} />
+        <Toggle label="Alert me when a tracker has overdue records" checked={draft.overdueAlerts} onChange={() => toggle('overdueAlerts')} />
+      </SettingsSection>
+      <div className="mt-6 flex justify-end gap-2">
+        <DqButton variant="outline" onClick={onClose}>Cancel</DqButton>
+        <DqButton variant="orange" onClick={() => onApply(draft)}>Apply Settings</DqButton>
+      </div>
+    </ModalFrame>
+  );
+}
+
+function RecentlyOpenedModal({ open, rows, onClose, onOpen }: { open: boolean; rows: Array<{ slug: string; name: string; owner: string; lastOpened: string; healthStatus: TrackerHealth; available: boolean }>; onClose: () => void; onOpen: (tracker: { slug: string; available?: boolean }) => void }) {
+  if (!open) return null;
+  return (
+    <ModalFrame title="Recently Opened Trackers" onClose={onClose} width="max-w-2xl">
+      <div className="divide-y divide-border-subtle rounded-card border border-border-subtle">
+        {rows.map((row) => (
+          <div key={row.slug} className="grid gap-3 px-4 py-3 sm:grid-cols-[1fr_120px_120px_auto] sm:items-center">
+            <div>
+              <div className="font-bold text-primary">{row.name}</div>
+              <div className="text-sm text-text-muted">{row.owner}</div>
+            </div>
+            <div className="text-sm font-semibold text-primary">{row.lastOpened}</div>
+            <HealthBadge health={row.healthStatus} />
+            <button onClick={() => onOpen(row)} className="text-sm font-bold text-info-text hover:text-primary">Open tracker →</button>
+          </div>
+        ))}
+      </div>
+    </ModalFrame>
+  );
+}
+
+function InfoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  if (!open) return null;
+  return (
+    <ModalFrame title="How Tracker Hub works" onClose={onClose} width="max-w-lg">
+      <div className="space-y-3 text-sm font-semibold leading-6 text-primary">
+        <p>Step 1: Select a tracker from the overview list.</p>
+        <p>Step 2: Open the tracker details page.</p>
+        <p>Step 3: Use the left tracker list to switch trackers.</p>
+        <p>Step 4: Use the records table to update tracker items.</p>
+      </div>
+      <div className="mt-6 flex justify-end">
+        <DqButton variant="orange" onClick={onClose}>Got it</DqButton>
+      </div>
+    </ModalFrame>
+  );
+}
+
+function ModalFrame({ title, onClose, width, children }: { title: string; onClose: () => void; width: string; children: ReactNode }) {
+  useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [item, onClose]);
-
-  if (!item || !draft) return null;
-  const update = (patch: Partial<TrackerItem>) => setDraft((current) => current ? { ...current, ...patch } : current);
-  const addComment = () => {
-    if (!comment.trim()) return;
-    update({ comments: [`Bilal Waqar: ${comment.trim()}`, ...draft.comments] });
-    setComment('');
-    toast.success('Comment added');
-  };
-  const addEvidence = (label: string) => {
-    update({ evidence: [label, ...draft.evidence] });
-    toast.success(label.includes('Link') ? 'Evidence link added' : 'Evidence uploaded');
-  };
+  }, [onClose]);
 
   return (
     <>
-      <div className="fixed inset-0 z-[190] bg-primary/20" onClick={onClose} />
-      <aside className="fixed bottom-0 right-0 top-0 z-[200] w-full max-w-[560px] overflow-y-auto border-l border-border-default bg-white shadow-xl 2xl:max-w-[42vw]">
-        <div className="sticky top-0 z-10 border-b border-border-subtle bg-white px-6 py-5">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <div className="font-mono text-xs font-bold text-text-muted">{draft.id}</div>
-              <h2 className="mt-1 text-xl font-bold text-primary">{draft.title}</h2>
-              <p className="mt-1 text-sm font-semibold text-text-secondary">{draft.tracker}</p>
-            </div>
-            <DqIconButton label="Close tracker drawer" onClick={onClose}><X size={18} strokeWidth={1.5} /></DqIconButton>
-          </div>
+      <div className="fixed inset-0 z-[210] bg-primary/25" onClick={onClose} />
+      <section className={`fixed left-1/2 top-1/2 z-[220] max-h-[calc(100vh-48px)] w-[min(92vw,880px)] ${width} -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-card border border-border-default bg-white p-5 shadow-xl`}>
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <h2 className="text-xl font-bold text-primary">{title}</h2>
+          <DqIconButton label={`Close ${title}`} onClick={onClose}><X size={18} strokeWidth={1.5} /></DqIconButton>
         </div>
-        <div className="space-y-4 bg-surface p-5">
-          <section className="dq-card grid gap-3 sm:grid-cols-2">
-            <DrawerSelect label="Owner" value={draft.owner} options={['Bilal Waqar', 'Sara Khan', 'Ali Raza', 'Hina Adam']} onChange={(value) => update({ owner: value })} />
-            <DrawerSelect label="Status" value={draft.status} options={['In Progress', 'Overdue', 'Awaiting Review', 'Blocked', 'Needs Update', 'Completed']} onChange={(value) => update({ status: value as TrackerStatus })} />
-            <DrawerSelect label="Priority" value={draft.priority} options={['Low', 'Medium', 'High', 'Critical']} onChange={(value) => update({ priority: value as TrackerPriority })} />
-            <DrawerField label="Due date" value={draft.dueDate} onChange={(value) => update({ dueDate: value })} />
-            <DrawerSelect label="RAG" value={draft.rag} options={['Green', 'Amber', 'Red']} onChange={(value) => update({ rag: value as TrackerHealth })} />
-            <DrawerField label="Last updated" value={draft.lastUpdated} onChange={(value) => update({ lastUpdated: value })} />
-          </section>
-
-          <DrawerTextarea label="Description / Context" value={draft.description} onChange={(value) => update({ description: value })} />
-          <DrawerTextarea label="Latest Update" value={draft.latestUpdate} onChange={(value) => update({ latestUpdate: value })} />
-          <DrawerField label="Next Action" value={draft.nextAction} onChange={(value) => update({ nextAction: value })} />
-
-          <section className="dq-card">
-            <h3 className="dq-card-title">Comments</h3>
-            <div className="mt-3 space-y-2">{draft.comments.map((entry) => <div key={entry} className="rounded-button bg-surface px-3 py-2 text-sm text-primary">{entry}</div>)}</div>
-            <div className="mt-3 flex gap-2">
-              <input value={comment} onChange={(event) => setComment(event.target.value)} placeholder="Add comment..." className="dq-input" />
-              <DqButton variant="navy" onClick={addComment}>Post</DqButton>
-            </div>
-          </section>
-
-          <section className="dq-card">
-            <h3 className="dq-card-title">Evidence / Links</h3>
-            <div className="mt-3 space-y-2">{draft.evidence.map((entry) => <div key={entry} className="rounded-button bg-surface px-3 py-2 text-sm font-semibold text-primary">{entry}</div>)}</div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <DqButton variant="outline" onClick={() => addEvidence('Linked evidence placeholder')}>Add Link</DqButton>
-              <DqButton variant="outline" onClick={() => addEvidence('Uploaded evidence placeholder')}>Upload Evidence</DqButton>
-            </div>
-          </section>
-
-          <section className="dq-card">
-            <h3 className="dq-card-title">Activity History</h3>
-            <div className="mt-3 space-y-3">{draft.activity.map((entry) => <div key={entry} className="border-l-2 border-secondary pl-3 text-sm text-primary">{entry}</div>)}</div>
-          </section>
-
-          <div className="flex flex-wrap justify-end gap-2">
-            <DqButton variant="outline" onClick={() => update({ status: 'Completed', rag: 'Green' })}>Mark as complete</DqButton>
-            <DqButton variant="orange" onClick={() => onSave(draft)}>Save changes</DqButton>
-          </div>
-        </div>
-      </aside>
+        {children}
+      </section>
     </>
   );
 }
 
-function DrawerField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+function ModalField({ label, value, onChange, error, className = '' }: { label: string; value: string; onChange: (value: string) => void; error?: string; className?: string }) {
   return (
-    <label className="block">
-      <span className="text-xs font-bold text-text-muted">{label}</span>
-      <input value={value} onChange={(event) => onChange(event.target.value)} className="dq-input mt-1" />
+    <label className={`block ${className}`}>
+      <span className="dq-field-label">{label}</span>
+      <input value={value} onChange={(event) => onChange(event.target.value)} className={`dq-input ${error ? 'dq-input-error' : ''}`} />
+      {error && <span className="mt-1 block text-xs font-semibold text-danger">{error}</span>}
     </label>
   );
 }
 
-function DrawerSelect({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (value: string) => void }) {
+function ModalSelect({ label, value, options, onChange, error }: { label: string; value: string; options: string[]; onChange: (value: string) => void; error?: string }) {
   return (
     <label className="block">
-      <span className="text-xs font-bold text-text-muted">{label}</span>
-      <select value={value} onChange={(event) => onChange(event.target.value)} className="dq-input mt-1">
+      <span className="dq-field-label">{label}</span>
+      <select value={value} onChange={(event) => onChange(event.target.value)} className={`dq-input ${error ? 'dq-input-error' : ''}`}>
         {options.map((option) => <option key={option} value={option}>{option}</option>)}
       </select>
+      {error && <span className="mt-1 block text-xs font-semibold text-danger">{error}</span>}
     </label>
   );
 }
 
-function DrawerTextarea({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: () => void }) {
   return (
-    <label className="dq-card block">
-      <span className="text-xs font-bold text-text-muted">{label}</span>
-      <textarea value={value} onChange={(event) => onChange(event.target.value)} rows={4} className="dq-textarea mt-2" />
-    </label>
+    <button onClick={onChange} className="flex w-full items-center justify-between gap-4 rounded-button px-2 py-2 text-left text-sm font-semibold text-primary hover:bg-navy-50">
+      <span>{label}</span>
+      <span className={`relative h-6 w-11 rounded-full transition ${checked ? 'bg-secondary' : 'bg-border-default'}`}>
+        <span className={`absolute top-1 h-4 w-4 rounded-full bg-white transition ${checked ? 'left-6' : 'left-1'}`} />
+      </span>
+    </button>
   );
+}
+
+function SettingsSection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="mb-4 rounded-card border border-border-subtle p-4">
+      <h3 className="mb-2 text-sm font-bold text-primary">{title}</h3>
+      <div className="space-y-2">{children}</div>
+    </section>
+  );
+}
+
+function tracker(id: string, slug: string, name: string, purpose: string, owner: string, trackerType: string, activeRecords: number, overdueRecords: number, lastUpdated: string, healthStatus: TrackerHealth, updateFrequency: string, favorite: boolean, recentlyOpened: boolean, lastOpened?: string): HubTracker {
+  return {
+    id,
+    slug,
+    name,
+    purpose,
+    owner,
+    trackerType,
+    requiredFields: ['Title', 'Owner', 'Status', 'Due Date'],
+    optionalFields: ['Notes', 'Links', 'Attachments'],
+    defaultStatuses: ['Open', 'In Progress', 'Closed'],
+    ownershipModel: `${owner} ownership`,
+    updateFrequency,
+    governanceRules: 'Governed tracker update cadence applies.',
+    healthStatus,
+    activeRecords,
+    overdueRecords,
+    lastUpdated,
+    favorite,
+    recentlyOpened,
+    lastOpened,
+  };
+}
+
+function applyTrackerView(trackers: HubTracker[], activeTab: HubTab, filters: FilterState, sort: SortState) {
+  const teamOwners = ['DQ Operations', 'Delivery Ops', 'PMO', currentUserTeam];
+  const query = filters.search.trim().toLowerCase();
+  const filtered = trackers
+    .filter((item) => {
+      if (activeTab === 'Recently Opened') return item.recentlyOpened;
+      if (activeTab === 'Owned by My Team') return teamOwners.includes(item.owner);
+      if (activeTab === 'Favorites') return item.favorite;
+      return true;
+    })
+    .filter((item) => !query || `${item.name} ${item.purpose} ${item.owner} ${item.healthStatus} ${item.trackerType}`.toLowerCase().includes(query))
+    .filter((item) => filters.trackerType === 'All' || item.trackerType === filters.trackerType)
+    .filter((item) => filters.owner === 'All' || item.owner === filters.owner)
+    .filter((item) => filters.health === 'All' || item.healthStatus === filters.health)
+    .filter((item) => filters.updateFrequency === 'All' || item.updateFrequency === filters.updateFrequency);
+
+  if (!sort.key) return filtered;
+  return [...filtered].sort((a, b) => {
+    const direction = sort.direction === 'asc' ? 1 : -1;
+    if (sort.key === 'healthStatus') return (healthRank(a.healthStatus) - healthRank(b.healthStatus)) * direction;
+    if (sort.key === 'lastUpdated') return (dateRank(a.lastUpdated) - dateRank(b.lastUpdated)) * direction;
+    const left = a[sort.key];
+    const right = b[sort.key];
+    if (typeof left === 'number' && typeof right === 'number') return (left - right) * direction;
+    return String(left).localeCompare(String(right)) * direction;
+  });
+}
+
+function sortFromSetting(value: string): SortState {
+  const map: Record<string, SortKey | null> = {
+    None: null,
+    'Tracker Name': 'name',
+    'Active Records': 'activeRecords',
+    Overdue: 'overdueRecords',
+    'Last Updated': 'lastUpdated',
+    Health: 'healthStatus',
+  };
+  return { key: map[value] || null, direction: 'asc' };
+}
+
+function healthRank(health: TrackerHealth) {
+  return { Green: 1, Amber: 2, Red: 3 }[health];
+}
+
+function dateRank(label: string) {
+  if (label === 'Today') return 3;
+  if (label === 'Yesterday') return 2;
+  return 1;
+}
+
+function slugify(value: string) {
+  const slug = value.trim().toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return slug.endsWith('-tracker') ? slug : `${slug}-tracker`;
+}
+
+function splitList(value: string, fallback: string[] = []) {
+  const list = value.split(',').map((item) => item.trim()).filter(Boolean);
+  return list.length > 0 ? list : fallback;
+}
+
+function readJson<T>(key: string): T | null {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) as T : null;
+  } catch {
+    return null;
+  }
+}
+
+function readCustomTrackers() {
+  return readJson<HubTracker[]>(customTrackerStorageKey) || [];
+}
+
+function persistCustomTrackers(trackers: HubTracker[]) {
+  localStorage.setItem(customTrackerStorageKey, JSON.stringify(trackers));
+}
+
+function downloadCsv(filename: string, headers: string[], rows: Array<Array<string | number>>) {
+  const csv = [headers, ...rows].map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
 }

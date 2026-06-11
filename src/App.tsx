@@ -333,7 +333,7 @@ function renderTaskFeaturePage(route: string): React.ReactNode | null {
 function renderTrackerFeaturePage(route: string): React.ReactNode | null {
   const trackerFeatureMap: Record<string, React.ReactNode> = {
     // Tracker Hub
-    "/tracker/tracker-hub/my-tracker-overview": <MyTrackerOverviewPage />,
+    "/tracker/tracker-hub/my-tracker-overview": <TrackerHubPage />,
     "/tracker/tracker-hub/team-tracker-overview": <TeamTrackerOverviewPage />,
     "/tracker/tracker-hub/open-items": <OpenItemsPage />,
     "/tracker/tracker-hub/at-risk-items": <AtRiskItemsPage />,
