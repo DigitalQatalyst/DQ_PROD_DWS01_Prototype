@@ -5,20 +5,18 @@ import {
   ListTree,
   Clock,
   ShieldAlert,
-  CheckCircle2,
   ExternalLink,
 } from 'lucide-react';
 import type { ServiceDetail } from '../types/serviceLifecycle';
 import { ApprovalBadge } from './ApprovalBadge';
-
-interface WorkflowStep {
-  id: number;
-  label: string;
-}
+import {
+  RequestWorkflowStepper,
+  type RequestWorkflowStep,
+} from './RequestWorkflowStepper';
 
 interface RequestWorkflowContextRailProps {
   detail: ServiceDetail;
-  steps: WorkflowStep[];
+  steps: RequestWorkflowStep[];
   currentStep: number;
   stage?: string;
 }
@@ -41,56 +39,7 @@ export function RequestWorkflowContextRail({
     <div className="dq-card sticky top-[88px] p-6">
       <section className="mb-8">
         <h3 className={sectionTitleClass}>Request Progress</h3>
-        <ol>
-          {steps.map((step, index) => {
-            const isActive = step.id === currentStep;
-            const isPast = step.id < currentStep;
-            const isLast = index === steps.length - 1;
-
-            return (
-              <li key={step.id} className="flex gap-3">
-                <div className="flex flex-col items-center self-stretch">
-                  {isPast ? (
-                    <CheckCircle2
-                      size={20}
-                      className="shrink-0 text-success-text"
-                      strokeWidth={2}
-                    />
-                  ) : (
-                    <span
-                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold ${
-                        isActive
-                          ? 'border-primary bg-primary text-white'
-                          : 'border-border-strong bg-surface text-text-muted'
-                      }`}
-                    >
-                      {step.id}
-                    </span>
-                  )}
-                  {!isLast && (
-                    <div
-                      className={`my-1.5 w-px flex-1 ${
-                        isPast ? 'bg-success-text/30' : 'bg-border-subtle'
-                      }`}
-                      aria-hidden
-                    />
-                  )}
-                </div>
-                <span
-                  className={`pb-4 text-sm leading-5 ${
-                    isActive
-                      ? 'font-semibold text-primary'
-                      : isPast
-                        ? 'text-success-text'
-                        : 'text-text-muted'
-                  } ${isLast ? 'pb-0' : ''}`}
-                >
-                  {step.label}
-                </span>
-              </li>
-            );
-          })}
-        </ol>
+        <RequestWorkflowStepper steps={steps} currentStep={currentStep} />
       </section>
 
       <section className="mb-4">
