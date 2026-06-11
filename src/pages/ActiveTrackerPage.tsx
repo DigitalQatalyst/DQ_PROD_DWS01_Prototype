@@ -157,8 +157,6 @@ export function ActiveTrackerPage() {
   const [settings, setSettings] = useState<SettingsState>(savedSettings || defaultSettings);
   const [pageSize, setPageSize] = useState(savedView?.pageSize || savedSettings?.pageSize || 5);
   const [page, setPage] = useState(1);
-  const [selectedRecord, setSelectedRecord] = useState<TrackerRecord | null>(null);
-  const [drawerFocus, setDrawerFocus] = useState<DrawerFocus>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [healthOpen, setHealthOpen] = useState(false);
@@ -168,7 +166,6 @@ export function ActiveTrackerPage() {
   useEffect(() => {
     if (!tracker) return;
     setRecords(getRecordsForTracker(tracker.id));
-    if (!recordId) setSelectedRecord(null);
     setPage(1);
     if (savedView && savedView.trackerSlug !== tracker.slug) {
       setActiveTab(savedView.activeTab || 'Records');
@@ -179,18 +176,6 @@ export function ActiveTrackerPage() {
       setPageSize(savedView.pageSize || settings.pageSize);
     }
   }, [tracker?.slug, recordId]);
-
-  useEffect(() => {
-    if (!recordId) {
-      setSelectedRecord(null);
-      return;
-    }
-    const record = records.find((item) => item.id === recordId);
-    if (record) {
-      setSelectedRecord(record);
-      setDrawerFocus('summary');
-    }
-  }, [recordId, records]);
 
   useEffect(() => setPage(1), [activeTab, filters, metricFilter, extraFilter, sort, pageSize, trackerSlug]);
 
@@ -274,18 +259,19 @@ export function ActiveTrackerPage() {
   };
   const updateRecord = (record: TrackerRecord) => {
     setRecords((current) => current.map((item) => item.id === record.id ? record : item));
-    setSelectedRecord(record);
     toast.success('Tracker record updated');
   };
-  const openRecord = (record: TrackerRecord, focus: DrawerFocus = 'summary') => {
-    setSelectedRecord(record);
-    setDrawerFocus(focus);
-    navigate(`/tracker/active-tracker/${tracker.slug}/records/${record.id}`);
+  const updateRecordField = (record: TrackerRecord, patch: Partial<TrackerRecord>) => {
+    const updated = {
+      ...record,
+      ...patch,
+      missingOwner: patch.owner !== undefined ? !patch.owner : record.missingOwner,
+      isBlocked: patch.status !== undefined ? patch.status.toLowerCase().includes('blocked') : record.isBlocked,
+    };
+    updateRecord(updated);
   };
-  const closeRecord = () => {
-    setSelectedRecord(null);
-    setDrawerFocus(null);
-    navigate(`/tracker/active-tracker/${tracker.slug}`);
+  const openRecord = (record: TrackerRecord) => {
+    navigate(`/tracker/active-tracker/${tracker.slug}/records/${record.id}`);
   };
   const applySettings = (nextSettings: SettingsState) => {
     setSettings(nextSettings);
@@ -306,6 +292,7 @@ export function ActiveTrackerPage() {
   };
 
   const showTable = activeTab !== 'About Tracker';
+  const showTrackerList = Boolean(recordId);
 
   return (
     <div className="w-full px-6 py-6 pb-12 lg:px-8">
@@ -328,14 +315,16 @@ export function ActiveTrackerPage() {
 
       <div
         className="grid gap-5"
-        style={{ gridTemplateColumns: settings.showRightRail ? '260px minmax(0,1fr) 300px' : '260px minmax(0,1fr)' }}>
-        <TrackerListPanel
-          trackers={filteredTrackers}
-          selectedSlug={tracker.slug}
-          search={trackerSearch}
-          onSearch={setTrackerSearch}
-          onSelect={(slug) => navigate(`/tracker/active-tracker/${slug}`)}
-        />
+        style={{ gridTemplateColumns: showTrackerList ? (settings.showRightRail ? '260px minmax(0,1fr) 300px' : '260px minmax(0,1fr)') : (settings.showRightRail ? 'minmax(0,1fr) 300px' : 'minmax(0,1fr)') }}>
+        {showTrackerList && (
+          <TrackerListPanel
+            trackers={filteredTrackers}
+            selectedSlug={tracker.slug}
+            search={trackerSearch}
+            onSearch={setTrackerSearch}
+            onSelect={(slug) => navigate(`/tracker/active-tracker/${slug}`)}
+          />
+        )}
 
         <main className="min-w-0 space-y-4">
           {/* <KpiStrip metrics={metrics} activeFilter={metricFilter} onFilter={applyMetric} /> */}
@@ -345,7 +334,9 @@ export function ActiveTrackerPage() {
               <>
                 <FilterBar filters={filters} options={filterOptions} onFilter={updateFilter} onClear={clearFilters} />
                 <RecordsTable
+                  tracker={tracker}
                   records={pagedRecords}
+                  selectedRecordId={recordId}
                   totalRecords={filteredRecords.length}
                   page={currentPage}
                   totalPages={totalPages}
@@ -358,6 +349,7 @@ export function ActiveTrackerPage() {
                   onPage={setPage}
                   onPageSize={(size) => setPageSize(size)}
                   onOpen={openRecord}
+                  onUpdate={updateRecordField}
                 />
               </>
             ) : (
@@ -381,13 +373,6 @@ export function ActiveTrackerPage() {
         )}
       </div>
 
-      <RecordDrawer
-        tracker={tracker}
-        record={selectedRecord}
-        focus={drawerFocus}
-        onClose={closeRecord}
-        onSave={updateRecord}
-      />
       <AddRecordModal tracker={tracker} open={addOpen} onClose={() => setAddOpen(false)} onAdd={addRecord} />
       <SettingsModal open={settingsOpen} settings={settings} onClose={() => setSettingsOpen(false)} onApply={applySettings} onReset={resetSettings} />
       <HealthDetailsModal open={healthOpen} metrics={metrics} onClose={() => setHealthOpen(false)} />
@@ -509,7 +494,7 @@ function FilterSelect({ value, options, onChange }: { value: string; options: st
   );
 }
 
-function RecordsTable({ records, totalRecords, page, totalPages, pageSize, columns, sort, compact, highlightOverdue, onSort, onPage, onPageSize, onOpen }: { records: TrackerRecord[]; totalRecords: number; page: number; totalPages: number; pageSize: number; columns: Record<ColumnKey, boolean>; sort: SortState; compact: boolean; highlightOverdue: boolean; onSort: (key: SortKey) => void; onPage: (page: number) => void; onPageSize: (size: number) => void; onOpen: (record: TrackerRecord, focus?: DrawerFocus) => void }) {
+function RecordsTable({ tracker, records, selectedRecordId, totalRecords, page, totalPages, pageSize, columns, sort, compact, highlightOverdue, onSort, onPage, onPageSize, onOpen, onUpdate }: { tracker: TrackerDefinition; records: TrackerRecord[]; selectedRecordId?: string; totalRecords: number; page: number; totalPages: number; pageSize: number; columns: Record<ColumnKey, boolean>; sort: SortState; compact: boolean; highlightOverdue: boolean; onSort: (key: SortKey) => void; onPage: (page: number) => void; onPageSize: (size: number) => void; onOpen: (record: TrackerRecord) => void; onUpdate: (record: TrackerRecord, patch: Partial<TrackerRecord>) => void }) {
   const activeColumns = (Object.keys(columnLabels) as ColumnKey[]).filter((key) => columns[key]);
   const rowPadding = compact ? 'px-4 py-2.5' : 'px-4 py-3.5';
   return (
@@ -532,8 +517,8 @@ function RecordsTable({ records, totalRecords, page, totalPages, pageSize, colum
           </thead>
           <tbody className="divide-y divide-border-subtle bg-white">
             {records.map((record) => (
-              <tr key={record.id} onClick={() => onOpen(record)} className={`cursor-pointer border-l-4 transition hover:bg-navy-50 ${highlightOverdue && record.isOverdue ? 'border-l-danger/50' : 'border-l-transparent'}`}>
-                {activeColumns.map((column) => <RecordCell key={column} column={column} record={record} rowPadding={rowPadding} onOpen={onOpen} />)}
+              <tr key={record.id} onClick={() => onOpen(record)} className={`cursor-pointer border-l-4 transition hover:bg-navy-50 ${selectedRecordId === record.id ? 'border-l-secondary bg-orange-50/40' : highlightOverdue && record.isOverdue ? 'border-l-danger/50' : 'border-l-transparent'}`}>
+                {activeColumns.map((column) => <RecordCell key={column} tracker={tracker} column={column} record={record} rowPadding={rowPadding} onUpdate={onUpdate} />)}
               </tr>
             ))}
             {records.length === 0 && (
@@ -553,17 +538,49 @@ function RecordsTable({ records, totalRecords, page, totalPages, pageSize, colum
   );
 }
 
-function RecordCell({ column, record, rowPadding, onOpen }: { column: ColumnKey; record: TrackerRecord; rowPadding: string; onOpen: (record: TrackerRecord, focus?: DrawerFocus) => void }) {
+function RecordCell({ tracker, column, record, rowPadding, onUpdate }: { tracker: TrackerDefinition; column: ColumnKey; record: TrackerRecord; rowPadding: string; onUpdate: (record: TrackerRecord, patch: Partial<TrackerRecord>) => void }) {
   if (column === 'id') return <td className={`${rowPadding} font-mono text-xs font-bold text-primary`}>{record.id}</td>;
   if (column === 'title') return <td className={`${rowPadding} max-w-[260px] text-sm font-semibold text-primary`}>{record.title}</td>;
-  if (column === 'owner') return <td className={rowPadding}><OwnerBadge owner={record.owner} /></td>;
+  if (column === 'owner') return <td className={rowPadding}><InlineText value={record.owner} onSave={(value) => onUpdate(record, { owner: value })} /></td>;
   if (column === 'team') return <td className={`${rowPadding} text-sm font-semibold text-primary`}>{record.teamOrSquad}</td>;
-  if (column === 'priority') return <td className={rowPadding}><PriorityBadge priority={record.priority} /></td>;
-  if (column === 'status') return <td className={rowPadding}><StatusBadge status={record.status} /></td>;
-  if (column === 'dueDate') return <td className={`${rowPadding} text-sm font-bold ${record.isOverdue ? 'text-danger' : 'text-primary'}`}>{record.dueDate}</td>;
-  if (column === 'rag') return <td className={rowPadding}><RagBadge rag={record.rag} /></td>;
+  if (column === 'priority') return <td className={rowPadding}><InlineSelect value={record.priority} options={['Low', 'Medium', 'High', 'Critical']} onSave={(value) => onUpdate(record, { priority: value as TrackerPriority })} /></td>;
+  if (column === 'status') return <td className={rowPadding}><InlineSelect value={record.status} options={tracker.defaultStatuses} onSave={(value) => onUpdate(record, { status: value })} /></td>;
+  if (column === 'dueDate') return <td className={rowPadding}><InlineText value={record.dueDate} className={record.isOverdue ? 'text-danger' : ''} onSave={(value) => onUpdate(record, { dueDate: value })} /></td>;
+  if (column === 'rag') return <td className={rowPadding}><InlineSelect value={record.rag} options={['Green', 'Amber', 'Red']} onSave={(value) => onUpdate(record, { rag: value as TrackerHealth })} /></td>;
   if (column === 'lastUpdated') return <td className={`${rowPadding} text-sm font-semibold text-primary`}>{record.lastUpdated}</td>;
-  return <td className={rowPadding}><button onClick={(event) => { event.stopPropagation(); onOpen(record, 'nextAction'); }} className="text-sm font-bold text-info-text hover:text-primary">{record.nextAction} →</button></td>;
+  return <td className={rowPadding}><InlineText value={record.nextAction} className="text-info-text" onSave={(value) => onUpdate(record, { nextAction: value })} /></td>;
+}
+
+function InlineText({ value, onSave, className = '' }: { value: string; onSave: (value: string) => void; className?: string }) {
+  const [draft, setDraft] = useState(value);
+  useEffect(() => setDraft(value), [value]);
+  const commit = () => {
+    if (draft.trim() !== value) onSave(draft.trim());
+  };
+  return (
+    <input
+      value={draft}
+      onClick={(event) => event.stopPropagation()}
+      onChange={(event) => setDraft(event.target.value)}
+      onBlur={commit}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter') event.currentTarget.blur();
+      }}
+      className={`h-8 w-full rounded-button border border-transparent bg-transparent px-2 text-sm font-semibold text-primary outline-none hover:border-border-default focus:border-primary focus:bg-white ${className}`}
+    />
+  );
+}
+
+function InlineSelect({ value, options, onSave }: { value: string; options: string[]; onSave: (value: string) => void }) {
+  return (
+    <select
+      value={value}
+      onClick={(event) => event.stopPropagation()}
+      onChange={(event) => onSave(event.target.value)}
+      className="h-8 w-full rounded-button border border-border-default bg-white px-2 text-sm font-semibold text-primary outline-none focus:border-primary">
+      {options.map((option) => <option key={option} value={option}>{option}</option>)}
+    </select>
+  );
 }
 
 function Pagination({ total, page, totalPages, pageSize, onPage, onPageSize }: { total: number; page: number; totalPages: number; pageSize: number; onPage: (page: number) => void; onPageSize: (size: number) => void }) {
@@ -851,33 +868,39 @@ function AddRecordModal({ tracker, open, onClose, onAdd }: { tracker: TrackerDef
   return (
     <>
       <div className="fixed inset-0 z-[210] bg-primary/25" onClick={guardedClose} />
-      <section className="fixed left-1/2 top-1/2 z-[220] max-h-[calc(100vh-48px)] w-[min(760px,92vw)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-card border border-border-default bg-white p-5 shadow-xl">
-        <div className="mb-5 flex items-start justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-bold text-primary">Add tracker record</h2>
-            <p className="mt-1 text-sm text-text-secondary">{tracker.name}</p>
+      <aside className="fixed bottom-0 right-0 top-0 z-[220] w-full max-w-[560px] overflow-y-auto border-l border-border-default bg-white shadow-xl">
+        <div className="sticky top-0 z-10 border-b border-border-subtle bg-white px-6 py-5">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-bold text-primary">Add tracker record</h2>
+              <p className="mt-1 text-sm text-text-secondary">{tracker.name}</p>
+            </div>
+            <DqIconButton label="Close add record drawer" onClick={onClose}><X size={18} strokeWidth={1.5} /></DqIconButton>
           </div>
-          <DqIconButton label="Close add record modal" onClick={onClose}><X size={18} strokeWidth={1.5} /></DqIconButton>
         </div>
-        <div className="grid gap-3 md:grid-cols-2">
-          <ModalField label="Title" value={draft.title} error={errors.title} onChange={(value) => update({ title: value })} />
-          <ModalField label="Owner" value={draft.owner} error={errors.owner} onChange={(value) => update({ owner: value })} />
-          <ModalField label="Team / Squad" value={draft.teamOrSquad} onChange={(value) => update({ teamOrSquad: value })} />
-          <ModalSelect label="Priority" value={draft.priority} options={['Low', 'Medium', 'High', 'Critical']} onChange={(value) => update({ priority: value as TrackerPriority })} />
-          <ModalSelect label="Status" value={draft.status} options={tracker.defaultStatuses} error={errors.status} onChange={(value) => update({ status: value })} />
-          <ModalField label="Due Date" value={draft.dueDate} error={errors.dueDate} onChange={(value) => update({ dueDate: value })} />
-          <ModalSelect label="RAG" value={draft.rag} options={['Green', 'Amber', 'Red']} error={errors.rag} onChange={(value) => update({ rag: value as TrackerHealth })} />
-          <ModalField label="Next Action" value={draft.nextAction} onChange={(value) => update({ nextAction: value })} />
+        <div className="space-y-4 bg-surface p-5">
+          <div>
+            <section className="dq-card grid gap-3">
+              <ModalField label="Title" value={draft.title} error={errors.title} onChange={(value) => update({ title: value })} />
+              <ModalField label="Owner" value={draft.owner} error={errors.owner} onChange={(value) => update({ owner: value })} />
+              <ModalField label="Team / Squad" value={draft.teamOrSquad} onChange={(value) => update({ teamOrSquad: value })} />
+              <ModalSelect label="Priority" value={draft.priority} options={['Low', 'Medium', 'High', 'Critical']} onChange={(value) => update({ priority: value as TrackerPriority })} />
+              <ModalSelect label="Status" value={draft.status} options={tracker.defaultStatuses} error={errors.status} onChange={(value) => update({ status: value })} />
+              <ModalField label="Due Date" value={draft.dueDate} error={errors.dueDate} onChange={(value) => update({ dueDate: value })} />
+              <ModalSelect label="RAG" value={draft.rag} options={['Green', 'Amber', 'Red']} error={errors.rag} onChange={(value) => update({ rag: value as TrackerHealth })} />
+              <ModalField label="Next Action" value={draft.nextAction} onChange={(value) => update({ nextAction: value })} />
+              <label className="block">
+                <span className="dq-field-label">Description / Context</span>
+                <textarea value={draft.description} onChange={(event) => update({ description: event.target.value })} rows={4} className="dq-textarea" />
+              </label>
+            </section>
+          </div>
+          <div className="flex justify-end gap-2">
+            <DqButton variant="outline" onClick={onClose}>Cancel</DqButton>
+            <DqButton variant="orange" onClick={submit}>Add Record</DqButton>
+          </div>
         </div>
-        <label className="mt-3 block">
-          <span className="dq-field-label">Description / Context</span>
-          <textarea value={draft.description} onChange={(event) => update({ description: event.target.value })} rows={4} className="dq-textarea" />
-        </label>
-        <div className="mt-5 flex justify-end gap-2">
-          <DqButton variant="outline" onClick={onClose}>Cancel</DqButton>
-          <DqButton variant="orange" onClick={submit}>Add Record</DqButton>
-        </div>
-      </section>
+      </aside>
     </>
   );
 }
