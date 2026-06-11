@@ -13,6 +13,7 @@ import {
   Clock3,
   Database,
   Download,
+  Filter,
   FileSearch,
   HelpCircle,
   Link as LinkIcon,
@@ -46,14 +47,17 @@ type SortKey = 'id' | 'title' | 'owner' | 'dueDate' | 'lastUpdated' | 'status' |
 type SortDirection = 'asc' | 'desc';
 
 type FilterState = {
-  search: string;
-  owner: string;
-  status: string;
-  priority: string;
-  rag: string;
-  dueDate: string;
-  team: string;
-  lastUpdated: string;
+  idSearch: string;
+  titleSearch: string;
+  ownerSearch: string;
+  owners: string[];
+  teams: string[];
+  priorities: TrackerPriority[];
+  statuses: string[];
+  dueDate: string[];
+  rag: Array<TrackerHealth | 'No RAG'>;
+  lastUpdated: string[];
+  nextActionSearch: string;
 };
 
 type SortState = {
@@ -88,14 +92,17 @@ type AddRecordDraft = {
 type DrawerFocus = 'summary' | 'nextAction' | null;
 
 const defaultFilters: FilterState = {
-  search: '',
-  owner: 'All',
-  status: 'All',
-  priority: 'All',
-  rag: 'All',
-  dueDate: 'All',
-  team: 'All',
-  lastUpdated: 'All',
+  idSearch: '',
+  titleSearch: '',
+  ownerSearch: '',
+  owners: [],
+  teams: [],
+  priorities: [],
+  statuses: [],
+  dueDate: [],
+  rag: [],
+  lastUpdated: [],
+  nextActionSearch: '',
 };
 
 const columnLabels: Record<ColumnKey, string> = {
@@ -147,10 +154,11 @@ export function ActiveTrackerPage() {
     pageSize: number;
   }>(viewStorageKey);
   const savedSettings = readJson<SettingsState>(settingsStorageKey);
+  const savedFilters = normalizeRecordFilters(savedView?.filters);
   const [trackerSearch, setTrackerSearch] = useState('');
   const [records, setRecords] = useState<TrackerRecord[]>(() => tracker ? getRecordsForTracker(tracker.id) : []);
   const [activeTab, setActiveTab] = useState<ActiveTab>(savedView?.activeTab || 'Records');
-  const [filters, setFilters] = useState<FilterState>(savedView?.filters || defaultFilters);
+  const [filters, setFilters] = useState<FilterState>(savedFilters);
   const [metricFilter, setMetricFilter] = useState<MetricFilter>(savedView?.metricFilter || null);
   const [extraFilter, setExtraFilter] = useState<ExtraFilter>(savedView?.extraFilter || null);
   const [sort, setSort] = useState<SortState>(savedView?.sort || { key: null, direction: 'asc' });
@@ -169,7 +177,7 @@ export function ActiveTrackerPage() {
     setPage(1);
     if (savedView && savedView.trackerSlug !== tracker.slug) {
       setActiveTab(savedView.activeTab || 'Records');
-      setFilters(savedView.filters || defaultFilters);
+      setFilters(normalizeRecordFilters(savedView.filters));
       setMetricFilter(savedView.metricFilter || null);
       setExtraFilter(savedView.extraFilter || null);
       setSort(savedView.sort || { key: null, direction: 'asc' });
@@ -179,6 +187,11 @@ export function ActiveTrackerPage() {
 
   useEffect(() => setPage(1), [activeTab, filters, metricFilter, extraFilter, sort, pageSize, trackerSlug]);
 
+  const filteredRecords = useMemo(
+    () => applyRecordView(records, activeTab, filters, metricFilter, extraFilter, sort),
+    [records, activeTab, filters, metricFilter, extraFilter, sort]
+  );
+
   if (!tracker) return <TrackerNotFound onBack={() => navigate('/tracker/tracker-hub')} />;
 
   const metrics = getMetrics(records, tracker);
@@ -187,15 +200,10 @@ export function ActiveTrackerPage() {
     const query = trackerSearch.trim().toLowerCase();
     return !query || `${item.name} ${item.owner} ${item.purpose}`.toLowerCase().includes(query);
   });
-  const filteredRecords = useMemo(
-    () => applyRecordView(records, activeTab, filters, metricFilter, extraFilter, sort),
-    [records, activeTab, filters, metricFilter, extraFilter, sort]
-  );
   const totalPages = Math.max(1, Math.ceil(filteredRecords.length / pageSize));
   const currentPage = Math.min(page, totalPages);
   const pagedRecords = filteredRecords.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
-  const updateFilter = (key: keyof FilterState, value: string) => setFilters((current) => ({ ...current, [key]: value }));
   const clearFilters = () => {
     setActiveTab('Records');
     setFilters(defaultFilters);
@@ -332,7 +340,6 @@ export function ActiveTrackerPage() {
             <Tabs activeTab={activeTab} onTab={(tab) => { setActiveTab(tab); setMetricFilter(null); setExtraFilter(null); }} />
             {showTable ? (
               <>
-                <FilterBar filters={filters} options={filterOptions} onFilter={updateFilter} onClear={clearFilters} />
                 <RecordsTable
                   tracker={tracker}
                   records={pagedRecords}
@@ -343,9 +350,13 @@ export function ActiveTrackerPage() {
                   pageSize={pageSize}
                   columns={settings.visibleColumns}
                   sort={sort}
+                  filters={filters}
+                  options={filterOptions}
                   compact={settings.compactDensity}
                   highlightOverdue={settings.highlightOverdueRows}
-                  onSort={(key) => setSort((current) => ({ key, direction: current.key === key && current.direction === 'asc' ? 'desc' : 'asc' }))}
+                  onSort={(key, direction) => setSort((current) => ({ key, direction: direction || (current.key === key && current.direction === 'asc' ? 'desc' : 'asc') }))}
+                  onFilterChange={setFilters}
+                  onClearFilters={clearFilters}
                   onPage={setPage}
                   onPageSize={(size) => setPageSize(size)}
                   onOpen={openRecord}
@@ -464,41 +475,59 @@ function Tabs({ activeTab, onTab }: { activeTab: ActiveTab; onTab: (tab: ActiveT
   );
 }
 
-function FilterBar({ filters, options, onFilter, onClear }: { filters: FilterState; options: FilterOptions; onFilter: (key: keyof FilterState, value: string) => void; onClear: () => void }) {
-  return (
-    <div className="grid grid-cols-4 gap-2 border-b border-border-subtle p-4">
-      <div className="relative col-span-2">
-        <Search size={16} strokeWidth={1.5} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
-        <input value={filters.search} onChange={(event) => onFilter('search', event.target.value)} placeholder="Search records..." className="dq-input pl-9" />
-      </div>
-      <FilterSelect value={filters.owner} options={['All', ...options.owners]} onChange={(value) => onFilter('owner', value)} />
-      <FilterSelect value={filters.status} options={['All', ...options.statuses]} onChange={(value) => onFilter('status', value)} />
-      <FilterSelect value={filters.priority} options={['All', 'Low', 'Medium', 'High', 'Critical']} onChange={(value) => onFilter('priority', value)} />
-      <FilterSelect value={filters.rag} options={['All', 'Green', 'Amber', 'Red']} onChange={(value) => onFilter('rag', value)} />
-      <FilterSelect value={filters.dueDate} options={['All', 'Today', 'This Week', 'Overdue', 'Future']} onChange={(value) => onFilter('dueDate', value)} />
-      <FilterSelect value={filters.team} options={['All', ...options.teams]} onChange={(value) => onFilter('team', value)} />
-      <FilterSelect value={filters.lastUpdated} options={['All', 'Today', 'Yesterday', 'This Week', 'Not Updated Recently']} onChange={(value) => onFilter('lastUpdated', value)} />
-      <button onClick={onClear} className="h-10 whitespace-nowrap rounded-button border border-border-default px-3 text-sm font-bold text-primary hover:bg-navy-50">Clear Filters</button>
-    </div>
-  );
-}
-
-function FilterSelect({ value, options, onChange }: { value: string; options: string[]; onChange: (value: string) => void }) {
-  return (
-    <label className="relative block">
-      <select value={value} onChange={(event) => onChange(event.target.value)} className="h-10 w-full appearance-none rounded-button border-[1.5px] border-border-default bg-white px-3 pr-8 text-sm font-semibold text-primary outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10">
-        {options.map((option) => <option key={option} value={option}>{option}</option>)}
-      </select>
-      <ChevronDown size={15} strokeWidth={1.5} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-text-muted" />
-    </label>
-  );
-}
-
-function RecordsTable({ tracker, records, selectedRecordId, totalRecords, page, totalPages, pageSize, columns, sort, compact, highlightOverdue, onSort, onPage, onPageSize, onOpen, onUpdate }: { tracker: TrackerDefinition; records: TrackerRecord[]; selectedRecordId?: string; totalRecords: number; page: number; totalPages: number; pageSize: number; columns: Record<ColumnKey, boolean>; sort: SortState; compact: boolean; highlightOverdue: boolean; onSort: (key: SortKey) => void; onPage: (page: number) => void; onPageSize: (size: number) => void; onOpen: (record: TrackerRecord) => void; onUpdate: (record: TrackerRecord, patch: Partial<TrackerRecord>) => void }) {
+function RecordsTable({
+  tracker,
+  records,
+  selectedRecordId,
+  totalRecords,
+  page,
+  totalPages,
+  pageSize,
+  columns,
+  sort,
+  filters,
+  options,
+  compact,
+  highlightOverdue,
+  onSort,
+  onFilterChange,
+  onClearFilters,
+  onPage,
+  onPageSize,
+  onOpen,
+  onUpdate,
+}: {
+  tracker: TrackerDefinition;
+  records: TrackerRecord[];
+  selectedRecordId?: string;
+  totalRecords: number;
+  page: number;
+  totalPages: number;
+  pageSize: number;
+  columns: Record<ColumnKey, boolean>;
+  sort: SortState;
+  filters: FilterState;
+  options: FilterOptions;
+  compact: boolean;
+  highlightOverdue: boolean;
+  onSort: (key: SortKey, direction?: SortDirection) => void;
+  onFilterChange: (filters: FilterState) => void;
+  onClearFilters: () => void;
+  onPage: (page: number) => void;
+  onPageSize: (size: number) => void;
+  onOpen: (record: TrackerRecord) => void;
+  onUpdate: (record: TrackerRecord, patch: Partial<TrackerRecord>) => void;
+}) {
   const activeColumns = (Object.keys(columnLabels) as ColumnKey[]).filter((key) => columns[key]);
   const rowPadding = compact ? 'px-4 py-2.5' : 'px-4 py-3.5';
+  const [openFilter, setOpenFilter] = useState<ColumnKey | null>(null);
   return (
     <>
+      <div className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-3">
+        <div className="text-xs font-semibold uppercase text-text-muted">Column filters</div>
+        <button onClick={onClearFilters} className="h-9 whitespace-nowrap rounded-button border border-border-default px-3 text-sm font-bold text-primary hover:bg-navy-50">Clear Filters</button>
+      </div>
+      {openFilter && <button aria-label="Close column filter" className="fixed inset-0 z-[140] cursor-default bg-transparent" onClick={() => setOpenFilter(null)} />}
       <div className="overflow-x-auto">
         <table className="w-full table-fixed border-collapse text-left">
           <colgroup>
@@ -508,9 +537,17 @@ function RecordsTable({ tracker, records, selectedRecordId, totalRecords, page, 
             <tr className="border-b border-border-subtle bg-surface">
               {activeColumns.map((column) => (
                 <th key={column} className="px-4 py-3 text-xs font-semibold uppercase text-[#454560]">
-                  {sortableColumn(column) ? (
-                    <button onClick={() => onSort(columnToSort(column)!)} className="inline-flex items-center gap-1 hover:text-primary">{columnLabels[column]} {sortMark(sort, columnToSort(column)!)}</button>
-                  ) : columnLabels[column]}
+                  <ColumnHeader
+                    column={column}
+                    sort={sort}
+                    filters={filters}
+                    options={options}
+                    open={openFilter === column}
+                    onOpen={() => setOpenFilter(column)}
+                    onClose={() => setOpenFilter(null)}
+                    onSort={onSort}
+                    onFilterChange={onFilterChange}
+                  />
                 </th>
               ))}
             </tr>
@@ -535,6 +572,139 @@ function RecordsTable({ tracker, records, selectedRecordId, totalRecords, page, 
       </div>
       <Pagination total={totalRecords} page={page} totalPages={totalPages} pageSize={pageSize} onPage={onPage} onPageSize={onPageSize} />
     </>
+  );
+}
+
+function ColumnHeader({
+  column,
+  sort,
+  filters,
+  options,
+  open,
+  onOpen,
+  onClose,
+  onSort,
+  onFilterChange,
+}: {
+  column: ColumnKey;
+  sort: SortState;
+  filters: FilterState;
+  options: FilterOptions;
+  open: boolean;
+  onOpen: () => void;
+  onClose: () => void;
+  onSort: (key: SortKey, direction?: SortDirection) => void;
+  onFilterChange: (filters: FilterState) => void;
+}) {
+  const sortKey = columnToSort(column);
+  const filtered = isColumnFiltered(column, filters);
+  return (
+    <div className="relative flex min-w-0 items-center gap-1">
+      <button
+        type="button"
+        onClick={() => sortKey && onSort(sortKey)}
+        className={`inline-flex min-w-0 items-center gap-1 truncate text-left hover:text-primary ${sortKey ? '' : 'cursor-default'}`}>
+        <span className="truncate">{columnLabels[column]}</span>
+        {sortKey && <span className="text-[11px] leading-none text-text-muted">{sortMark(sort, sortKey)}</span>}
+      </button>
+      <button
+        type="button"
+        aria-label={`Filter ${columnLabels[column]}`}
+        onClick={(event) => {
+          event.stopPropagation();
+          onOpen();
+        }}
+        className={`grid h-6 w-6 shrink-0 place-items-center rounded-button hover:bg-white ${filtered ? 'text-secondary' : 'text-text-muted'}`}>
+        <Filter size={13} strokeWidth={1.5} />
+      </button>
+      {open && (
+        <ColumnFilterPopover
+          column={column}
+          filters={filters}
+          options={options}
+          onSort={onSort}
+          onApply={(nextFilters) => onFilterChange(nextFilters)}
+          onClose={onClose}
+        />
+      )}
+    </div>
+  );
+}
+
+function ColumnFilterPopover({
+  column,
+  filters,
+  options,
+  onSort,
+  onApply,
+  onClose,
+}: {
+  column: ColumnKey;
+  filters: FilterState;
+  options: FilterOptions;
+  onSort: (key: SortKey, direction?: SortDirection) => void;
+  onApply: (filters: FilterState) => void;
+  onClose: () => void;
+}) {
+  const [draft, setDraft] = useState(filters);
+  const sortKey = columnToSort(column);
+  const ownerOptions = options.owners.filter((owner) => owner.toLowerCase().includes(draft.ownerSearch.trim().toLowerCase()));
+  const textInput = (key: 'idSearch' | 'titleSearch' | 'ownerSearch' | 'nextActionSearch', placeholder: string) => (
+    <div className="relative">
+      <Search size={14} strokeWidth={1.5} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+      <input
+        value={draft[key]}
+        onChange={(event) => setDraft((current) => ({ ...current, [key]: event.target.value }))}
+        placeholder={placeholder}
+        className="h-9 w-full rounded-button border border-border-default bg-white pl-9 pr-3 text-sm font-semibold normal-case text-primary outline-none focus:border-primary"
+      />
+    </div>
+  );
+  const checkboxList = <T extends string,>(values: T[], selected: T[], onChange: (values: T[]) => void) => (
+    <div className="max-h-44 space-y-1 overflow-y-auto">
+      {values.map((value) => (
+        <label key={value} className="flex cursor-pointer items-center gap-2 rounded-button px-2 py-1.5 text-sm font-semibold normal-case text-primary hover:bg-navy-50">
+          <input
+            type="checkbox"
+            checked={selected.includes(value)}
+            onChange={() => onChange(toggleValue(selected, value))}
+            className="h-4 w-4 rounded border-border-default text-secondary"
+          />
+          <span>{value}</span>
+        </label>
+      ))}
+    </div>
+  );
+  const sortControls = sortKey && (
+    <div className="grid grid-cols-2 gap-2">
+      <button type="button" onClick={() => onSort(sortKey, 'asc')} className="h-8 rounded-button border border-border-default px-2 text-xs font-bold text-primary hover:bg-navy-50">Sort ↑</button>
+      <button type="button" onClick={() => onSort(sortKey, 'desc')} className="h-8 rounded-button border border-border-default px-2 text-xs font-bold text-primary hover:bg-navy-50">Sort ↓</button>
+    </div>
+  );
+
+  return (
+    <div className="absolute left-0 top-full z-[160] mt-2 w-72 rounded-card border border-border-default bg-white p-3 text-left shadow-lg" onClick={(event) => event.stopPropagation()}>
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <div className="text-xs font-bold uppercase text-primary">{columnLabels[column]}</div>
+        <button type="button" onClick={onClose} className="text-text-muted hover:text-primary"><X size={14} strokeWidth={1.5} /></button>
+      </div>
+      <div className="space-y-3">
+        {column === 'id' && <>{textInput('idSearch', 'Search by ID')}{sortControls}</>}
+        {column === 'title' && <>{textInput('titleSearch', 'Search text')}{sortControls}</>}
+        {column === 'owner' && <>{textInput('ownerSearch', 'Search owner name')}{checkboxList(ownerOptions, draft.owners, (owners) => setDraft((current) => ({ ...current, owners })))}</>}
+        {column === 'team' && checkboxList(options.teams, draft.teams, (teams) => setDraft((current) => ({ ...current, teams })))}
+        {column === 'priority' && checkboxList(['Low', 'Medium', 'High', 'Critical'] as TrackerPriority[], draft.priorities, (priorities) => setDraft((current) => ({ ...current, priorities })))}
+        {column === 'status' && checkboxList(options.statuses, draft.statuses, (statuses) => setDraft((current) => ({ ...current, statuses })))}
+        {column === 'dueDate' && <>{checkboxList(['Today', 'This Week', 'Overdue', 'Future'], draft.dueDate, (dueDate) => setDraft((current) => ({ ...current, dueDate })))}{sortControls}</>}
+        {column === 'rag' && checkboxList(['Green', 'Amber', 'Red', 'No RAG'] as Array<TrackerHealth | 'No RAG'>, draft.rag, (rag) => setDraft((current) => ({ ...current, rag })))}
+        {column === 'lastUpdated' && <>{checkboxList(['Today', 'Yesterday', 'This Week', 'Not Updated Recently'], draft.lastUpdated, (lastUpdated) => setDraft((current) => ({ ...current, lastUpdated })))}{sortControls}</>}
+        {column === 'nextAction' && textInput('nextActionSearch', 'Search text')}
+      </div>
+      <div className="mt-4 flex justify-end gap-2 border-t border-border-subtle pt-3">
+        <button type="button" onClick={() => { onApply(clearColumnFilter(filters, column)); onClose(); }} className="h-8 rounded-button border border-border-default px-3 text-xs font-bold text-primary hover:bg-navy-50">Clear</button>
+        <button type="button" onClick={() => { onApply(draft); onClose(); }} className="h-8 rounded-button bg-primary px-3 text-xs font-bold text-white hover:bg-[#07184f]">Apply</button>
+      </div>
+    </div>
   );
 }
 
@@ -1129,7 +1299,10 @@ function getFilterOptions(records: TrackerRecord[], tracker: TrackerDefinition) 
 }
 
 function applyRecordView(records: TrackerRecord[], activeTab: ActiveTab, filters: FilterState, metricFilter: MetricFilter, extraFilter: ExtraFilter, sort: SortState) {
-  const query = filters.search.trim().toLowerCase();
+  const idQuery = filters.idSearch.trim().toLowerCase();
+  const titleQuery = filters.titleSearch.trim().toLowerCase();
+  const ownerQuery = filters.ownerSearch.trim().toLowerCase();
+  const nextActionQuery = filters.nextActionSearch.trim().toLowerCase();
   const filtered = records
     .filter((record) => {
       if (activeTab === 'My Items') return record.owner === currentUser;
@@ -1152,14 +1325,17 @@ function applyRecordView(records: TrackerRecord[], activeTab: ActiveTab, filters
       const band = disciplineBand(record);
       return band === extraFilter.value;
     })
-    .filter((record) => !query || `${record.id} ${record.title} ${record.owner} ${record.teamOrSquad} ${record.priority} ${record.status} ${record.rag} ${record.nextAction} ${record.description}`.toLowerCase().includes(query))
-    .filter((record) => filters.owner === 'All' || record.owner === filters.owner)
-    .filter((record) => filters.status === 'All' || record.status === filters.status)
-    .filter((record) => filters.priority === 'All' || record.priority === filters.priority)
-    .filter((record) => filters.rag === 'All' || record.rag === filters.rag)
-    .filter((record) => filters.team === 'All' || record.teamOrSquad === filters.team)
-    .filter((record) => filters.dueDate === 'All' || dueDateMatches(record, filters.dueDate))
-    .filter((record) => filters.lastUpdated === 'All' || lastUpdatedMatches(record, filters.lastUpdated));
+    .filter((record) => !idQuery || record.id.toLowerCase().includes(idQuery))
+    .filter((record) => !titleQuery || record.title.toLowerCase().includes(titleQuery))
+    .filter((record) => !ownerQuery || record.owner.toLowerCase().includes(ownerQuery))
+    .filter((record) => filters.owners.length === 0 || filters.owners.includes(record.owner))
+    .filter((record) => filters.teams.length === 0 || filters.teams.includes(record.teamOrSquad))
+    .filter((record) => filters.priorities.length === 0 || filters.priorities.includes(record.priority))
+    .filter((record) => filters.statuses.length === 0 || filters.statuses.includes(record.status))
+    .filter((record) => filters.rag.length === 0 || filters.rag.includes(record.rag || 'No RAG'))
+    .filter((record) => filters.dueDate.length === 0 || filters.dueDate.some((value) => dueDateMatches(record, value)))
+    .filter((record) => filters.lastUpdated.length === 0 || filters.lastUpdated.some((value) => lastUpdatedMatches(record, value)))
+    .filter((record) => !nextActionQuery || record.nextAction.toLowerCase().includes(nextActionQuery));
 
   if (!sort.key) return filtered;
   return [...filtered].sort((a, b) => compareRecords(a, b, sort.key!, sort.direction));
@@ -1209,6 +1385,36 @@ function columnToSort(column: ColumnKey): SortKey | null {
 function sortMark(sort: SortState, key: SortKey) {
   if (sort.key !== key) return '↕';
   return sort.direction === 'asc' ? '↑' : '↓';
+}
+
+function isColumnFiltered(column: ColumnKey, filters: FilterState) {
+  if (column === 'id') return Boolean(filters.idSearch.trim());
+  if (column === 'title') return Boolean(filters.titleSearch.trim());
+  if (column === 'owner') return Boolean(filters.ownerSearch.trim()) || filters.owners.length > 0;
+  if (column === 'team') return filters.teams.length > 0;
+  if (column === 'priority') return filters.priorities.length > 0;
+  if (column === 'status') return filters.statuses.length > 0;
+  if (column === 'dueDate') return filters.dueDate.length > 0;
+  if (column === 'rag') return filters.rag.length > 0;
+  if (column === 'lastUpdated') return filters.lastUpdated.length > 0;
+  return Boolean(filters.nextActionSearch.trim());
+}
+
+function clearColumnFilter(filters: FilterState, column: ColumnKey): FilterState {
+  if (column === 'id') return { ...filters, idSearch: '' };
+  if (column === 'title') return { ...filters, titleSearch: '' };
+  if (column === 'owner') return { ...filters, ownerSearch: '', owners: [] };
+  if (column === 'team') return { ...filters, teams: [] };
+  if (column === 'priority') return { ...filters, priorities: [] };
+  if (column === 'status') return { ...filters, statuses: [] };
+  if (column === 'dueDate') return { ...filters, dueDate: [] };
+  if (column === 'rag') return { ...filters, rag: [] };
+  if (column === 'lastUpdated') return { ...filters, lastUpdated: [] };
+  return { ...filters, nextActionSearch: '' };
+}
+
+function toggleValue<T extends string>(values: T[], value: T) {
+  return values.includes(value) ? values.filter((item) => item !== value) : [...values, value];
 }
 
 function dueDateMatches(record: TrackerRecord, value: string) {
@@ -1277,6 +1483,35 @@ function percent(value: number, total: number) {
 
 function unique(values: string[]) {
   return Array.from(new Set(values));
+}
+
+function normalizeRecordFilters(value: unknown): FilterState {
+  if (!value || typeof value !== 'object') return defaultFilters;
+  const raw = value as Record<string, unknown>;
+  return {
+    idSearch: stringValue(raw.idSearch, stringValue(raw.search)),
+    titleSearch: stringValue(raw.titleSearch),
+    ownerSearch: stringValue(raw.ownerSearch),
+    owners: stringArray(raw.owners, raw.owner),
+    teams: stringArray(raw.teams, raw.team),
+    priorities: stringArray(raw.priorities, raw.priority) as TrackerPriority[],
+    statuses: stringArray(raw.statuses, raw.status),
+    dueDate: stringArray(raw.dueDate),
+    rag: stringArray(raw.rag) as Array<TrackerHealth | 'No RAG'>,
+    lastUpdated: stringArray(raw.lastUpdated),
+    nextActionSearch: stringValue(raw.nextActionSearch),
+  };
+}
+
+function stringValue(value: unknown, fallback = '') {
+  return typeof value === 'string' ? value : fallback;
+}
+
+function stringArray(value: unknown, legacyValue?: unknown) {
+  if (Array.isArray(value)) return value.filter((item): item is string => typeof item === 'string');
+  if (typeof legacyValue === 'string' && legacyValue !== 'All') return [legacyValue];
+  if (typeof value === 'string' && value !== 'All') return [value];
+  return [];
 }
 
 function readJson<T>(key: string): T | null {
