@@ -148,7 +148,8 @@ export function StandardSidebar() {
             const GroupIcon = group.icon;
             const isGroupOpen = expandedFeatureGroups.includes(group.route);
             const isGroupActive = activeFeatureGroup?.route === group.route;
-            const groupClickRoute = area.id === 'tasks' && group.children[0]?.route 
+            const shouldOpenFirstChild = area.id === 'tasks' || group.id === 'tracker-hub';
+            const groupClickRoute = shouldOpenFirstChild && group.children[0]?.route
               ? group.children[0].route 
               : group.route;
             
