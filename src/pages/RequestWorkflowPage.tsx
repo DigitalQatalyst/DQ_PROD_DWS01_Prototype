@@ -170,53 +170,8 @@ export function RequestWorkflowPage() {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
           <div className="lg:col-span-8">
             <div className="dq-card overflow-hidden p-0">
-            <div className="border-b border-border-default bg-surface/50 px-6 py-6">
-              <h2 className="dq-section-title mb-6">New Request</h2>
-
-              <div className="flex items-center gap-4">
-                {steps.map((step, index) => {
-                  const isActive = step.id === currentStep;
-                  const isPast = step.id < currentStep;
-
-                  return (
-                    <React.Fragment key={step.id}>
-                      <div
-                        className={`flex items-center gap-2 ${
-                          isActive
-                            ? 'text-primary'
-                            : isPast
-                              ? 'text-success-text'
-                              : 'text-text-muted'
-                        }`}
-                      >
-                        <div
-                          className={`flex h-6 w-6 items-center justify-center rounded-full border text-xs font-bold ${
-                            isActive
-                              ? 'border-primary bg-primary text-white'
-                              : isPast
-                                ? 'border-success-text/20 bg-success-surface text-success-text'
-                                : 'border-border-strong bg-surface text-text-muted'
-                          }`}
-                        >
-                          {isPast ? <CheckCircle2 size={12} /> : step.id}
-                        </div>
-                        <span
-                          className={`text-sm font-semibold ${isActive || isPast ? '' : 'hidden sm:block'}`}
-                        >
-                          {step.label}
-                        </span>
-                      </div>
-                      {index < steps.length - 1 && (
-                        <div className="relative mx-2 h-px flex-1 bg-border-strong">
-                          {isPast && (
-                            <div className="absolute inset-0 bg-success-text/40" />
-                          )}
-                        </div>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </div>
+            <div className="border-b border-border-default bg-surface/50 px-6 py-5">
+              <h2 className="dq-section-title">New Request</h2>
             </div>
 
             <div className="p-8">
