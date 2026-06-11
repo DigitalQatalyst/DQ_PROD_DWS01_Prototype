@@ -293,7 +293,6 @@ export function RequestWorkflowPage() {
               steps={steps}
               currentStep={currentStep}
               stage={stage}
-              formData={formData}
             />
           </div>
         </div>

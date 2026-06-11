@@ -6,7 +6,6 @@ import {
   Clock,
   ShieldAlert,
   CheckCircle2,
-  Circle,
   ExternalLink,
 } from 'lucide-react';
 import type { ServiceDetail } from '../types/serviceLifecycle';
@@ -22,34 +21,6 @@ interface RequestWorkflowContextRailProps {
   steps: WorkflowStep[];
   currentStep: number;
   stage?: string;
-  formData: {
-    title: string;
-    expectedOutcome: string;
-    dynamicFields: Record<string, string>;
-  };
-}
-
-const evidenceFieldNames = [
-  'evidence',
-  'Evidence',
-  'Screenshot/evidence',
-  'Supporting evidence',
-];
-
-function isInputComplete(
-  input: string,
-  formData: RequestWorkflowContextRailProps['formData'],
-): boolean {
-  if (evidenceFieldNames.includes(input)) {
-    return true;
-  }
-  if (input === 'Request title' || input.toLowerCase().includes('title')) {
-    return formData.title.trim() !== '';
-  }
-  if (input.toLowerCase().includes('outcome')) {
-    return formData.expectedOutcome.trim() !== '';
-  }
-  return !!formData.dynamicFields[input]?.trim();
 }
 
 export function RequestWorkflowContextRail({
@@ -57,12 +28,7 @@ export function RequestWorkflowContextRail({
   steps,
   currentStep,
   stage = 'deploy',
-  formData,
 }: RequestWorkflowContextRailProps) {
-  const checklistInputs = detail.requiredInputs.filter(
-    (input) => !evidenceFieldNames.includes(input),
-  );
-
   return (
     <div className="dq-card sticky top-[88px] space-y-6 p-6">
       <div>
@@ -154,32 +120,6 @@ export function RequestWorkflowContextRail({
           )}
         </div>
       </div>
-
-      {checklistInputs.length > 0 && (
-        <div>
-          <h3 className="mb-3 border-b border-border-subtle pb-2 text-sm font-semibold uppercase tracking-wider text-primary">
-            Required Inputs
-          </h3>
-          <ul className="space-y-2">
-            {checklistInputs.map((input) => {
-              const complete = isInputComplete(input, formData);
-
-              return (
-                <li key={input} className="flex items-start gap-2 text-sm">
-                  {complete ? (
-                    <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-success-text" />
-                  ) : (
-                    <Circle size={14} className="mt-0.5 shrink-0 text-text-muted" />
-                  )}
-                  <span className={complete ? 'text-text-secondary' : 'text-primary'}>
-                    {input}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      )}
 
       <Link
         to={`/marketplace/services/${detail.serviceId}?from=${stage}`}
