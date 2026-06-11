@@ -262,7 +262,7 @@ export function TrackerHubPage() {
         <div className="flex shrink-0 flex-wrap items-center justify-start gap-2 xl:justify-end">
           <DqButton variant="orange" onClick={() => setCreateOpen(true)} className="h-12 px-5"><Plus size={18} strokeWidth={1.5} /> Create Tracker</DqButton>
           <DqButton variant="navy" onClick={saveView} className="h-12 px-5"><Bookmark size={17} strokeWidth={1.5} /> Save View</DqButton>
-          <DqButton variant="navy" onClick={exportTrackers} className="h-12 px-5"><Download size={17} strokeWidth={1.5} /> Export Tracker</DqButton>
+          {/* <DqButton variant="navy" onClick={exportTrackers} className="h-12 px-5"><Download size={17} strokeWidth={1.5} /> Export Tracker</DqButton> */}
           <DqIconButton label="Tracker Hub settings" onClick={() => setSettingsOpen(true)} className="h-12 w-12"><Settings size={19} strokeWidth={1.5} /></DqIconButton>
         </div>
       </header>
