@@ -4,8 +4,6 @@ import { ArrowLeft, Save, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useServiceLifecycle } from '../context/ServiceLifecycleContext';
 import { MarketplaceDetailHeader } from '../components/marketplace/MarketplaceDetailHeader';
-import { CategoryBadge } from '../components/CategoryBadge';
-import { StatusBadge } from '../components/DqBadge';
 import { DynamicRequiredFields } from '../components/DynamicRequiredFields';
 import { UrgencySelector } from '../components/UrgencySelector';
 import { ExpectedOutcomeField } from '../components/ExpectedOutcomeField';
@@ -165,12 +163,6 @@ export function RequestWorkflowPage() {
       <div className="mx-auto max-w-[1440px] px-6 pt-8 lg:px-8">
         <MarketplaceDetailHeader
           breadcrumbItems={buildStartRequestTrail(stage, service.title, service.id)}
-          badges={
-            <>
-              <CategoryBadge category={service.category} />
-              <StatusBadge status="Draft" />
-            </>
-          }
           title={service.title}
           lede={detail.purpose}
         />
