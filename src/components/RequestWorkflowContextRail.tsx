@@ -23,6 +23,14 @@ interface RequestWorkflowContextRailProps {
   stage?: string;
 }
 
+const sectionTitleClass =
+  'mb-4 border-b border-border-subtle pb-2 text-sm font-semibold uppercase tracking-wider text-primary';
+
+const metadataLabelClass =
+  'mb-1 flex items-center gap-2 text-xs text-text-muted';
+
+const metadataValueClass = 'pl-5 text-sm font-medium text-primary';
+
 export function RequestWorkflowContextRail({
   detail,
   steps,
@@ -30,78 +38,90 @@ export function RequestWorkflowContextRail({
   stage = 'deploy',
 }: RequestWorkflowContextRailProps) {
   return (
-    <div className="dq-card sticky top-[88px] space-y-6 p-6">
-      <div>
-        <h3 className="mb-3 border-b border-border-subtle pb-2 text-sm font-semibold uppercase tracking-wider text-primary">
-          Request Progress
-        </h3>
-        <ol className="space-y-2">
-          {steps.map((step) => {
+    <div className="dq-card sticky top-[88px] p-6">
+      <section className="mb-8">
+        <h3 className={sectionTitleClass}>Request Progress</h3>
+        <ol>
+          {steps.map((step, index) => {
             const isActive = step.id === currentStep;
             const isPast = step.id < currentStep;
+            const isLast = index === steps.length - 1;
 
             return (
-              <li
-                key={step.id}
-                className={`flex items-center gap-2 text-sm ${
-                  isActive
-                    ? 'font-semibold text-primary'
-                    : isPast
-                      ? 'text-success-text'
-                      : 'text-text-muted'
-                }`}
-              >
-                {isPast ? (
-                  <CheckCircle2 size={14} className="shrink-0" />
-                ) : (
-                  <span
-                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold ${
-                      isActive
-                        ? 'border-primary bg-primary text-white'
-                        : 'border-border-strong bg-surface text-text-muted'
-                    }`}
-                  >
-                    {step.id}
-                  </span>
-                )}
-                <span>{step.label}</span>
+              <li key={step.id} className="flex gap-3">
+                <div className="flex flex-col items-center self-stretch">
+                  {isPast ? (
+                    <CheckCircle2
+                      size={20}
+                      className="shrink-0 text-success-text"
+                      strokeWidth={2}
+                    />
+                  ) : (
+                    <span
+                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold ${
+                        isActive
+                          ? 'border-primary bg-primary text-white'
+                          : 'border-border-strong bg-surface text-text-muted'
+                      }`}
+                    >
+                      {step.id}
+                    </span>
+                  )}
+                  {!isLast && (
+                    <div
+                      className={`my-1.5 w-px flex-1 ${
+                        isPast ? 'bg-success-text/30' : 'bg-border-subtle'
+                      }`}
+                      aria-hidden
+                    />
+                  )}
+                </div>
+                <span
+                  className={`pb-4 text-sm leading-5 ${
+                    isActive
+                      ? 'font-semibold text-primary'
+                      : isPast
+                        ? 'text-success-text'
+                        : 'text-text-muted'
+                  } ${isLast ? 'pb-0' : ''}`}
+                >
+                  {step.label}
+                </span>
               </li>
             );
           })}
         </ol>
-      </div>
+      </section>
 
-      <div>
-        <h3 className="mb-3 border-b border-border-subtle pb-2 text-sm font-semibold uppercase tracking-wider text-primary">
-          Governance Metadata
-        </h3>
+      <section className="mb-4">
+        <h3 className={sectionTitleClass}>Governance Metadata</h3>
         <div className="space-y-4">
           <div>
-            <div className="mb-1 flex items-center gap-2 text-xs text-text-muted">
+            <div className={metadataLabelClass}>
               <User size={14} />
               <span>Service Owner</span>
             </div>
-            <div className="pl-5 text-sm font-medium text-primary">{detail.owner}</div>
+            <div className={metadataValueClass}>{detail.owner}</div>
           </div>
 
           <div>
-            <div className="mb-1 flex items-center gap-2 text-xs text-text-muted">
+            <div className={metadataLabelClass}>
               <ListTree size={14} />
               <span>Fulfilment Queue</span>
             </div>
-            <div className="pl-5 text-sm font-medium text-primary">{detail.queue}</div>
+            <div className={metadataValueClass}>{detail.queue}</div>
           </div>
 
           <div>
-            <div className="mb-1 flex items-center gap-2 text-xs text-text-muted">
+            <div className={metadataLabelClass}>
               <Clock size={14} />
               <span>Fulfilment SLA</span>
             </div>
-            <div className="pl-5 text-sm font-medium text-primary">{detail.sla}</div>
+            <div className={metadataValueClass}>{detail.sla}</div>
           </div>
 
           <div>
-            <div className="mb-1 flex items-center gap-2 text-xs text-text-muted">
+            <div className={metadataLabelClass}>
               <ShieldAlert size={14} />
               <span>Approval</span>
             </div>
@@ -109,17 +129,18 @@ export function RequestWorkflowContextRail({
               <ApprovalBadge requirement={detail.approval} label={detail.approvalDetail} />
             </div>
           </div>
-
         </div>
-      </div>
+      </section>
 
-      <Link
-        to={`/marketplace/services/${detail.serviceId}?from=${stage}`}
-        className="flex items-center gap-2 text-sm font-semibold text-secondary transition-colors hover:text-primary"
-      >
-        View service detail
-        <ExternalLink size={14} />
-      </Link>
+      <div className="border-t border-border-subtle pt-4">
+        <Link
+          to={`/marketplace/services/${detail.serviceId}?from=${stage}`}
+          className="flex items-center gap-2 text-sm font-semibold text-secondary transition-colors hover:text-primary"
+        >
+          View service detail
+          <ExternalLink size={14} />
+        </Link>
+      </div>
     </div>
   );
 }
