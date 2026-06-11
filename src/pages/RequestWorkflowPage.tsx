@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronRight, ArrowLeft, Save, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Save, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useServiceLifecycle } from '../context/ServiceLifecycleContext';
-import { RequestWorkflowContextBanner } from '../components/RequestWorkflowContextBanner';
+import { MarketplaceDetailHeader } from '../components/marketplace/MarketplaceDetailHeader';
+import { CategoryBadge } from '../components/CategoryBadge';
+import { StatusBadge } from '../components/DqBadge';
 import { DynamicRequiredFields } from '../components/DynamicRequiredFields';
 import { UrgencySelector } from '../components/UrgencySelector';
 import { ExpectedOutcomeField } from '../components/ExpectedOutcomeField';
@@ -41,10 +43,11 @@ export function RequestWorkflowPage() {
 
   if (loading) {
     return (
-      <div className="bg-[#F6F6FB] min-h-screen py-8">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="w-48 h-4 bg-border-default animate-pulse rounded mb-6" />
-          <div className="bg-white rounded-card h-96 animate-pulse border border-border-default" />
+      <div className="min-h-screen bg-surface py-8">
+        <div className="mx-auto max-w-4xl px-6">
+          <div className="mb-6 h-4 w-48 animate-pulse rounded bg-border-default" />
+          <div className="mb-6 h-24 animate-pulse rounded bg-border-default/60" />
+          <div className="dq-card h-96 animate-pulse" />
         </div>
       </div>
     );
@@ -52,8 +55,8 @@ export function RequestWorkflowPage() {
 
   if (!service || !detail) {
     return (
-      <div className="bg-[#F6F6FB] min-h-screen py-20 px-6">
-        <div className="max-w-3xl mx-auto">
+      <div className="min-h-screen bg-surface py-20 px-6">
+        <div className="mx-auto max-w-3xl">
           <ServiceEmptyState
             title="Service Context Missing"
             message="We could not initiate the request workflow because the selected service details are missing."
@@ -67,7 +70,6 @@ export function RequestWorkflowPage() {
 
   const hasSpecificInputs = detail.requiredInputs && detail.requiredInputs.length > 0;
 
-  // Define steps dynamically based on if specific inputs are required
   const steps = [
     { id: 1, label: 'Core Details' },
     ...(hasSpecificInputs ? [{ id: 2, label: 'Specific Information' }] : []),
@@ -104,7 +106,7 @@ export function RequestWorkflowPage() {
   const handleNext = () => {
     setShowValidation(true);
     if (validateCurrentStep()) {
-      setShowValidation(false); // Reset so the next step starts clean
+      setShowValidation(false);
       setCurrentStep(prev => prev + 1);
       window.scrollTo(0, 0);
     } else {
@@ -138,7 +140,7 @@ export function RequestWorkflowPage() {
 
   if (submittedId) {
     return (
-      <div className="bg-[#F6F6FB] min-h-screen py-12 px-6">
+      <div className="min-h-screen bg-surface py-12 px-6">
         <ConfirmationCard
           requestId={submittedId}
           detail={detail}
@@ -149,168 +151,187 @@ export function RequestWorkflowPage() {
   }
 
   return (
-    <div className="bg-[#F6F6FB] min-h-screen pb-12">
-      <div className="max-w-[1440px] mx-auto px-6 lg:px-8 pt-8">
-
-        {/* Breadcrumbs */}
-        <div className="flex items-center gap-2 text-[12px] font-medium text-text-muted mb-6">
-          <button onClick={() => navigate('/marketplaces/services')} className="hover:text-primary transition-colors">Marketplaces</button>
-          <ChevronRight size={12} />
-          <button onClick={() => navigate('/marketplaces/services')} className="hover:text-primary transition-colors">Services</button>
-          <ChevronRight size={12} />
-          <button onClick={() => navigate(`/marketplaces/services/${service.id}`)} className="hover:text-primary transition-colors truncate max-w-[200px]">{service.title}</button>
-          <ChevronRight size={12} />
-          <span className="text-text-primary">Start Request</span>
-        </div>
-
+    <div className="min-h-screen bg-surface pb-12">
+      <div className="mx-auto max-w-[1440px] px-6 pt-8 lg:px-8">
         <div className="max-w-4xl">
-        <RequestWorkflowContextBanner service={service} />
+          <MarketplaceDetailHeader
+            breadcrumbs={[
+              { label: 'Marketplaces', href: '/marketplaces/services' },
+              { label: 'Services', href: '/marketplaces/services' },
+              { label: service.title, href: `/marketplaces/services/${service.id}` },
+              { label: 'Start Request' },
+            ]}
+            badges={
+              <>
+                <CategoryBadge category={service.category} />
+                <StatusBadge status="Draft" />
+              </>
+            }
+            title={service.title}
+            lede={detail.purpose}
+          />
 
-        <div className="bg-white rounded-card border border-border-default shadow-sm overflow-hidden">
+          <div className="dq-card overflow-hidden p-0">
+            <div className="border-b border-border-default bg-surface/50 px-6 py-6">
+              <h2 className="dq-section-title mb-6">New Request</h2>
 
-          {/* Form Header / Stepper */}
-          <div className="border-b border-border-default p-6 bg-surface/50">
-            <h1 className="text-xl font-bold text-primary mb-6">New Request</h1>
+              <div className="flex items-center gap-4">
+                {steps.map((step, index) => {
+                  const isActive = step.id === currentStep;
+                  const isPast = step.id < currentStep;
 
-            <div className="flex items-center gap-4">
-              {steps.map((step, index) => {
-                const isActive = step.id === currentStep;
-                const isPast = step.id < currentStep;
-
-                return (
-                  <React.Fragment key={step.id}>
-                    <div className={`flex items-center gap-2 ${isActive ? 'text-primary' : isPast ? 'text-success-text' : 'text-text-muted'}`}>
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border ${isActive ? 'bg-primary text-white border-primary' :
-                          isPast ? 'bg-success-surface text-success-text border-success-text/20' :
-                            'bg-surface text-text-muted border-border-strong'
-                        }`}>
-                        {isPast ? <CheckCircle2 size={12} /> : step.id}
+                  return (
+                    <React.Fragment key={step.id}>
+                      <div
+                        className={`flex items-center gap-2 ${
+                          isActive
+                            ? 'text-primary'
+                            : isPast
+                              ? 'text-success-text'
+                              : 'text-text-muted'
+                        }`}
+                      >
+                        <div
+                          className={`flex h-6 w-6 items-center justify-center rounded-full border text-xs font-bold ${
+                            isActive
+                              ? 'border-primary bg-primary text-white'
+                              : isPast
+                                ? 'border-success-text/20 bg-success-surface text-success-text'
+                                : 'border-border-strong bg-surface text-text-muted'
+                          }`}
+                        >
+                          {isPast ? <CheckCircle2 size={12} /> : step.id}
+                        </div>
+                        <span
+                          className={`text-sm font-semibold ${isActive || isPast ? '' : 'hidden sm:block'}`}
+                        >
+                          {step.label}
+                        </span>
                       </div>
-                      <span className={`text-sm font-semibold ${isActive || isPast ? '' : 'hidden sm:block'}`}>
-                        {step.label}
-                      </span>
-                    </div>
-                    {index < steps.length - 1 && (
-                      <div className="flex-1 h-px bg-border-strong mx-2" />
-                    )}
-                  </React.Fragment>
-                );
-              })}
+                      {index < steps.length - 1 && (
+                        <div className="relative mx-2 h-px flex-1 bg-border-strong">
+                          {isPast && (
+                            <div className="absolute inset-0 bg-success-text/40" />
+                          )}
+                        </div>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </div>
             </div>
-          </div>
 
-          {/* Form Content Body */}
-          <div className="p-8">
-
-            {/* Step 1: Core Details */}
-            {currentStep === 1 && (
-              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                <div>
-                  <label className="block text-sm font-semibold text-primary mb-1">
-                    Request Title <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.title}
-                    onChange={(e) => handleFieldChange('title', e.target.value)}
-                    className={`w-full p-2.5 bg-white border rounded-button focus:outline-none focus:ring-2 focus:ring-secondary/20 transition-all ${showValidation && !formData.title.trim() ? 'border-danger' : 'border-border-strong hover:border-text-muted'
+            <div className="p-8">
+              {currentStep === 1 && (
+                <div className="animate-in fade-in slide-in-from-bottom-4 space-y-7 duration-300">
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-primary">
+                      Request Title <span className="text-danger">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.title}
+                      onChange={(e) => handleFieldChange('title', e.target.value)}
+                      className={`w-full rounded-button border bg-white p-2.5 transition-all focus:outline-none focus:ring-2 focus:ring-secondary/20 ${
+                        showValidation && !formData.title.trim()
+                          ? 'border-danger'
+                          : 'border-border-strong hover:border-text-muted'
                       }`}
-                    placeholder="Briefly summarize your request"
+                      placeholder="Briefly summarize your request"
+                    />
+                    {showValidation && !formData.title.trim() && (
+                      <p className="mt-1.5 text-xs font-medium text-danger">Required field.</p>
+                    )}
+                  </div>
+
+                  <UrgencySelector
+                    value={formData.urgency}
+                    onChange={(val) => handleFieldChange('urgency', val)}
                   />
-                  {showValidation && !formData.title.trim() && (
-                    <p className="text-xs text-danger mt-1.5 font-medium">Required field.</p>
-                  )}
+
+                  <ExpectedOutcomeField
+                    value={formData.expectedOutcome}
+                    onChange={(val) => handleFieldChange('expectedOutcome', val)}
+                    showValidation={showValidation}
+                  />
+
+                  <EvidenceUploadStub />
                 </div>
+              )}
 
-                <UrgencySelector
-                  value={formData.urgency}
-                  onChange={(val) => handleFieldChange('urgency', val)}
-                />
+              {currentStep === 2 && hasSpecificInputs && (
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+                  <DynamicRequiredFields
+                    requiredInputs={detail.requiredInputs.filter(
+                      input =>
+                        !['evidence', 'Evidence', 'Screenshot/evidence', 'Supporting evidence'].includes(
+                          input
+                        )
+                    )}
+                    values={formData.dynamicFields}
+                    onChange={handleDynamicFieldChange}
+                    showValidation={showValidation}
+                  />
+                </div>
+              )}
 
-                <ExpectedOutcomeField
-                  value={formData.expectedOutcome}
-                  onChange={(val) => handleFieldChange('expectedOutcome', val)}
-                  showValidation={showValidation}
-                />
+              {isLastStep && (
+                <div className="animate-in fade-in slide-in-from-bottom-4 space-y-8 duration-300">
+                  <ReviewSubmitSummary
+                    title={formData.title}
+                    urgency={formData.urgency}
+                    expectedOutcome={formData.expectedOutcome}
+                    dynamicFields={formData.dynamicFields}
+                    requiredInputs={detail.requiredInputs}
+                  />
 
-                <EvidenceUploadStub />
-              </div>
-            )}
-
-            {/* Step 2: Specific Information (if applicable) */}
-            {currentStep === 2 && hasSpecificInputs && (
-              <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-                <DynamicRequiredFields
-                  requiredInputs={detail.requiredInputs.filter(
-                    input => !['evidence', 'Evidence', 'Screenshot/evidence', 'Supporting evidence'].includes(input)
-                  )}
-                  values={formData.dynamicFields}
-                  onChange={handleDynamicFieldChange}
-                  showValidation={showValidation}
-                />
-              </div>
-            )}
-
-            {/* Step 3: Routing & Review */}
-            {isLastStep && (
-              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                <ReviewSubmitSummary
-                  title={formData.title}
-                  urgency={formData.urgency}
-                  expectedOutcome={formData.expectedOutcome}
-                  dynamicFields={formData.dynamicFields}
-                  requiredInputs={detail.requiredInputs}
-                />
-
-                <RoutingPreviewCard
-                  detail={detail}
-                  urgency={formData.urgency}
-                />
-              </div>
-            )}
-
-          </div>
-
-          {/* Form Footer Actions */}
-          <div className="border-t border-border-default p-6 bg-surface/30 flex items-center justify-between">
-            <button
-              onClick={handleBack}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-text-secondary hover:text-primary transition-colors"
-            >
-              <ArrowLeft size={16} />
-              {currentStep === 1 ? 'Cancel' : 'Back'}
-            </button>
-
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handleSaveDraft}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-primary bg-white border border-border-strong rounded-button hover:bg-surface hover:border-text-muted transition-colors"
-              >
-                <Save size={16} />
-                Save Draft
-              </button>
-
-              {!isLastStep ? (
-                <button
-                  onClick={handleNext}
-                  className="flex items-center gap-2 px-6 py-2 text-sm font-semibold text-white bg-primary rounded-button hover:bg-primary-hover transition-colors shadow-sm"
-                >
-                  Next
-                  <ArrowRight size={16} />
-                </button>
-              ) : (
-                <button
-                  onClick={handleSubmit}
-                  className="flex items-center gap-2 px-6 py-2 text-sm font-semibold text-white bg-secondary rounded-button hover:bg-orange-600 transition-colors shadow-sm"
-                >
-                  Submit Request
-                  <CheckCircle2 size={16} />
-                </button>
+                  <RoutingPreviewCard detail={detail} urgency={formData.urgency} />
+                </div>
               )}
             </div>
-          </div>
 
-        </div>
+            <div className="flex items-center justify-between border-t border-border-default bg-surface/30 px-6 py-6">
+              <button
+                type="button"
+                onClick={handleBack}
+                className="dq-btn dq-btn-ghost text-text-secondary hover:text-primary"
+              >
+                <ArrowLeft size={16} />
+                {currentStep === 1 ? 'Cancel' : 'Back'}
+              </button>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleSaveDraft}
+                  className="dq-btn dq-btn-outline"
+                >
+                  <Save size={16} />
+                  Save Draft
+                </button>
+
+                {!isLastStep ? (
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    className="dq-btn dq-btn-navy"
+                  >
+                    Next
+                    <ArrowRight size={16} />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSubmit}
+                    className="dq-btn dq-btn-orange"
+                  >
+                    Submit Request
+                    <CheckCircle2 size={16} />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

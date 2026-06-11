@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { useParams } from 'react-router-dom';
 import { useServiceLifecycle } from '../context/ServiceLifecycleContext';
+import { MarketplaceDetailHeader } from '../components/marketplace/MarketplaceDetailHeader';
+import { CategoryBadge } from '../components/CategoryBadge';
 import { ServiceDetailHero } from '../components/ServiceDetailHero';
 import { ServiceMetadataRail } from '../components/ServiceMetadataRail';
 import { WhenToUseCard } from '../components/WhenToUseCard';
@@ -15,14 +16,12 @@ import { ServiceEmptyState } from '../components/ServiceEmptyState';
 export function ServiceDetailPage() {
   const { serviceId } = useParams<{ serviceId: string }>();
   const { getServiceById, getServiceDetailByServiceId } = useServiceLifecycle();
-  
+
   const [loading, setLoading] = useState(true);
 
-  // Fetch data
   const service = serviceId ? getServiceById(serviceId) : undefined;
   const detail = serviceId ? getServiceDetailByServiceId(serviceId) : undefined;
 
-  // Simulate network loading
   useEffect(() => {
     setLoading(true);
     const timer = setTimeout(() => {
@@ -33,23 +32,18 @@ export function ServiceDetailPage() {
 
   if (loading) {
     return (
-      <div className="bg-[#F6F6FB] min-h-screen py-8">
-        <div className="max-w-[1440px] mx-auto px-6 lg:px-8">
-          {/* Breadcrumb Skeleton */}
-          <div className="w-64 h-4 bg-border-default animate-pulse rounded mb-6" />
-          
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-8 space-y-6">
-              {/* Hero Skeleton */}
-              <div className="bg-white rounded-card border border-border-default h-48 animate-pulse" />
-              {/* Content Skeletons */}
-              <div className="bg-white rounded-card border border-border-default h-64 animate-pulse" />
-              <div className="bg-white rounded-card border border-border-default h-48 animate-pulse" />
+      <div className="min-h-screen bg-surface py-8">
+        <div className="mx-auto max-w-[1440px] px-6 lg:px-8">
+          <div className="mb-6 h-4 w-64 animate-pulse rounded bg-border-default" />
+          <div className="mb-8 h-24 animate-pulse rounded bg-border-default/60" />
+
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+            <div className="space-y-6 lg:col-span-8">
+              <div className="dq-card h-64 animate-pulse" />
+              <div className="dq-card h-48 animate-pulse" />
             </div>
-            
             <div className="lg:col-span-4">
-              {/* Rail Skeleton */}
-              <div className="bg-white rounded-card border border-border-default h-96 animate-pulse sticky top-[88px]" />
+              <div className="dq-card sticky top-[88px] h-96 animate-pulse" />
             </div>
           </div>
         </div>
@@ -59,10 +53,10 @@ export function ServiceDetailPage() {
 
   if (!service || !detail) {
     return (
-      <div className="bg-[#F6F6FB] min-h-screen py-20 px-6">
-        <div className="max-w-3xl mx-auto">
-          <ServiceEmptyState 
-            title="Service not found" 
+      <div className="min-h-screen bg-surface py-20 px-6">
+        <div className="mx-auto max-w-3xl">
+          <ServiceEmptyState
+            title="Service not found"
             message={`We couldn't find a service matching the ID "${serviceId}". It may have been removed or you might have an incorrect link.`}
             ctaLabel="Back to Service Catalogue"
             onCtaClick={() => window.history.back()}
@@ -73,51 +67,47 @@ export function ServiceDetailPage() {
   }
 
   return (
-    <div className="bg-[#F6F6FB] min-h-screen pb-12">
-      <div className="max-w-[1440px] mx-auto px-6 lg:px-8 pt-8">
-        
-        {/* Breadcrumbs */}
-        <div className="flex items-center gap-2 text-[12px] font-medium text-text-muted mb-6">
-          <Link to="/marketplaces/services" className="hover:text-primary transition-colors">Marketplaces</Link>
-          <ChevronRight size={12} />
-          <Link to="/marketplaces/services" className="hover:text-primary transition-colors">Services</Link>
-          <ChevronRight size={12} />
-          <span className="text-text-primary">{service.title}</span>
-        </div>
+    <div className="min-h-screen bg-surface pb-12">
+      <div className="mx-auto max-w-[1440px] px-6 pt-8 lg:px-8">
+        <MarketplaceDetailHeader
+          breadcrumbs={[
+            { label: 'Marketplaces', href: '/marketplaces/services' },
+            { label: 'Services', href: '/marketplaces/services' },
+            { label: service.title },
+          ]}
+          badges={<CategoryBadge category={service.category} />}
+          title={service.title}
+          lede={detail.purpose}
+          meta={<ServiceDetailHero service={service} />}
+        />
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
-          {/* Main Content (8 cols) */}
-          <div className="lg:col-span-8 space-y-6">
-            <ServiceDetailHero service={service} detail={detail} />
-            
-            <WhenToUseCard 
-              whenToUse={detail.whenToUse} 
-              whenNotToUse={detail.whenNotToUse} 
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+          <div className="space-y-6 lg:col-span-8">
+            <WhenToUseCard
+              whenToUse={detail.whenToUse}
+              whenNotToUse={detail.whenNotToUse}
             />
-            
+
             <RequiredInputsList inputs={detail.requiredInputs} />
-            
+
             <FulfilmentTimeline path={detail.fulfilmentPath} />
-            
-            <ApprovalPathCard 
-              requirement={detail.approval} 
-              detail={detail.approvalDetail} 
+
+            <ApprovalPathCard
+              requirement={detail.approval}
+              detail={detail.approvalDetail}
             />
-            
-            <RelatedItemsCard 
-              knowledgeLinks={detail.relatedKnowledge} 
-              serviceLinks={detail.relatedServices} 
+
+            <RelatedItemsCard
+              knowledgeLinks={detail.relatedKnowledge}
+              serviceLinks={detail.relatedServices}
             />
-            
+
             <AuditNoteCard note={detail.auditNote} />
           </div>
-          
-          {/* Metadata Rail (4 cols) */}
-          <div className="lg:col-span-4 relative">
+
+          <div className="relative lg:col-span-4">
             <ServiceMetadataRail detail={detail} />
           </div>
-          
         </div>
       </div>
     </div>

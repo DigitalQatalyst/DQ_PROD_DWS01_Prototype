@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import { ArrowLeft, Clock, User, Copy, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useServiceLifecycle } from '../context/ServiceLifecycleContext';
-import { RequestHeaderCard } from '../components/RequestHeaderCard';
+import { MarketplaceDetailHeader } from '../components/marketplace/MarketplaceDetailHeader';
+import { CategoryBadge } from '../components/CategoryBadge';
+import { StatusBadge } from '../components/DqBadge';
 import { RequestStatusTimeline } from '../components/RequestStatusTimeline';
 import { ApprovalStateCard } from '../components/ApprovalStateCard';
 import { FulfilmentNotesCard } from '../components/FulfilmentNotesCard';
@@ -15,7 +17,6 @@ import { WorkItemLinkedKnowledgeCard } from '../components/WorkItemLinkedKnowled
 
 export function RequestStatusPage() {
   const { requestId } = useParams<{ requestId: string }>();
-  const navigate = useNavigate();
   const { getRequestById, updateRequestStatus } = useServiceLifecycle();
 
   const [loading, setLoading] = useState(true);
@@ -30,27 +31,31 @@ export function RequestStatusPage() {
 
   const handleBackToMyRequests = () => {
     toast.info('My Requests opened in prototype state');
-    // For navigation if we wanted: navigate('/workspace/my-requests');
   };
 
-  const handleInfoSubmit = (response: string) => {
+  const handleInfoSubmit = (_response: string) => {
     if (requestId) {
       updateRequestStatus(requestId, 'In Review');
       toast.success('Information submitted');
     }
   };
 
+  const copyToClipboard = (id: string) => {
+    navigator.clipboard.writeText(id);
+    toast.success('Request ID copied');
+  };
+
   if (loading) {
     return (
-      <div className="bg-[#F6F6FB] min-h-screen py-8">
-        <div className="max-w-[1440px] mx-auto px-6 lg:px-8">
-          <div className="w-32 h-8 bg-border-default animate-pulse rounded mb-6" />
-          <div className="bg-white rounded-card h-48 animate-pulse border border-border-default mb-8" />
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-8 bg-white rounded-card h-96 animate-pulse border border-border-default" />
-            <div className="lg:col-span-4 space-y-4">
-              <div className="bg-white rounded-card h-32 animate-pulse border border-border-default" />
-              <div className="bg-white rounded-card h-32 animate-pulse border border-border-default" />
+      <div className="min-h-screen bg-surface py-8">
+        <div className="mx-auto max-w-[1440px] px-6 lg:px-8">
+          <div className="mb-6 h-8 w-32 animate-pulse rounded bg-border-default" />
+          <div className="mb-8 h-24 animate-pulse rounded bg-border-default/60" />
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+            <div className="dq-card h-96 animate-pulse lg:col-span-8" />
+            <div className="space-y-4 lg:col-span-4">
+              <div className="dq-card h-32 animate-pulse" />
+              <div className="dq-card h-32 animate-pulse" />
             </div>
           </div>
         </div>
@@ -60,10 +65,10 @@ export function RequestStatusPage() {
 
   if (!request) {
     return (
-      <div className="bg-[#F6F6FB] min-h-screen py-20 px-6">
-        <div className="max-w-3xl mx-auto">
-          <ServiceEmptyState 
-            title="Request not found" 
+      <div className="min-h-screen bg-surface py-20 px-6">
+        <div className="mx-auto max-w-3xl">
+          <ServiceEmptyState
+            title="Request not found"
             message={`We couldn't find a request matching the ID "${requestId}".`}
             ctaLabel="Back to My Requests"
             onCtaClick={handleBackToMyRequests}
@@ -74,37 +79,88 @@ export function RequestStatusPage() {
   }
 
   return (
-    <div className="bg-[#F6F6FB] min-h-screen pb-12">
-      <div className="max-w-[1440px] mx-auto px-6 lg:px-8 pt-8">
-        
-        <button 
+    <div className="min-h-screen bg-surface pb-12">
+      <div className="mx-auto max-w-[1440px] px-6 pt-8 lg:px-8">
+        <button
+          type="button"
           onClick={handleBackToMyRequests}
-          className="flex items-center gap-2 text-sm font-semibold text-text-secondary hover:text-primary transition-colors mb-6"
+          className="mb-6 flex items-center gap-2 text-sm font-semibold text-text-secondary transition-colors hover:text-primary"
         >
           <ArrowLeft size={16} />
           Back to My Requests
         </button>
 
-        <div className="mb-8">
-          <RequestHeaderCard request={request} />
-        </div>
+        <MarketplaceDetailHeader
+          breadcrumbs={[
+            { label: 'Marketplaces', href: '/marketplaces/services' },
+            { label: 'Services', href: '/marketplaces/services' },
+            { label: request.service },
+          ]}
+          eyebrow={
+            <button
+              type="button"
+              onClick={() => copyToClipboard(request.id)}
+              className="group flex items-center gap-1.5 rounded border border-border-strong bg-surface px-2 py-0.5 transition-colors hover:border-text-muted"
+            >
+              <span className="font-mono text-xs font-bold text-text-primary">{request.id}</span>
+              <Copy size={12} className="text-text-muted transition-colors group-hover:text-primary" />
+            </button>
+          }
+          badges={
+            <>
+              <StatusBadge status={request.status} />
+              <CategoryBadge category={request.category} />
+            </>
+          }
+          title={request.service}
+          lede={`Submitted on ${new Date(request.submittedAt).toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+          })}`}
+          meta={
+            <>
+              <div>
+                <div className="mb-1 flex items-center gap-1.5 text-xs text-text-muted">
+                  <User size={14} />
+                  <span>Service Owner</span>
+                </div>
+                <span className="text-sm font-semibold text-primary">{request.owner}</span>
+              </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
-          {/* Main Content (8 cols) */}
+              <div className="hidden h-8 w-px bg-border-strong sm:block" />
+
+              <div>
+                <div className="mb-1 flex items-center gap-1.5 text-xs text-text-muted">
+                  <Clock size={14} />
+                  <span>SLA Target</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-primary">{request.sla}</span>
+                  {request.slaState === 'At Risk' && (
+                    <span className="h-2 w-2 rounded-full bg-warning-text" title="At Risk" />
+                  )}
+                  {request.slaState === 'Completed' && (
+                    <CheckCircle2 size={14} className="text-success-text" />
+                  )}
+                </div>
+              </div>
+            </>
+          }
+        />
+
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
           <div className="lg:col-span-8">
             <RequestStatusTimeline timeline={request.timeline} />
           </div>
-          
-          {/* Right Rail (4 cols) */}
-          <div className="lg:col-span-4 space-y-6">
-            
+
+          <div className="space-y-6 lg:col-span-4">
             <ApprovalStateCard approvalState={request.approval} />
 
             {request.status === 'Returned for Information' && request.pendingInfo && (
-              <PendingInformationCard 
-                pendingInfo={request.pendingInfo} 
-                onSubmit={handleInfoSubmit} 
+              <PendingInformationCard
+                pendingInfo={request.pendingInfo}
+                onSubmit={handleInfoSubmit}
               />
             )}
 
@@ -118,11 +174,8 @@ export function RequestStatusPage() {
 
             <AuditTrailCue />
 
-            {/* Linked Knowledge */}
             {requestId && <WorkItemLinkedKnowledgeCard workItemId={requestId} />}
-            
           </div>
-          
         </div>
       </div>
     </div>
