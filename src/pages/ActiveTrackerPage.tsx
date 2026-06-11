@@ -557,13 +557,13 @@ function RecordDetailRoute({
   return (
     <div className="w-full px-6 py-6 pb-12 lg:px-8">
       <header className="mb-5">
-        <nav className="mb-3 flex flex-wrap items-center gap-2 text-sm font-semibold text-primary" aria-label="Breadcrumb">
+        <nav className="mb-3 flex flex-wrap items-center gap-2 text-sm font-semibold text-secondary" aria-label="Breadcrumb">
           <span>Tracker</span>
-          <span className="text-text-muted">/</span>
-          <button onClick={() => guardedNavigate(onHub)} className="hover:text-secondary">Tracker Hub</button>
-          <span className="text-text-muted">/</span>
-          <button onClick={() => guardedNavigate(onBack)} className="hover:text-secondary">{tracker.name}</button>
-          <span className="text-text-muted">/</span>
+          <span>/</span>
+          <button onClick={() => guardedNavigate(onHub)} className="hover:text-gray-900">Tracker Hub</button>
+          <span>/</span>
+          <button onClick={() => guardedNavigate(onBack)} className="hover:text-gray-900">{tracker.name}</button>
+          <span>/</span>
           <span className="font-mono text-xs font-bold">{draft.id}</span>
         </nav>
         <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
@@ -842,13 +842,13 @@ function MetaRow({ label, value, mono, tone = '' }: { label: string; value: stri
 function RecordNotFound({ tracker, recordId, onBack, onHub }: { tracker: TrackerDefinition; recordId: string; onBack: () => void; onHub: () => void }) {
   return (
     <div className="w-full px-6 py-6 lg:px-8">
-      <nav className="mb-3 flex flex-wrap items-center gap-2 text-sm font-semibold text-primary" aria-label="Breadcrumb">
+      <nav className="mb-3 flex flex-wrap items-center gap-2 text-sm font-semibold text-secondary" aria-label="Breadcrumb">
         <span>Tracker</span>
-        <span className="text-text-muted">/</span>
-        <button onClick={onHub} className="hover:text-secondary">Tracker Hub</button>
-        <span className="text-text-muted">/</span>
-        <button onClick={onBack} className="hover:text-secondary">{tracker.name}</button>
-        <span className="text-text-muted">/</span>
+        <span>/</span>
+        <button onClick={onHub} className="hover:text-gray-900">Tracker Hub</button>
+        <span>/</span>
+        <button onClick={onBack} className="hover:text-gray-900">{tracker.name}</button>
+        <span>/</span>
         <span className="font-mono text-xs font-bold">{recordId}</span>
       </nav>
       <section className="mt-16 max-w-lg rounded-card border border-border-default bg-white p-8 text-center shadow-sm">
@@ -863,11 +863,11 @@ function RecordNotFound({ tracker, recordId, onBack, onHub }: { tracker: Tracker
 
 function Breadcrumb({ trackerName, onHub }: { trackerName: string; onHub: () => void }) {
   return (
-    <nav className="mb-3 flex items-center gap-2 text-sm font-semibold text-primary" aria-label="Breadcrumb">
+    <nav className="mb-3 flex items-center gap-2 text-sm font-semibold text-secondary" aria-label="Breadcrumb">
       <span>Tracker</span>
-      <span className="text-text-muted">/</span>
-      <button onClick={onHub} className="hover:text-secondary">Tracker Hub</button>
-      <span className="text-text-muted">/</span>
+      <span>/</span>
+      <button onClick={onHub} className="hover:text-gray-900">Tracker Hub</button>
+      <span>/</span>
       <span className="font-bold">{trackerName}</span>
     </nav>
   );
