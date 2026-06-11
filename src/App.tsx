@@ -808,6 +808,7 @@ function AppRoutes() {
         <Route path="/tasks/my-work/assigned-tasks/:taskId" element={<RouteGuard><TaskDetailsPage /></RouteGuard>} />
         <Route path="/tasks/task-board/kanban-view" element={<RouteGuard><KanbanBoardPage /></RouteGuard>} />
         <Route path="/tracker/tracker-hub" element={<RouteGuard><TrackerHubPage /></RouteGuard>} />
+        <Route path="/tracker/active-tracker/:trackerSlug/records/:recordId" element={<RouteGuard><ActiveTrackerPage /></RouteGuard>} />
         <Route path="/tracker/active-tracker/:trackerSlug" element={<RouteGuard><ActiveTrackerPage /></RouteGuard>} />
         {featureAreas.map((area) => (
           <React.Fragment key={area.id}>
