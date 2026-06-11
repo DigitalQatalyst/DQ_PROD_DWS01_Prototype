@@ -110,14 +110,6 @@ export function RequestWorkflowContextRail({
             </div>
           </div>
 
-          {detail.escalationTrigger && (
-            <div>
-              <div className="mb-1 text-xs text-text-muted">Escalation Trigger</div>
-              <div className="text-sm font-medium leading-snug text-primary">
-                {detail.escalationTrigger}
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
