@@ -12,7 +12,6 @@ import {
   RotateCcw,
   Search,
   Settings,
-  SlidersHorizontal,
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -51,7 +50,6 @@ type SortState = {
 
 type SettingsState = {
   compactDensity: boolean;
-  showBottomGuide: boolean;
   showRightRail: boolean;
   defaultTab: HubTab;
   defaultSort: string;
@@ -92,7 +90,6 @@ const defaultSort: SortState = {
 
 const defaultSettings: SettingsState = {
   compactDensity: false,
-  showBottomGuide: true,
   showRightRail: true,
   defaultTab: 'All Trackers',
   defaultSort: 'None',
@@ -288,7 +285,6 @@ export function TrackerHubPage() {
             />
           </section>
 
-          {settings.showBottomGuide && <BottomGuide />}
         </main>
 
         {hasRightRail && (
@@ -486,37 +482,6 @@ function Dot({ color }: { color: string }) {
   return <span className={`h-2 w-2 rounded-full ${color}`} />;
 }
 
-function BottomGuide() {
-  return (
-    <section className="rounded-card border border-border-default bg-white p-6 shadow-sm">
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(420px,1fr)] xl:items-center">
-        <div className="flex gap-4">
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-orange-50 text-secondary"><SlidersHorizontal size={24} strokeWidth={1.5} /></span>
-          <div>
-            <h2 className="dq-card-title">Next step after opening a tracker</h2>
-            <p className="mt-2 text-sm leading-6 text-primary">Click “Open tracker” to go to the tracker details page. Use the left panel to switch between trackers and the right panel to view and manage records.</p>
-          </div>
-        </div>
-        <div className="grid grid-cols-[1fr_120px_2fr_1fr] items-center gap-4 text-xs font-semibold text-primary">
-          <div className="text-right"><b>Left panel</b><br />All trackers in<br />your workspace</div>
-          <div className="relative h-28 rounded-button border border-border-default bg-white shadow-sm">
-            <div className="mx-3 mt-5 h-3 rounded-full bg-surface" />
-            <div className="mx-3 mt-3 h-3 rounded-full bg-surface" />
-            <div className="mx-3 mt-3 h-3 w-2/3 rounded-full bg-surface" />
-          </div>
-          <div className="rounded-button bg-surface p-4">
-            <div className="mb-3 h-5 rounded bg-white" />
-            <div className="grid grid-cols-3 gap-2">
-              {Array.from({ length: 12 }).map((_, index) => <span key={index} className="h-3 rounded bg-white" />)}
-            </div>
-          </div>
-          <div><b>Right panel</b><br />Records / items in<br />the selected tracker</div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function CreateTrackerModal({ open, onClose, onCreate }: { open: boolean; onClose: () => void; onCreate: (draft: CreateTrackerDraft) => void }) {
   const [draft, setDraft] = useState<CreateTrackerDraft>({
     name: '',
@@ -581,12 +546,11 @@ function SettingsModal({ open, settings, onClose, onApply }: { open: boolean; se
     if (open) setDraft(settings);
   }, [open, settings]);
   if (!open) return null;
-  const toggle = (key: keyof SettingsState) => setDraft((current) => ({ ...current, [key]: !current[key] }));
+  const toggle = (key: 'compactDensity' | 'showRightRail' | 'redAlerts' | 'overdueAlerts') => setDraft((current) => ({ ...current, [key]: !current[key] }));
   return (
     <ModalFrame title="Tracker Hub Settings" onClose={onClose} width="max-w-2xl">
       <SettingsSection title="Display">
         <Toggle label="Compact table density" checked={draft.compactDensity} onChange={() => toggle('compactDensity')} />
-        <Toggle label="Show bottom guide card" checked={draft.showBottomGuide} onChange={() => toggle('showBottomGuide')} />
         <Toggle label="Show right rail" checked={draft.showRightRail} onChange={() => toggle('showRightRail')} />
       </SettingsSection>
       <SettingsSection title="Defaults">

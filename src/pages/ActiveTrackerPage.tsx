@@ -133,7 +133,7 @@ const defaultSettings: SettingsState = {
 };
 
 export function ActiveTrackerPage() {
-  const { trackerSlug } = useParams();
+  const { trackerSlug, recordId } = useParams();
   const navigate = useNavigate();
   const tracker = getTrackerBySlug(trackerSlug);
   const allTrackers = useMemo(() => getAllTrackers(), []);
@@ -168,7 +168,7 @@ export function ActiveTrackerPage() {
   useEffect(() => {
     if (!tracker) return;
     setRecords(getRecordsForTracker(tracker.id));
-    setSelectedRecord(null);
+    if (!recordId) setSelectedRecord(null);
     setPage(1);
     if (savedView && savedView.trackerSlug !== tracker.slug) {
       setActiveTab(savedView.activeTab || 'Records');
@@ -178,7 +178,19 @@ export function ActiveTrackerPage() {
       setSort(savedView.sort || { key: null, direction: 'asc' });
       setPageSize(savedView.pageSize || settings.pageSize);
     }
-  }, [tracker?.slug]);
+  }, [tracker?.slug, recordId]);
+
+  useEffect(() => {
+    if (!recordId) {
+      setSelectedRecord(null);
+      return;
+    }
+    const record = records.find((item) => item.id === recordId);
+    if (record) {
+      setSelectedRecord(record);
+      setDrawerFocus('summary');
+    }
+  }, [recordId, records]);
 
   useEffect(() => setPage(1), [activeTab, filters, metricFilter, extraFilter, sort, pageSize, trackerSlug]);
 
@@ -265,6 +277,16 @@ export function ActiveTrackerPage() {
     setSelectedRecord(record);
     toast.success('Tracker record updated');
   };
+  const openRecord = (record: TrackerRecord, focus: DrawerFocus = 'summary') => {
+    setSelectedRecord(record);
+    setDrawerFocus(focus);
+    navigate(`/tracker/active-tracker/${tracker.slug}/records/${record.id}`);
+  };
+  const closeRecord = () => {
+    setSelectedRecord(null);
+    setDrawerFocus(null);
+    navigate(`/tracker/active-tracker/${tracker.slug}`);
+  };
   const applySettings = (nextSettings: SettingsState) => {
     setSettings(nextSettings);
     setPageSize(nextSettings.pageSize);
@@ -335,7 +357,7 @@ export function ActiveTrackerPage() {
                   onSort={(key) => setSort((current) => ({ key, direction: current.key === key && current.direction === 'asc' ? 'desc' : 'asc' }))}
                   onPage={setPage}
                   onPageSize={(size) => setPageSize(size)}
-                  onOpen={(record, focus = 'summary') => { setSelectedRecord(record); setDrawerFocus(focus); }}
+                  onOpen={openRecord}
                 />
               </>
             ) : (
@@ -363,7 +385,7 @@ export function ActiveTrackerPage() {
         tracker={tracker}
         record={selectedRecord}
         focus={drawerFocus}
-        onClose={() => setSelectedRecord(null)}
+        onClose={closeRecord}
         onSave={updateRecord}
       />
       <AddRecordModal tracker={tracker} open={addOpen} onClose={() => setAddOpen(false)} onAdd={addRecord} />
