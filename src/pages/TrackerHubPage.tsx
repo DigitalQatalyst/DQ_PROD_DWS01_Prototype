@@ -237,8 +237,8 @@ export function TrackerHubPage() {
         <Breadcrumb items={['Tracker', 'Tracker Hub']} />
         <div className="flex flex-col gap-4 2xl:flex-row 2xl:items-start 2xl:justify-between">
           <div>
-            <div className="dq-overline mb-2">TRACKER WORKSPACE</div>
-            <h1 className="dq-page-title">Tracker Hub</h1>
+            {/* <div className="dq-overline mb-2">TRACKER WORKSPACE</div> */}
+            <h1 className="dq-page-title">My Tracker Overview</h1>
             <p className="mt-2 max-w-4xl text-sm leading-6 text-primary">
               Monitor live trackers, assigned records, overdue items, health signals, and follow-up actions across DWS.
             </p>
@@ -250,14 +250,14 @@ export function TrackerHubPage() {
           </div>
         </div>
       </header>
-
+{/* 
       <section className="mb-4 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         <KpiCard active={activeFilter === 'active'} label="Active Trackers" value="9" trend="↗ -2 this week" icon={Folder} accent="blue" onClick={() => applyKpiFilter('active')} />
         <KpiCard active={activeFilter === 'assigned'} label="My Assigned Items" value="26" trend="↘ -4 due today" icon={UserCheck} accent="green" onClick={() => applyKpiFilter('assigned')} />
         <KpiCard active={activeFilter === 'overdue'} label="Overdue Records" value="7" trend="↘ -1 vs yesterday" icon={AlertTriangle} accent="red" onClick={() => applyKpiFilter('overdue')} />
         <KpiCard active={activeFilter === 'review'} label="Awaiting My Review" value="5" trend="↔ +1 pending" icon={ClipboardCheck} accent="purple" onClick={() => applyKpiFilter('review')} />
         <KpiCard active={activeFilter === 'rag'} label="RAG Alerts" value="11" trend="3 red / 8 amber" icon={ShieldAlert} accent="orange" onClick={() => applyKpiFilter('rag')} />
-      </section>
+      </section> */}
 
       <div className="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_360px]">
         <main className="min-w-0">
