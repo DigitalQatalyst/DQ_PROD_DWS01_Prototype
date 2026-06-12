@@ -39,21 +39,33 @@ function riskTone(risk: Risk): BadgeTone {
   return statusTone(String(risk));
 }
 
-export function DqBadge({ label, tone = 'gray', dot = true }: { label: string; tone?: BadgeTone; dot?: boolean }) {
+type BadgeSize = 'md' | 'sm';
+
+export function DqBadge({
+  label,
+  tone = 'gray',
+  dot = true,
+  size = 'md',
+}: {
+  label: string;
+  tone?: BadgeTone;
+  dot?: boolean;
+  size?: BadgeSize;
+}) {
   return (
-    <span className={`dq-badge ${toneClass[tone]}`}>
+    <span className={`dq-badge ${size === 'sm' ? 'dq-badge-sm' : ''} ${toneClass[tone]}`}>
       {dot && <span className="dq-badge-dot" />}
       {label}
     </span>
   );
 }
 
-export function StatusBadge({ status }: { status: string }) {
-  return <DqBadge label={status} tone={statusTone(status)} />;
+export function StatusBadge({ status, size = 'md' }: { status: string; size?: BadgeSize }) {
+  return <DqBadge label={status} tone={statusTone(status)} size={size} />;
 }
 
-export function PriorityBadge({ priority }: { priority: Priority }) {
-  return <DqBadge label={String(priority)} tone={priorityTone(priority)} dot={false} />;
+export function PriorityBadge({ priority, size = 'md' }: { priority: Priority; size?: BadgeSize }) {
+  return <DqBadge label={String(priority)} tone={priorityTone(priority)} dot={false} size={size} />;
 }
 
 export function RiskBadge({ risk }: { risk: Risk }) {

@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { PriorityBadge } from '../DqBadge';
+import { PriorityBadge, StatusBadge } from '../DqBadge';
+import { MarketplaceEyebrowTrail } from '../marketplace/MarketplaceEyebrowTrail';
 import {
   actionSnapshotKpis,
   dashboardRecentActivity,
@@ -19,10 +20,14 @@ export function DashboardHeader({ firstName }: { firstName: string }) {
 
   return (
     <header>
-      <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400">
-        S02 / My Dashboard
-      </p>
-      <h1 className="dq-page-title mt-2">
+      <MarketplaceEyebrowTrail
+        items={[
+          { label: 'S02', href: '/home' },
+          { label: 'My Dashboard' },
+        ]}
+        className="mb-2"
+      />
+      <h1 className="dq-page-title">
         {greeting}, {firstName}.
       </h1>
       <p className="mt-2 max-w-2xl text-sm leading-relaxed text-text-muted">
@@ -66,23 +71,26 @@ export function NextBestActionsPanel() {
       <h2 className="dq-card-title">Next best actions</h2>
       <ul className="mt-4 divide-y divide-border-subtle">
         {nextBestActions.map((action) => (
-          <li key={action.id} className="flex flex-wrap items-center justify-between gap-3 py-4 first:pt-0 last:pb-0">
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-primary">{action.title}</p>
-              <p className="mt-1 text-xs text-text-muted">
-                {action.category} &bull; {action.due}
-              </p>
+          <li
+            key={action.id}
+            className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0"
+          >
+            <div className="min-w-0 flex-1 pr-2">
+              <p className="text-sm font-semibold leading-snug text-primary">{action.title}</p>
+              <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+                <p className="text-xs text-text-muted">
+                  {action.category} &bull; {action.due}
+                </p>
+                <PriorityBadge priority={action.priority} size="sm" />
+              </div>
             </div>
-            <div className="flex items-center gap-3">
-              <PriorityBadge priority={action.priority} />
-              <button
-                type="button"
-                onClick={() => navigate(action.route)}
-                className="dq-btn dq-btn-orange min-w-[88px] px-4 focus-visible:outline-none"
-              >
-                Review
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => navigate(action.route)}
+              className="dq-btn dq-btn-orange dq-btn-sm shrink-0 focus-visible:outline-none"
+            >
+              Review
+            </button>
           </li>
         ))}
       </ul>
@@ -90,43 +98,24 @@ export function NextBestActionsPanel() {
   );
 }
 
-const alertStatusTone: Record<string, 'success' | 'warning' | 'danger' | 'info'> = {
-  'On Track': 'success',
-  Attention: 'warning',
-  'At Risk': 'danger',
-  Active: 'info',
-};
-
 export function PriorityAlertsPanel() {
   return (
     <section className="dq-card h-full">
       <h2 className="dq-card-title">Priority alerts</h2>
-      <ul className="mt-4 space-y-3">
+      <ul className="mt-4 space-y-2.5">
         {priorityAlerts.map((alert) => (
           <li key={alert.id}>
             <Link
               to={alert.route}
-              className="flex items-start justify-between gap-4 rounded-btn border border-border-subtle bg-gray-50 px-4 py-3 transition hover:border-border-default hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dq-orange focus-visible:ring-offset-2"
+              className="flex items-center justify-between gap-3 rounded-btn border border-border-subtle bg-gray-50 px-3.5 py-2.5 transition hover:border-border-default hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dq-orange focus-visible:ring-offset-2"
             >
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-primary">
+              <div className="min-w-0 pr-2">
+                <p className="text-sm font-semibold leading-snug text-primary">
                   {alert.code}: {alert.title}
                 </p>
-                <p className="mt-1 text-xs text-text-muted">{alert.description}</p>
+                <p className="mt-0.5 text-xs text-text-muted">{alert.description}</p>
               </div>
-              <span
-                className={`dq-badge shrink-0 ${
-                  alertStatusTone[alert.status] === 'success'
-                    ? 'dq-badge-success'
-                    : alertStatusTone[alert.status] === 'warning'
-                      ? 'dq-badge-warning'
-                      : alertStatusTone[alert.status] === 'danger'
-                        ? 'dq-badge-danger'
-                        : 'dq-badge-info'
-                }`}
-              >
-                {alert.status}
-              </span>
+              <StatusBadge status={alert.status} size="sm" />
             </Link>
           </li>
         ))}

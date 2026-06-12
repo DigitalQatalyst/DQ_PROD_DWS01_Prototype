@@ -85,6 +85,48 @@
   --border: 214.3 31.8% 91.4%;
   --input: 214.3 31.8% 91.4%;
   --ring: 222.2 84% 4.9%;
+  /* Corp web aliases */
+  --dq-navy: var(--color-primary);
+  --dq-orange: var(--color-secondary);
+  --white: var(--color-background);
+  --gray-50: var(--color-surface);
+  --gray-900: var(--color-text-primary);
+  --gray-700: var(--color-text-secondary);
+  --gray-500: var(--color-text-muted);
+  --gray-400: var(--color-text-disabled);
+  --gray-100: var(--color-border-subtle);
+  --gray-200: var(--color-border-default);
+  --mesh-hero-light: linear-gradient(
+    135deg,
+    oklch(0.98 0.006 264) 0%,
+    oklch(0.96 0.012 264 / 0.8) 35%,
+    oklch(0.97 0.010 30 / 0.35) 65%,
+    oklch(0.99 0.004 264) 100%
+  );
+  --mesh-hero-dark: radial-gradient(
+      ellipse 80% 60% at 20% 40%,
+      oklch(0.25 0.06 264 / 0.8),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 60% 50% at 80% 60%,
+      oklch(0.22 0.04 264 / 0.6),
+      transparent 70%
+    ),
+    oklch(0.12 0.045 264);
+  --mesh-cta-orange: radial-gradient(
+      ellipse 50% 40% at 30% 50%,
+      oklch(0.58 0.22 22 / 0.28),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 40% 50% at 75% 25%,
+      oklch(0.45 0.18 20 / 0.18),
+      transparent 55%
+    ),
+    oklch(0.10 0.040 264);
+  --glow-orange-md: 0 0 40px oklch(0.65 0.208 29 / 0.35), 0 0 80px oklch(0.65 0.208 29 / 0.15);
+  --glow-navy-md: 0 0 40px oklch(0.25 0.06 264 / 0.3), 0 8px 32px oklch(0.12 0.045 264 / 0.25);
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -112,7 +154,7 @@
 
 @layer components {
   .dq-overline {
-    @apply text-[11px] font-semibold uppercase tracking-[0.16em] text-secondary;
+    @apply font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-secondary;
   }
 
   .dq-page-title {
@@ -137,6 +179,10 @@
 
   .dq-btn {
     @apply inline-flex h-10 items-center justify-center gap-2 rounded-button px-4 text-sm font-medium transition focus:outline-none active:translate-y-px;
+  }
+
+  .dq-btn-sm {
+    @apply h-8 gap-1.5 px-3 text-xs font-medium;
   }
 
   .dq-btn-orange {
@@ -217,6 +263,14 @@
 
   .dq-badge {
     @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-pill border px-2.5 py-1 text-xs font-semibold;
+  }
+
+  .dq-badge-sm {
+    @apply gap-1 px-2 py-0.5 text-[10px] font-semibold leading-none;
+  }
+
+  .dq-badge-sm .dq-badge-dot {
+    @apply h-1 w-1;
   }
 
   .dq-badge-dot {
@@ -303,4 +357,41 @@
   .hide-scrollbar::-webkit-scrollbar {
     display: none; /* Chrome, Safari and Opera */
   }
+
+  .text-balance {
+    text-wrap: balance;
+  }
 }
+
+.hero-grid {
+  background-image:
+    linear-gradient(to right, rgba(3, 15, 53, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(3, 15, 53, 0.06) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(ellipse 70% 50% at 50% 30%, black 40%, transparent 80%);
+  mask-image: radial-gradient(ellipse 70% 50% at 50% 30%, black 40%, transparent 80%);
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.marquee-track {
+  display: flex;
+  animation: marquee 30s linear infinite;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.7s ease-out both;
+}
+
+.animation-delay-100 { animation-delay: 0.1s; }
+.animation-delay-200 { animation-delay: 0.2s; }
+.animation-delay-300 { animation-delay: 0.3s; }
+.animation-delay-500 { animation-delay: 0.5s; }
