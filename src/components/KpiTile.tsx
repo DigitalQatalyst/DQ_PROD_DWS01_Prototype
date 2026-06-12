@@ -3,6 +3,7 @@ import type { LucideIcon } from 'lucide-react';
 interface KpiTileProps {
   label: string;
   value: string;
+  subtitle?: string;
   trend?: string;
   status: 'success' | 'warning' | 'danger' | 'info';
   icon?: LucideIcon;
@@ -10,6 +11,7 @@ interface KpiTileProps {
 export function KpiTile({
   label,
   value,
+  subtitle,
   trend,
   status,
   icon: Icon
@@ -66,6 +68,7 @@ export function KpiTile({
           </div>}
       </div>
       <div>
+        {subtitle && <p className="mt-1 text-xs text-text-muted">{subtitle}</p>}
         {renderTrend()}
       </div>
     </div>;
