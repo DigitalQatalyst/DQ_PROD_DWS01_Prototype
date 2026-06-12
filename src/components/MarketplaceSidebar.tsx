@@ -3,6 +3,7 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   BarChart2,
   BookOpen,
+  Brain,
   Briefcase,
   CheckSquare,
   ChevronsLeft,
@@ -42,6 +43,7 @@ const iconMap: Record<NavIcon, LucideIcon> = {
   bookOpen: BookOpen,
   barChart2: BarChart2,
   messageSquare: MessageSquare,
+  brain: Brain,
 };
 
 interface MarketplaceSidebarProps {

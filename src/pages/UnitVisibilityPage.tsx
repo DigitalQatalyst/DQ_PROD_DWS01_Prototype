@@ -6,7 +6,7 @@ import { DetailPanel } from '../components/DetailPanel';
 import { OwnerBadge } from '../components/OwnerBadge';
 import { StatusPill } from '../components/StatusPill';
 import { getUnits, getTeams } from '../services/platform.service';
-import type { Unit, Team } from '../types/platform';
+import type { KpiSet, Team, Unit } from '../types/platform';
 import { toast } from 'sonner';
 import { ShieldAlert, Target, Activity } from 'lucide-react';
 export function UnitVisibilityPage() {
@@ -159,6 +159,12 @@ export function UnitVisibilityPage() {
         </div>
       </div>
 
-      {selectedTeam && <DetailPanel entity={selectedTeam} type="kpi" onClose={() => setSelectedTeam(null)} />}
+      {selectedTeam && (
+        <DetailPanel
+          entity={selectedTeam as unknown as KpiSet}
+          type="kpi"
+          onClose={() => setSelectedTeam(null)}
+        />
+      )}
     </div>;
 }

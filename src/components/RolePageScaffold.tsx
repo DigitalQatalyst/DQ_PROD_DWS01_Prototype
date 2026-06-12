@@ -14,6 +14,12 @@ interface RolePageScaffoldProps {
   };
   kpiStrip?: ReactNode;
   filterRow?: ReactNode;
+  /** Legacy props kept for page compatibility during scaffold migration. */
+  loading?: boolean;
+  kpis?: unknown;
+  tabs?: string[];
+  activeTab?: string;
+  onTabChange?: (tab: string) => void;
   children: ReactNode;
 }
 export function RolePageScaffold({

@@ -235,7 +235,7 @@ export function SlaBreachedPage() {
     { header: 'Title', accessor: (s) => s.title },
     { header: 'Owner', width: '110px', accessor: (s) => s.owner },
     { header: 'Breach Reason', accessor: (s) => s.breachReason || '—' },
-    { header: 'Recovery Plan', width: '120px', accessor: (s) => s.hasRecoveryPlan === false ? <span className="font-bold text-red-600">Missing</span> : 'Drafted' },
+    { header: 'Recovery Plan', width: '120px', accessor: (s) => !s.recoveryPlan ? <span className="font-bold text-red-600">Missing</span> : 'Drafted' },
   ];
 
   return (

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getTaskSignals } from '../services/platform.service';
 import { TaskExecutiveSignal } from '../types/taskLibrary';
+import type { ExecutiveSignal } from '../types/serviceLifecycle';
 import { ExecutiveSignalStrip } from '../components/ExecutiveSignalStrip';
 import { Activity, Briefcase } from 'lucide-react';
 
@@ -17,12 +18,12 @@ export function ExecutiveTaskSignalPage() {
 
   if (isLoading) return <div className="p-8">Loading intelligence signals...</div>;
 
-  const mappedSignals = signals.map(s => ({
+  const mappedSignals: ExecutiveSignal[] = signals.map((s) => ({
     id: s.id,
-    label: s.signal,
-    value: String(s.value),
-    trend: s.trend,
-    status: s.status as any
+    signal: s.signal,
+    value: typeof s.value === 'number' ? s.value : Number(s.value) || 0,
+    status: s.status,
+    linksTo: s.linksTo ?? '#',
   }));
 
   return (

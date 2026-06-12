@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
+  Brain,
   Briefcase,
   BookOpen,
   CheckSquare,
@@ -39,6 +40,7 @@ const iconMap: Record<NavIcon, LucideIcon> = {
   bookOpen: BookOpen,
   barChart2: PieChart,
   messageSquare: BookOpen,
+  brain: Brain,
 };
 
 interface Stage02SidebarProps {

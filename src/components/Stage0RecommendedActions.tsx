@@ -1,6 +1,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ClipboardList, AlertOctagon, Inbox, CheckSquare, BookOpen, ArrowRight, BoxIcon } from 'lucide-react';
+import {
+  ClipboardList,
+  AlertOctagon,
+  Inbox,
+  CheckSquare,
+  BookOpen,
+  ArrowRight,
+  type LucideIcon,
+} from 'lucide-react';
 import { Persona } from '../types/platform';
 interface Stage0RecommendedActionsProps {
   activePersona: Persona;
@@ -8,7 +16,7 @@ interface Stage0RecommendedActionsProps {
 interface RecommendedAction {
   title: string;
   description: string;
-  icon: BoxIcon;
+  icon: LucideIcon;
   route: string;
 }
 export function Stage0RecommendedActions({
