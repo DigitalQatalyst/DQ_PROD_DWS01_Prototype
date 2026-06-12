@@ -90,7 +90,7 @@ export const nextBestActions: NextBestAction[] = [
 
 export const priorityAlerts: PriorityAlert[] = [
   {
-    id: 'pa-1',
+    id: 'pa-s00',
     code: 'S00',
     title: 'L&D',
     description: 'Onboarding path on schedule',
@@ -98,7 +98,7 @@ export const priorityAlerts: PriorityAlert[] = [
     route: '/performance/learning-progress',
   },
   {
-    id: 'pa-2',
+    id: 'pa-s01',
     code: 'S01',
     title: 'Practice',
     description: 'Playbook review due today',
@@ -106,28 +106,20 @@ export const priorityAlerts: PriorityAlert[] = [
     route: '/knowledge',
   },
   {
-    id: 'pa-2b',
-    code: 'S01',
-    title: 'Practice',
-    description: 'SOP acknowledgement pending',
-    status: 'At Risk',
-    route: '/knowledge',
-  },
-  {
-    id: 'pa-3',
+    id: 'pa-s02',
     code: 'S02',
-    title: 'Workspace',
-    description: '1 blocked item needs update',
+    title: 'Products',
+    description: '1 product readiness item needs update',
     status: 'At Risk',
-    route: '/tasks/my-work/my-blockers',
+    route: '/marketplace/catalogue',
   },
   {
-    id: 'pa-4',
+    id: 'pa-s03',
     code: 'S03',
-    title: 'Requests',
-    description: '2 requests awaiting your input',
+    title: 'Projects',
+    description: '2 project milestones awaiting your input',
     status: 'Active',
-    route: '/workspace/my-requests',
+    route: '/trackers',
   },
 ];
 
