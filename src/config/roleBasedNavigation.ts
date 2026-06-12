@@ -10,18 +10,20 @@ import {
   AlertTriangle,
   BarChart3,
   BadgeCheck,
-  Bot,
+  Boxes,
   Building2,
   CheckCircle2,
   ClipboardCheck,
+  Compass,
   Gauge,
   Handshake,
   HelpCircle,
-  Home,
   Inbox,
+  LibraryBig,
+  Link2,
+  Receipt,
   Kanban,
   LayoutTemplate,
-  LibraryBig,
   LineChart,
   ListChecks,
   ListOrdered,
@@ -49,38 +51,96 @@ import {
 import type { NavItem } from '../types/navigation';
 import type { DwsRole } from '../types/roles';
 import { ALL_ROLES } from '../types/roles';
+import { MARKETPLACE_4D_DESTINATIONS } from './marketplace4dRoutes';
 
 /**
- * ORIENTATION - visible to all roles
+ * ORIENTATION — Getting Started · Quick Links (accordion group → feature, same shape as Tasks).
  */
-export const orientationNav: NavItem[] = [
-  {
-    id: 'home',
-    label: 'Home',
-    route: '/home',
-    icon: Home,
-    helper: 'Start here',
-    visibleTo: ALL_ROLES,
-  },
-  {
-    id: 'ai-cockpit',
-    label: 'AI Cockpit',
-    route: '/ai-cockpit',
-    icon: Bot,
-    helper: 'Ask, automate, and analyze',
-    visibleTo: ALL_ROLES,
-  },
-];
-
-/**
- * MARKETPLACE - visible to all roles
- */
-export const marketplaceNav: NavItem = {
-  id: 'marketplace',
-  label: '4D Marketplaces',
-  route: '/marketplace',
-  icon: Store,
+export const orientationFeatureArea: NavItem = {
+  id: 'orientation',
+  label: 'ORIENTATION',
+  route: '/orientation',
   visibleTo: ALL_ROLES,
+  children: [
+    {
+      id: 'getting-started',
+      label: 'Getting Started',
+      route: '/orientation/getting-started',
+      icon: Compass,
+      visibleTo: ALL_ROLES,
+      children: [
+        { id: 'home', label: 'Home', route: '/home', visibleTo: ALL_ROLES },
+      ],
+    },
+    {
+      id: 'quick-links',
+      label: 'Quick Links',
+      route: '/orientation/quick-links',
+      icon: Link2,
+      visibleTo: ALL_ROLES,
+      children: [
+        { id: 'dashboard', label: 'My Dashboard', route: '/dashboard', visibleTo: ALL_ROLES },
+        { id: 'my-work', label: 'My Work', route: '/tasks/my-work', visibleTo: ALL_ROLES },
+        { id: 'ai-cockpit', label: 'AI Cockpit', route: '/ai-cockpit', visibleTo: ALL_ROLES },
+      ],
+    },
+  ],
+};
+
+/**
+ * MARKETPLACE — Catalogue · Transaction · Collaboration (features on hub pages only).
+ */
+export const marketplaceFeatureArea: NavItem = {
+  id: 'marketplace',
+  label: 'MARKETPLACE',
+  route: '/marketplace',
+  visibleTo: ALL_ROLES,
+  children: [
+    {
+      id: 'catalogue',
+      label: 'Catalogue',
+      route: '/marketplace/catalogue',
+      icon: LibraryBig,
+      visibleTo: ALL_ROLES,
+      children: [
+        { id: 'discern', label: 'Discern', route: MARKETPLACE_4D_DESTINATIONS.discern, visibleTo: ALL_ROLES },
+        { id: 'design', label: 'Design', route: MARKETPLACE_4D_DESTINATIONS.design, visibleTo: ALL_ROLES },
+        { id: 'deploy', label: 'Deploy', route: MARKETPLACE_4D_DESTINATIONS.deploy, visibleTo: ALL_ROLES },
+        { id: 'drive', label: 'Drive', route: MARKETPLACE_4D_DESTINATIONS.drive, visibleTo: ALL_ROLES },
+      ],
+    },
+    {
+      id: 'transaction',
+      label: 'Transaction',
+      route: '/marketplace/transaction',
+      icon: Receipt,
+      visibleTo: ALL_ROLES,
+      children: [
+        { id: 'my-requests', label: 'My Requests', route: '/workspace/my-requests', visibleTo: ALL_ROLES },
+        { id: 'submitted-requests', label: 'Submitted Requests', route: '/tracker/request-status-tracker/submitted-requests', visibleTo: ALL_ROLES },
+        { id: 'request-drafts', label: 'Request Drafts', route: '/tracker/request-status-tracker/request-drafts', visibleTo: ALL_ROLES },
+        { id: 'request-status', label: 'Request Status', route: '/tracker/request-status-tracker/request-status', visibleTo: ALL_ROLES },
+        { id: 'pending-information', label: 'Pending Information', route: '/tracker/request-status-tracker/pending-information', visibleTo: ALL_ROLES },
+        { id: 'request-closure', label: 'Request Closure Status', route: '/tracker/request-status-tracker/request-closure-status', visibleTo: ALL_ROLES },
+        { id: 'service-requests', label: 'Service Requests', route: '/marketplace/services?from=transaction', visibleTo: ALL_ROLES },
+        { id: 'task-requests', label: 'Task Requests', route: '/marketplace/task-library?from=transaction', visibleTo: ALL_ROLES },
+      ],
+    },
+    {
+      id: 'collaboration',
+      label: 'Collaboration',
+      route: '/marketplace/collaboration',
+      icon: Handshake,
+      visibleTo: ALL_ROLES,
+      children: [
+        { id: 'work-directory', label: 'Work Directory', route: '/marketplace/work-directory', visibleTo: ALL_ROLES },
+        { id: 'working-sessions', label: 'Working Sessions', route: '/workspace/working-sessions', visibleTo: ALL_ROLES },
+        { id: 'marketplace-feedback', label: 'Marketplace Feedback', route: '/marketplace/feedback', visibleTo: ALL_ROLES },
+        { id: 'knowledge-sharing', label: 'Knowledge Sharing', route: '/marketplace/knowledge-discovery?from=collaboration', visibleTo: ALL_ROLES },
+        { id: 'team-ownership', label: 'Team & Ownership', route: '/marketplace/work-directory?from=collaboration', visibleTo: ALL_ROLES },
+      ],
+    },
+  ],
 };
 
 /**
@@ -514,7 +574,7 @@ export const analyticsFeatureArea: NavItem = {
       icon: BarChart3,
       visibleTo: ["Lead", "ServiceOwner", "Leadership", "PlatformAdmin"],
       children: [
-        { id: 'execution-overview', label: 'Execution Overview', route: '/analytics/execution-analytics/execution-overview' },
+        { id: 'execution-overview', label: 'Execution Dashboard', route: '/analytics/execution-analytics/execution-overview' },
         { id: 'bottleneck-detection', label: 'Bottleneck Detection', route: '/analytics/execution-analytics/bottleneck-detection' },
         { id: 'cycle-time-analysis', label: 'Cycle Time Analysis', route: '/analytics/execution-analytics/cycle-time-analysis' },
         { id: 'execution-trends', label: 'Execution Trends', route: '/analytics/execution-analytics/execution-trends' },
