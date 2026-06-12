@@ -7,14 +7,36 @@ import {
 import { toast } from 'sonner';
 import { useWorkspaceRole } from '../context/WorkspaceRoleContext';
 import {
-  orientationNav,
-  marketplaceNav,
+  orientationFeatureArea,
+  marketplaceFeatureArea,
   utilityNav,
   featureAreas,
   filterNavByRole,
   hasRouteAccess as checkRouteAccess,
 } from '../config/roleBasedNavigation';
 import type { NavItem } from '../types/navigation';
+
+function routePath(route: string) {
+  return route.split('?')[0];
+}
+
+function matchesNavRoute(pathname: string, route: string) {
+  const base = routePath(route);
+  return pathname === base || pathname.startsWith(`${base}/`);
+}
+
+function isNavItemActive(pathname: string, item: NavItem): boolean {
+  if (item.route && matchesNavRoute(pathname, item.route)) return true;
+  return item.children?.some((child) => isNavItemActive(pathname, child)) ?? false;
+}
+
+function isGroupActive(pathname: string, group: NavItem) {
+  return isNavItemActive(pathname, group);
+}
+
+function findActiveGroup(area: NavItem, pathname: string): NavItem | undefined {
+  return area.children?.find((group) => isNavItemActive(pathname, group));
+}
 
 const itemClass = ({ isActive }: { isActive: boolean }) =>
   `relative flex min-h-9 items-center gap-3 rounded-r-lg px-3 py-2 text-sm font-semibold transition-colors ${
@@ -66,11 +88,15 @@ export function StandardSidebar() {
   const navigate = useNavigate();
   const { activeDwsRole, getDefaultRoute, activeRole } = useWorkspaceRole();
 
-  // Filter navigation by active role
-  const filteredOrientation = useMemo(
-    () => filterNavByRole(orientationNav, activeDwsRole),
-    [activeDwsRole]
-  );
+  const filteredOrientationArea = useMemo(() => {
+    const [area] = filterNavByRole([orientationFeatureArea], activeDwsRole);
+    return area;
+  }, [activeDwsRole]);
+
+  const filteredMarketplaceArea = useMemo(() => {
+    const [area] = filterNavByRole([marketplaceFeatureArea], activeDwsRole);
+    return area;
+  }, [activeDwsRole]);
 
   const filteredFeatureAreas = useMemo(
     () => filterNavByRole(featureAreas, activeDwsRole),
@@ -82,16 +108,24 @@ export function StandardSidebar() {
     [activeDwsRole]
   );
 
-  // Check if marketplace is visible to current role
-  const isMarketplaceVisible = !marketplaceNav.visibleTo || marketplaceNav.visibleTo.includes(activeDwsRole);
+  const sidebarAreas = useMemo(
+    () => [
+      ...(filteredOrientationArea ? [filteredOrientationArea] : []),
+      ...(filteredMarketplaceArea ? [filteredMarketplaceArea] : []),
+      ...filteredFeatureAreas,
+    ],
+    [filteredOrientationArea, filteredMarketplaceArea, filteredFeatureAreas]
+  );
 
-  // Find active feature area and group
-  const activeFeatureArea = filteredFeatureAreas.find(
-    (area) => area.route && (location.pathname === area.route || location.pathname.startsWith(`${area.route}/`))
+  const activeFeatureArea = sidebarAreas.find(
+    (area) =>
+      (area.route && matchesNavRoute(location.pathname, area.route)) ||
+      Boolean(findActiveGroup(area, location.pathname))
   );
-  const activeFeatureGroup = activeFeatureArea?.children?.find(
-    (group) => group.route && (location.pathname === group.route || location.pathname.startsWith(`${group.route}/`))
-  );
+
+  const activeFeatureGroup = activeFeatureArea
+    ? findActiveGroup(activeFeatureArea, location.pathname)
+    : undefined;
 
   const [expandedFeatureGroups, setExpandedFeatureGroups] = useState<string[]>(() => {
     const stored = localStorage.getItem('dws-feature-groups-expanded');
@@ -99,14 +133,13 @@ export function StandardSidebar() {
   });
 
   useEffect(() => {
-    if (activeFeatureGroup?.route) {
-      setExpandedFeatureGroups((current) =>
-        current.includes(activeFeatureGroup.route!)
-          ? current
-          : [...current, activeFeatureGroup.route!]
-      );
-    }
-  }, [activeFeatureGroup]);
+    if (!activeFeatureGroup?.route) return;
+    setExpandedFeatureGroups((current) =>
+      current.includes(activeFeatureGroup.route!)
+        ? current
+        : [...current, activeFeatureGroup.route!]
+    );
+  }, [activeFeatureGroup?.route]);
 
   useEffect(() => {
     localStorage.setItem('dws-feature-groups-expanded', JSON.stringify(expandedFeatureGroups));
@@ -115,8 +148,8 @@ export function StandardSidebar() {
   // Check route access on role change
   useEffect(() => {
     const allNavItems = [
-      ...filteredOrientation,
-      marketplaceNav,
+      ...(filteredOrientationArea ? [filteredOrientationArea] : []),
+      ...(filteredMarketplaceArea ? [filteredMarketplaceArea] : []),
       ...filteredFeatureAreas,
       ...filteredUtility,
     ];
@@ -128,7 +161,7 @@ export function StandardSidebar() {
       const defaultRoute = getDefaultRoute(activeRole);
       navigate(defaultRoute);
     }
-  }, [activeDwsRole, location.pathname, filteredOrientation, filteredFeatureAreas, filteredUtility, navigate, getDefaultRoute, activeRole]);
+  }, [activeDwsRole, location.pathname, filteredOrientationArea, filteredMarketplaceArea, filteredFeatureAreas, filteredUtility, navigate, getDefaultRoute, activeRole]);
 
   const toggleFeatureGroup = (route: string) =>
     setExpandedFeatureGroups((current) =>
@@ -138,32 +171,43 @@ export function StandardSidebar() {
   const renderFeatureArea = (area: NavItem) => {
     if (!area.children || area.children.length === 0) return null;
 
+    const sectionClass =
+      area.id === 'marketplace'
+        ? 'space-y-1 border-t border-border-subtle pt-4'
+        : 'space-y-1';
+
     return (
-      <section key={area.id} className="space-y-1">
+      <section key={area.id} className={sectionClass}>
         <div className="sidebar-feature-area">{area.label}</div>
         <div className="mt-1 space-y-1">
           {area.children.map((group) => {
             if (!group.icon || !group.children || group.children.length === 0 || !group.route) return null;
-            
+
             const GroupIcon = group.icon;
             const isGroupOpen = expandedFeatureGroups.includes(group.route);
-            const isGroupActive = activeFeatureGroup?.route === group.route;
-            const groupClickRoute = area.id === 'tasks' && group.children[0]?.route 
-              ? group.children[0].route 
-              : group.route;
-            
+            const groupIsActive = isGroupActive(location.pathname, group);
+            const groupClickRoute = group.children[0]?.route ?? group.route;
+
             return (
               <div key={group.id}>
                 <button
+                  type="button"
                   onClick={() => {
                     toggleFeatureGroup(group.route!);
                     navigate(groupClickRoute);
                   }}
                   aria-expanded={isGroupOpen}
-                  className={`sidebar-feature-group ${isGroupActive ? 'sidebar-feature-group-active' : ''}`}>
+                  className={`relative sidebar-feature-group ${groupIsActive ? 'sidebar-feature-group-active' : ''}`}>
+                  {groupIsActive && (
+                    <span className="absolute bottom-1.5 left-0 top-1.5 w-0.5 rounded-r bg-secondary" />
+                  )}
                   <GroupIcon size={17} strokeWidth={1.5} className="shrink-0" />
                   <span className="min-w-0 flex-1 truncate">{group.label}</span>
-                  <ChevronDown size={14} strokeWidth={1.5} className={`shrink-0 transition-transform ${isGroupOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown
+                    size={14}
+                    strokeWidth={1.5}
+                    className={`shrink-0 transition-transform ${isGroupOpen ? 'rotate-180' : ''}`}
+                  />
                 </button>
                 {isGroupOpen && (
                   <div className="sidebar-child-line">
@@ -187,23 +231,9 @@ export function StandardSidebar() {
     <aside className="fixed bottom-0 left-0 top-16 z-40 hidden w-[280px] border-r border-border-subtle bg-white lg:flex lg:flex-col" aria-label="Platform navigation">
       <div className="flex-1 overflow-y-auto px-3 py-4">
         <nav className="space-y-5">
-          {filteredOrientation.length > 0 && (
-            <section>
-              <h2 className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-secondary">ORIENTATION</h2>
-              <div className="space-y-0.5">
-                {filteredOrientation.map((item) => (
-                  <SidebarLink key={item.id} item={item} />
-                ))}
-              </div>
-            </section>
-          )}
+          {filteredOrientationArea && renderFeatureArea(filteredOrientationArea)}
 
-          {isMarketplaceVisible && marketplaceNav.route && (
-            <section className="border-t border-border-subtle pt-4">
-              <h2 className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-secondary">MARKETPLACE</h2>
-              <SidebarLink item={marketplaceNav} />
-            </section>
-          )}
+          {filteredMarketplaceArea && renderFeatureArea(filteredMarketplaceArea)}
 
           {filteredFeatureAreas.length > 0 && (
             <section className="space-y-1 border-t border-border-subtle pt-4">

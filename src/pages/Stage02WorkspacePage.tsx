@@ -1,4 +1,4 @@
-import { useAuth } from '../context/AuthContext';
+import { useWorkspaceRole } from '../context/WorkspaceRoleContext';
 import { QuickLinksPanel } from '../components/dashboard/QuickLinksPanel';
 import {
   ActionSnapshotRow,
@@ -13,8 +13,8 @@ function getFirstName(displayName: string) {
 }
 
 export function Stage02WorkspacePage() {
-  const { user } = useAuth();
-  const firstName = getFirstName(user?.name ?? 'Aisha');
+  const { activeSegment } = useWorkspaceRole();
+  const firstName = getFirstName(activeSegment.profileName);
 
   return (
     <div className="px-5 py-7 md:px-8 lg:px-10">
