@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { noop } from '../utils/noop';
 import { RolePageScaffold } from '../components/RolePageScaffold';
 import { DataTable } from '../components/DataTable';
 import { MonoId } from '../components/MonoId';
@@ -46,7 +47,7 @@ export function EmployeeReadinessRequestsPage() {
   }
   return <RolePageScaffold eyebrow="HRA Workflow" title="Employee Readiness Requests" purpose="Requests awaiting HRA confirmation of employee readiness.">
       <div className="bg-white rounded-[12px] border border-[#D8D9E6] shadow-sm overflow-hidden">
-        <DataTable columns={columns} rows={mockRequests} onRowClick={() => {}} />
+        <DataTable columns={columns} rows={mockRequests} onRowClick={noop} />
       </div>
     </RolePageScaffold>;
 }

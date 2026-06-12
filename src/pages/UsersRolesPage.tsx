@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { noop } from '../utils/noop';
 import { RolePageScaffold } from '../components/RolePageScaffold';
 import { DataTable } from '../components/DataTable';
 import { StatusPill } from '../components/StatusPill';
@@ -95,7 +96,7 @@ export function UsersRolesPage() {
       label: 'Permission Exceptions',
       value: '3',
       status: 'danger'
-    }]} tabs={['All Users', 'Admins', 'Pending', 'Inactive']} activeTab="All Users" onTabChange={() => {}} loading={loading}>
+    }]} tabs={['All Users', 'Admins', 'Pending', 'Inactive']} activeTab="All Users" onTabChange={noop} loading={loading}>
         <div className="bg-white rounded-card border border-border-default shadow-sm overflow-hidden">
           <DataTable columns={columns} rows={USERS} onRowClick={(row) => setSelectedUser({
           id: row.id,

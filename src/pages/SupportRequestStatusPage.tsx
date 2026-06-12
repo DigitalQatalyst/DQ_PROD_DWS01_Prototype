@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { noop } from '../utils/noop';
 import { RolePageScaffold } from '../components/RolePageScaffold';
 import { DataTable } from '../components/DataTable';
 import { StatusPill } from '../components/StatusPill';
@@ -52,7 +53,7 @@ export function SupportRequestStatusPage() {
     header: 'Owner',
     accessor: (row: any) => <OwnerBadge userId={row.owner} />
   }];
-  return <RolePageScaffold eyebrow="Support Operations" title="Request Status Overview" purpose="Complete visibility of all support requests across the platform." tabs={['All', 'New', 'Routed', 'Pending Info', 'Closed']} activeTab="All" onTabChange={() => {}} loading={loading}>
+  return <RolePageScaffold eyebrow="Support Operations" title="Request Status Overview" purpose="Complete visibility of all support requests across the platform." tabs={['All', 'New', 'Routed', 'Pending Info', 'Closed']} activeTab="All" onTabChange={noop} loading={loading}>
       <div className="bg-white rounded-card border border-border-default shadow-sm overflow-hidden">
         <DataTable columns={columns} rows={ALL_REQUESTS} onRowClick={(row) => toast.success(`View details for ${row.id}`)} emptyMessage="No requests found." />
       </div>

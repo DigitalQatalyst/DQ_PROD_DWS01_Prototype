@@ -3,6 +3,7 @@
  */
 
 import React, { useState } from 'react';
+import { noop } from '../../utils/noop';
 import { toast } from 'sonner';
 import {
   LedgerShell,
@@ -209,7 +210,7 @@ export function AssignedFollowupsPage() {
           </div>
         )}
       </div>
-      <TrackerBulkActionBar selectedCount={selected ? 1 : 0} actions={[{ label: 'Bulk Reminder', onClick: () => toast.info('Reminders sent.') }, { label: 'Bulk Update', onClick: () => {} }]} />
+      <TrackerBulkActionBar selectedCount={selected ? 1 : 0} actions={[{ label: 'Bulk Reminder', onClick: () => toast.info('Reminders sent.') }, { label: 'Bulk Update', onClick: noop }]} />
     </div>
     </TrackerPageFrame>
   );

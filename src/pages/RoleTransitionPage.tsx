@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { noop } from '../utils/noop';
 import { RolePageScaffold } from '../components/RolePageScaffold';
 import { DataTable } from '../components/DataTable';
 import { OwnerBadge } from '../components/OwnerBadge';
@@ -38,7 +39,7 @@ export function RoleTransitionPage() {
   }
   return <RolePageScaffold eyebrow="HRA Workflow" title="Role Transition" purpose="Manage employees moving between roles and ensure required readiness checks.">
       <div className="bg-white rounded-[12px] border border-[#D8D9E6] shadow-sm overflow-hidden">
-        <DataTable columns={columns} rows={mockTransitions} onRowClick={() => {}} />
+        <DataTable columns={columns} rows={mockTransitions} onRowClick={noop} />
       </div>
     </RolePageScaffold>;
 }

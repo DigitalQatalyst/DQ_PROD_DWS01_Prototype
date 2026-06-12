@@ -3,6 +3,7 @@
  */
 
 import React, { useState } from 'react';
+import { noop } from '../../utils/noop';
 import { toast } from 'sonner';
 import {
   RecoveryShell,
@@ -90,7 +91,7 @@ export function ActiveBlockersPage() {
           </div>
         )
       }
-      bottom={<TrackerBulkActionBar selectedCount={selected ? 1 : 0} actions={[{ label: 'Escalate Selected', onClick: () => {}, variant: 'danger' }, { label: 'Assign Owner', onClick: () => {} }]} />}
+      bottom={<TrackerBulkActionBar selectedCount={selected ? 1 : 0} actions={[{ label: 'Escalate Selected', onClick: noop, variant: 'danger' }, { label: 'Assign Owner', onClick: noop }]} />}
     />
     </TrackerPageFrame>
   );

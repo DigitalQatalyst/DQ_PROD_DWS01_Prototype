@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { noop } from '../utils/noop';
 import { RolePageScaffold } from '../components/RolePageScaffold';
 import { DataTable } from '../components/DataTable';
 import { MonoId } from '../components/MonoId';
@@ -52,7 +53,7 @@ export function GovernanceRisksPage() {
   }
   return <RolePageScaffold eyebrow="Unit Visibility" title="Governance Risks" purpose="Identify compliance gaps, missing evidence, and audit exceptions.">
       <div className="bg-white rounded-[12px] border border-[#D8D9E6] shadow-sm overflow-hidden">
-        <DataTable columns={columns} rows={mockRisks} onRowClick={() => {}} />
+        <DataTable columns={columns} rows={mockRisks} onRowClick={noop} />
       </div>
     </RolePageScaffold>;
 }
