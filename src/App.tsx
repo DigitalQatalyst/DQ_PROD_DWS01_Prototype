@@ -20,6 +20,9 @@ import { hasAnyPermission } from "./config/permissions";
 import { AppLayout } from "./layouts/AppLayout";
 import { Stage02Layout } from "./layouts/Stage02Layout";
 import { Stage0ShellLayout } from "./layouts/Stage0ShellLayout";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { LoginPage } from "./pages/LoginPage";
 import { MarketplaceLayout } from "./layouts/MarketplaceLayout";
 import { PlaceholderPage } from "./components/PlaceholderPage";
 import {
@@ -28,6 +31,9 @@ import {
   FeatureWorkspaceRoute,
 } from "./components/FeatureAreaPages";
 import { featureAreas } from "./data/featureAreas";
+import { HomeLandingPage } from "./pages/HomeLandingPage";
+import { OrientationFeatureGroupPage } from "./pages/OrientationFeatureGroupPage";
+import { MarketplaceFeatureGroupPage } from "./pages/MarketplaceFeatureGroupPage";
 import { Stage0OrientationPage } from "./pages/Stage0OrientationPage";
 import { OperatingGuidePage } from "./pages/OperatingGuidePage";
 import { OnboardingPage } from "./pages/OnboardingPage";
@@ -142,6 +148,7 @@ import { KnowledgeAssistancePage } from "./pages/KnowledgeAssistancePage";
 import { FulfilmentOwnerQueuesPage } from "./pages/FulfilmentOwnerQueuesPage";
 import { SupportRequestStatusPage } from "./pages/SupportRequestStatusPage";
 import { SupportDashboardPage } from "./pages/SupportDashboardPage";
+import { ExecutionDashboardPage } from "./pages/analytics/ExecutionDashboardPage";
 import { StrategicInitiativesPage } from "./pages/StrategicInitiativesPage";
 import { GovernanceHealthPage } from "./pages/GovernanceHealthPage";
 import { SlaExposurePage } from "./pages/SlaExposurePage";
@@ -435,10 +442,19 @@ function renderDwsRoute(route: string) {
   return <DwsSectionPage route={route} />;
 }
 
+function RootRedirect() {
+  const { isAuthenticated, isLoading } = useAuth();
+  if (isLoading) return null;
+  return <Navigate to={isAuthenticated ? "/home" : "/login"} replace />;
+}
+
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/home" replace />} />
+      <Route path="/login" element={<LoginPage />} />
+
+      <Route element={<ProtectedRoute />}>
+      <Route path="/" element={<RootRedirect />} />
 
       {/* Full Page Routes (No Layout) */}
       <Route
@@ -783,8 +799,17 @@ function AppRoutes() {
         path="/services/submit-request"
         element={<Navigate to="/marketplace/services" replace />}
       />
+
       <Route element={<Stage02Layout />}>
-        <Route path="/home" element={<Stage0OrientationPage />} />
+        <Route path="/home" element={<HomeLandingPage />} />
+        <Route path="/orientation" element={<Navigate to="/home" replace />} />
+        <Route path="/orientation/dashboard" element={<Stage0OrientationPage />} />
+        <Route path="/orientation/:groupId" element={<OrientationFeatureGroupPage />} />
+        <Route path="/marketplace/catalogue" element={<MarketplaceFeatureGroupPage />} />
+        <Route path="/marketplace/transaction" element={<MarketplaceFeatureGroupPage />} />
+        <Route path="/marketplace/collaboration" element={<MarketplaceFeatureGroupPage />} />
+        <Route path="/marketplace/catalogues" element={<Navigate to="/marketplace/catalogue" replace />} />
+        <Route path="/marketplace/transactions" element={<Navigate to="/marketplace/transaction" replace />} />
         <Route path="/dashboard" element={<Stage02WorkspacePage />} />
         <Route path="/ai-cockpit" element={<AiCockpitPage />} />
         <Route path="/help-support" element={<OperatingGuidePage />} />
@@ -811,6 +836,18 @@ function AppRoutes() {
         <Route path="/tasks/task-board/kanban-view" element={<RouteGuard><KanbanBoardPage /></RouteGuard>} />
         <Route path="/tracker/tracker-hub" element={<RouteGuard><TrackerHubPage /></RouteGuard>} />
         <Route path="/tracker/active-tracker/:trackerSlug" element={<RouteGuard><ActiveTrackerPage /></RouteGuard>} />
+        <Route
+          path="/analytics/execution-analytics/execution-overview"
+          element={
+            <RouteGuard>
+              <ExecutionDashboardPage />
+            </RouteGuard>
+          }
+        />
+        <Route
+          path="/reports/execution-dashboard"
+          element={<Navigate to="/analytics/execution-analytics/execution-overview" replace />}
+        />
         {featureAreas.map((area) => (
           <React.Fragment key={area.id}>
             <Route
@@ -2113,12 +2150,14 @@ function AppRoutes() {
           }
         />
       </Route>
+      </Route>
     </Routes>
   );
 }
 export function App() {
   return (
     <BrowserRouter>
+      <AuthProvider>
       <PersonaProvider>
         <WorkspaceRoleProvider>
           <ViewingModeProvider>
@@ -2133,6 +2172,7 @@ export function App() {
           </ViewingModeProvider>
         </WorkspaceRoleProvider>
       </PersonaProvider>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

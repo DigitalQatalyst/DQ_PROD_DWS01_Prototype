@@ -3,10 +3,12 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { Check, HelpCircle, LogOut, Settings, SlidersHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '../context/AuthContext';
 import { useWorkspaceRole } from '../context/WorkspaceRoleContext';
 import { getDefaultRouteForRole } from '../config/navigation';
 
 export function UserMenu() {
+  const { signOut } = useAuth();
   const { activeRole, setActiveRole, roles, activeSegment } = useWorkspaceRole();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -26,7 +28,8 @@ export function UserMenu() {
   }, []);
   const handleSignOut = () => {
     setIsOpen(false);
-    toast.info('Workspace exit recorded for this prototype session.');
+    signOut();
+    navigate('/login');
   };
   const handleRoleChange = (role: typeof activeRole) => {
     setActiveRole(role);
