@@ -41,8 +41,19 @@ export function getStageHref(stage: MarketplaceCategoryKey): string {
   return MARKETPLACE_4D_DESTINATIONS[stage];
 }
 
-export function getServicesCatalogHref(stage: MarketplaceCategoryKey = 'deploy'): string {
-  return `/marketplace/services?from=${stage}`;
+export function getServicesCatalogHref(
+  stage: MarketplaceCategoryKey = 'deploy',
+  category?: string,
+): string {
+  const params = new URLSearchParams({ from: stage });
+  if (category) {
+    params.set('category', category);
+  }
+  return `/marketplace/services?${params.toString()}`;
+}
+
+function serviceDetailCrumbLabel(serviceTitle: string): string {
+  return serviceTitle.replace(/\s+Request$/i, '') || serviceTitle;
 }
 
 export function getServiceDetailHref(
@@ -84,11 +95,24 @@ export function buildServiceDetailTrail(
   stage: MarketplaceCategoryKey,
   serviceTitle: string,
   serviceId: string,
+  serviceCategory?: string,
 ): MarketplaceBreadcrumbItem[] {
-  return buildServicesTrail(stage, {
-    label: serviceTitle,
-    href: getServiceDetailHref(serviceId, stage),
-  });
+  const category = serviceCategory ?? 'Services';
+
+  return [
+    {
+      label: 'Services Marketplace',
+      href: getServicesCatalogHref(stage),
+    },
+    {
+      label: category,
+      href: getServicesCatalogHref(stage, serviceCategory),
+    },
+    {
+      label: serviceDetailCrumbLabel(serviceTitle),
+      href: getServiceDetailHref(serviceId, stage),
+    },
+  ];
 }
 
 export function buildStartRequestTrail(
@@ -120,5 +144,33 @@ export function buildMarketplaceHubTrail(groupTitle: string): MarketplaceBreadcr
     MARKETPLACE_ROOT,
     { label: 'Marketplace', href: '/marketplace/catalogue' },
     { label: groupTitle },
+  ];
+}
+
+export const KNOWLEDGE_HUB_LABEL = 'Knowledge Hub';
+
+export function getKnowledgeHubHref(stage: MarketplaceCategoryKey = 'discern'): string {
+  return `/marketplace/knowledge-discovery?from=${stage}`;
+}
+
+export function getKnowledgeDetailHref(
+  knowledgeId: string,
+  stage: MarketplaceCategoryKey = 'discern',
+): string {
+  return `/marketplace/knowledge-discovery/${knowledgeId}?from=${stage}`;
+}
+
+export function buildKnowledgeDetailTrail(
+  stage: MarketplaceCategoryKey,
+  assetType: string,
+  assetTitle: string,
+  assetId: string,
+): MarketplaceBreadcrumbItem[] {
+  return [
+    { label: assetType },
+    MARKETPLACE_ROOT,
+    stageSegment(stage),
+    { label: KNOWLEDGE_HUB_LABEL, href: getKnowledgeHubHref(stage) },
+    { label: assetTitle, href: getKnowledgeDetailHref(assetId, stage) },
   ];
 }
