@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { noop } from '../utils/noop';
 import { RolePageScaffold } from '../components/RolePageScaffold';
 import { DataTable } from '../components/DataTable';
 import { StatusPill } from '../components/StatusPill';
@@ -81,7 +82,7 @@ export function CentralSupportQueuePage() {
       label: 'Pending Info',
       value: '8',
       status: 'info'
-    }]} tabs={['All Active', 'New', 'In Progress', 'Pending Info']} activeTab="All Active" onTabChange={() => {}} loading={loading}>
+    }]} tabs={['All Active', 'New', 'In Progress', 'Pending Info']} activeTab="All Active" onTabChange={noop} loading={loading}>
         <div className="bg-white rounded-card border border-border-default shadow-sm overflow-hidden">
           <DataTable columns={columns} rows={REQUESTS} onRowClick={(row) => setSelectedRequest({
           id: row.id,

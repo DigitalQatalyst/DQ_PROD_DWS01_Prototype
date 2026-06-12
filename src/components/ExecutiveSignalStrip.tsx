@@ -1,5 +1,6 @@
 import React from 'react';
 import type { ExecutiveSignal } from '../types/serviceLifecycle';
+import { noop } from '../utils/noop';
 
 interface ExecutiveSignalStripProps {
   signals: ExecutiveSignal[];
@@ -30,7 +31,7 @@ export function ExecutiveSignalStrip({ signals }: ExecutiveSignalStripProps) {
         <div 
           key={signal.id} 
           className={`bg-white rounded-card border ${getBorderColor(signal.status)} p-5 flex flex-col justify-between shadow-sm cursor-pointer hover:shadow-md transition-shadow`}
-          onClick={() => {}}
+          onClick={noop}
         >
           <span className="text-sm font-semibold text-text-secondary leading-snug">
             {signal.signal}

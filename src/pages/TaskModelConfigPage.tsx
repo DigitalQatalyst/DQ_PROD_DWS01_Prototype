@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { noop } from '../utils/noop';
 import { RolePageScaffold } from '../components/RolePageScaffold';
 import { CheckSquare, Settings } from 'lucide-react';
 import { toast } from 'sonner';
@@ -115,7 +116,7 @@ export function TaskModelConfigPage() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         search=""
-        onSearchChange={() => {}} />
+        onSearchChange={noop} />
       
 
       {activeTab === 'Task Types' &&

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { noop } from '../utils/noop';
 import { RolePageScaffold } from '../components/RolePageScaffold';
 import { DataTable } from '../components/DataTable';
 import { OwnerBadge } from '../components/OwnerBadge';
@@ -49,7 +50,7 @@ export function UnitWorkloadPage() {
   }
   return <RolePageScaffold eyebrow="Unit Visibility" title="Unit Workload" purpose="Aggregate workload and capacity metrics across all teams in the unit.">
       <div className="bg-white rounded-[12px] border border-[#D8D9E6] shadow-sm overflow-hidden">
-        <DataTable columns={columns} rows={mockWorkload} onRowClick={() => {}} />
+        <DataTable columns={columns} rows={mockWorkload} onRowClick={noop} />
       </div>
     </RolePageScaffold>;
 }

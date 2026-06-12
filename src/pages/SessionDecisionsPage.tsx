@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { noop } from '../utils/noop';
 import { RolePageScaffold } from '../components/RolePageScaffold';
 import { DataTable } from '../components/DataTable';
 import { MonoId } from '../components/MonoId';
@@ -46,7 +47,7 @@ export function SessionDecisionsPage() {
   }
   return <RolePageScaffold eyebrow="Working Sessions" title="Decisions" purpose="Log of formal decisions agreed upon during working sessions.">
       <div className="bg-white rounded-[12px] border border-[#D8D9E6] shadow-sm overflow-hidden">
-        <DataTable columns={columns} rows={mockDecisions} onRowClick={() => {}} />
+        <DataTable columns={columns} rows={mockDecisions} onRowClick={noop} />
       </div>
     </RolePageScaffold>;
 }

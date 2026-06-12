@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { noop } from '../utils/noop';
 import { RolePageScaffold } from '../components/RolePageScaffold';
 import { DataTable } from '../components/DataTable';
 import { MonoId } from '../components/MonoId';
@@ -63,7 +64,7 @@ export function SlaTrendsPage() {
         At Risk & Breached Items
       </h3>
       <div className="bg-white rounded-[12px] border border-[#D8D9E6] shadow-sm overflow-hidden">
-        <DataTable columns={columns} rows={mockSlaItems} onRowClick={() => {}} />
+        <DataTable columns={columns} rows={mockSlaItems} onRowClick={noop} />
       </div>
     </RolePageScaffold>;
 }

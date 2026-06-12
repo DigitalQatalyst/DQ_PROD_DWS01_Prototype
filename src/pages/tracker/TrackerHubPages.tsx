@@ -4,6 +4,7 @@
  */
 
 import React, { useMemo, useState } from 'react';
+import { noop } from '../../utils/noop';
 import {
   WorkbenchShell,
   RegisterShell,
@@ -346,8 +347,8 @@ export function AtRiskItemsPage() {
       <TrackerBulkActionBar
         selectedCount={selectedCount || (selectedRow ? 1 : 0)}
         actions={[
-          { label: 'Request Update', onClick: () => {} },
-          { label: 'Escalate', onClick: () => {}, variant: 'danger' },
+          { label: 'Request Update', onClick: noop },
+          { label: 'Escalate', onClick: noop, variant: 'danger' },
         ]}
       />
     </div>
