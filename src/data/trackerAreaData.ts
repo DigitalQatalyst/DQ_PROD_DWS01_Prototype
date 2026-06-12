@@ -138,6 +138,7 @@ export interface RequestRecord {
   linkedRecords?: string[];
   auditEvents?: Array<{ timestamp: string; event: string; user: string }>;
   lifecycleStages?: Array<{ id: string; label: string; status: 'complete' | 'current' | 'pending' }>;
+  closureState?: string;
 }
 
 export interface PendingInfoRecord {
@@ -305,7 +306,7 @@ export const slaRecords: SlaRecord[] = [
   { id: 'SLA-401', title: 'HRA request fulfilment', owner: 'Nadia Ali', timeRemaining: '3h 45m', slaBand: 'Less than 4 hours', slaState: 'At Risk' },
   { id: 'SLA-402', title: 'Platform support ticket', owner: 'Ibrahim Njoroge', timeRemaining: 'End of day', slaBand: 'Due today', slaState: 'At Risk' },
   { id: 'SLA-403', title: 'Knowledge article review', owner: 'Grace Wanjiku', timeRemaining: 'Tomorrow 5pm', slaBand: 'Due tomorrow', slaState: 'On Track' },
-  { id: 'SLA-410', title: 'Admin policy update', owner: 'Priya Menon', timeRemaining: '—', slaBand: 'Due today', slaState: 'Breached', breachReason: 'Approval delay', hasRecoveryPlan: false },
+  { id: 'SLA-410', title: 'Admin policy update', owner: 'Priya Menon', timeRemaining: '—', slaBand: 'Due today', slaState: 'Breached', breachReason: 'Approval delay' },
   { id: 'SLA-415', title: 'Access provisioning', owner: 'Amina Shah', timeRemaining: '—', slaBand: 'Due this week', slaState: 'Resolved', quality: 'Resolved with evidence', resolutionNote: 'Completed with evidence attached.' },
 ];
 

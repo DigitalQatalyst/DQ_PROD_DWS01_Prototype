@@ -209,7 +209,8 @@ export function TrackerHubPage() {
       .filter((item) => filters.dueDate === 'All Due Dates' || item.dueDate === filters.dueDate || (filters.dueDate === 'Today' && item.dueDate === 'Today'));
   }, [filters, items]);
 
-  const updateFilter = (key: keyof typeof filters, value: string) => setFilters((current) => ({ ...current, [key]: value }));
+  const updateFilter = (key: string, value: string) =>
+    setFilters((current) => ({ ...current, [key]: value }));
   const clearFilters = () => {
     setFilters({ search: '', tracker: 'All Tracker Types', owner: 'All Owners', status: 'All Statuses', priority: 'All Priorities', rag: 'All RAG', dueDate: 'All Due Dates' });
     setActiveFilter(null);
@@ -444,7 +445,7 @@ function HealthDot({ status }: { status: TrackerHealth }) {
   return <span className="inline-flex items-center gap-1.5 text-xs font-bold"><span className={`h-2 w-2 rounded-full ${color.split(' ')[0]}`} />Status: <span className={color.split(' ')[1]}>{status}</span></span>;
 }
 
-function TrackerItemsSection({ filters, items, onFilter, onClear, onOpenItem }: { filters: Record<string, string>; items: TrackerItem[]; onFilter: (key: keyof typeof filters, value: string) => void; onClear: () => void; onOpenItem: (item: TrackerItem) => void }) {
+function TrackerItemsSection({ filters, items, onFilter, onClear, onOpenItem }: { filters: Record<string, string>; items: TrackerItem[]; onFilter: (key: string, value: string) => void; onClear: () => void; onOpenItem: (item: TrackerItem) => void }) {
   return (
     <section className="mt-4 rounded-card border border-border-default bg-white shadow-sm">
       <div className="border-b border-border-subtle p-4">

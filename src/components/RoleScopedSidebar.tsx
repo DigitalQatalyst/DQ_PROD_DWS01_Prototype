@@ -43,14 +43,15 @@ import {
   LifeBuoy,
   TrendingUp,
   Trophy,
-  BoxIcon } from
-'lucide-react';
+  Box,
+  type LucideIcon,
+} from 'lucide-react';
 import { usePersona } from '../context/PersonaContext';
 import { PersonaId } from '../types/platform';
 interface NavItem {
   label: string;
   route: string;
-  icon: BoxIcon;
+  icon: LucideIcon;
   badge?: {
     value: string;
     tone?: 'accent' | 'warning' | 'danger';

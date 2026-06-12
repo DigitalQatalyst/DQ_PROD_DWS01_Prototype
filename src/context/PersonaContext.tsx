@@ -1,4 +1,4 @@
-import React, { useState, createContext, useContext } from 'react';
+import React, { useState, createContext, useContext, type ReactNode } from 'react';
 import type { Persona, PersonaId } from '../types/platform';
 import { personas } from '../mocks/platform.mock';
 interface PersonaContextType {

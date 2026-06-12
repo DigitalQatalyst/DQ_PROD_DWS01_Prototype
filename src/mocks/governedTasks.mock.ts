@@ -6,11 +6,11 @@ export const strategicAspirations = [
 
 
 export const objectives = [
-{ id: 'OBJ-001', title: 'Increase governed task completeness' },
-{ id: 'OBJ-002', title: 'Standardise service request intake' },
-{ id: 'OBJ-003', title: 'Complete onboarding before work assignment' },
-{ id: 'OBJ-004', title: 'Improve unit delivery health' },
-{ id: 'OBJ-005', title: 'Reduce SLA-at-risk work' }];
+{ id: 'OBJ-001', title: 'Increase governed task completeness', aspirationId: 'ASP-001' },
+{ id: 'OBJ-002', title: 'Standardise service request intake', aspirationId: 'ASP-002' },
+{ id: 'OBJ-003', title: 'Complete onboarding before work assignment', aspirationId: 'ASP-003' },
+{ id: 'OBJ-004', title: 'Improve unit delivery health', aspirationId: 'ASP-004' },
+{ id: 'OBJ-005', title: 'Reduce SLA-at-risk work', aspirationId: 'ASP-004' }];
 
 
 export const outcomes = [
