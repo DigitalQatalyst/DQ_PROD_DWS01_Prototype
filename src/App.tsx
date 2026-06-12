@@ -74,6 +74,7 @@ import { MyUpdatesPage } from "./pages/MyUpdatesPage";
 import { MyBlockersPage } from "./pages/MyBlockersPage";
 import { KnowledgeContextPage } from "./pages/KnowledgeContextPage";
 import { AssignedWorkPage } from "./pages/AssignedWorkPage";
+import { MyWorkPage } from "./pages/MyWorkPage";
 import { TaskDetailsPage } from './pages/TaskDetailsPage';
 import { KanbanBoardPage } from './pages/KanbanBoardPage';
 import { TrackerHubPage } from './pages/TrackerHubPage';
@@ -804,6 +805,7 @@ function AppRoutes() {
           path="/stage02/trackers"
           element={<Stage02SectionPage section="trackers" />}
         />
+        <Route path="/tasks/my-work" element={<RouteGuard><MyWorkPage /></RouteGuard>} />
         <Route path="/tasks/my-work/assigned-tasks" element={<RouteGuard><AssignedWorkPage /></RouteGuard>} />
         <Route path="/tasks/my-work/assigned-tasks/:taskId" element={<RouteGuard><TaskDetailsPage /></RouteGuard>} />
         <Route path="/tasks/task-board/kanban-view" element={<RouteGuard><KanbanBoardPage /></RouteGuard>} />

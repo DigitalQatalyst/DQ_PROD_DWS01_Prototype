@@ -131,7 +131,7 @@ export const dashboardRecentActivity: DashboardActivityItem[] = [
 ];
 
 export const dashboardQuickLinks: DashboardQuickLink[] = [
-  { label: 'My Work', route: '/tasks/my-work/assigned-tasks', icon: CheckSquare },
+  { label: 'My Work', route: '/tasks/my-work', icon: CheckSquare },
   { label: 'Requests', route: '/workspace/my-requests', icon: FileText },
   { label: 'Knowledge / SOPs', route: '/knowledge', icon: BookOpen },
   { label: 'Evidence', route: '/tasks/task-updates-evidence/evidence-upload-link', icon: FolderOpen },
