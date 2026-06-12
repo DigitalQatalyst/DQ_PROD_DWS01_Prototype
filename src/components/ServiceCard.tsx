@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ShieldAlert } from 'lucide-react';
 import type { Service } from '../types/serviceLifecycle';
 import { getServiceCategoryCode } from '../utils/serviceCategoryCodes';
@@ -37,6 +37,8 @@ function RiskBadge({ risk }: { risk: Service['risk'] }) {
 
 export function ServiceCard({ service }: { service: Service }) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const stage = searchParams.get('from') || 'deploy';
 
   return (
     <MarketplaceCatalogCard
@@ -49,7 +51,7 @@ export function ServiceCard({ service }: { service: Service }) {
       highlighted={
         service.risk !== 'Standard' || service.approval === 'Required'
       }
-      onClick={() => navigate(`/marketplace/services/${service.id}`)}
+      onClick={() => navigate(`/marketplace/services/${service.id}?from=${stage}`)}
     />
   );
 }

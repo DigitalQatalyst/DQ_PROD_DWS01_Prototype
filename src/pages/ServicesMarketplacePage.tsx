@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ServiceCard } from '../components/ServiceCard';
 import { MarketplaceCatalogLayout } from '../components/marketplace/MarketplaceCatalogLayout';
@@ -18,11 +18,21 @@ export function ServicesMarketplacePage() {
   const [searchParams] = useSearchParams();
   const { services, serviceCategories } = useServiceLifecycle();
   const stage = resolveMarketplaceStage(searchParams.get('from'), 'deploy');
+  const categoryParam = searchParams.get('category');
 
   const [activeTab, setActiveTab] = useState(ALL_TAB_ID);
   const [search, setSearch] = useState('');
   const [filterValues, setFilterValues] = useState<Record<string, string[]>>({});
   const [recommendedActive, setRecommendedActive] = useState(false);
+
+  useEffect(() => {
+    if (
+      categoryParam &&
+      serviceCategories.some((category) => category.name === categoryParam)
+    ) {
+      setActiveTab(categoryParam);
+    }
+  }, [categoryParam, serviceCategories]);
 
   const categoryTabs = useMemo(
     () =>

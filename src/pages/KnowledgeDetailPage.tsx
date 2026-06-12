@@ -1,49 +1,95 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useKnowledgeLifecycle } from '../context/KnowledgeLifecycleContext';
-import { KnowledgeDetailRecord } from '../types/knowledgeDiscovery';
-import { KnowledgeDetailHero } from '../components/KnowledgeDetailHero';
-import { KnowledgeActionRail } from '../components/KnowledgeActionRail';
-import { ApplicabilityCard } from '../components/ApplicabilityCard';
-import { CoreGuidancePreview } from '../components/CoreGuidancePreview';
-import { EvidenceExpectationCard } from '../components/EvidenceExpectationCard';
-import { LinkedWorkPanel } from '../components/LinkedWorkPanel';
-import { RelatedKnowledgeGrid } from '../components/RelatedKnowledgeGrid';
-import { KnowledgeFeedbackPanel } from '../components/KnowledgeFeedbackPanel';
-import { VersionHistoryList } from '../components/VersionHistoryList';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
+import { useKnowledgeLifecycle } from '../context/KnowledgeLifecycleContext';
+import type { KnowledgeDetailRecord } from '../types/knowledgeDiscovery';
+import { KnowledgeDetailPageHeader } from '../components/marketplace/knowledge/KnowledgeDetailPageHeader';
+import { MarketplaceDetailPageGrid } from '../components/marketplace/shared/MarketplaceDetailPageGrid';
+import { KnowledgeOverviewTab } from '../components/marketplace/knowledge/KnowledgeOverviewTab';
+import { KnowledgeGovernanceTab } from '../components/marketplace/knowledge/KnowledgeGovernanceTab';
+import { KnowledgeResourcesTab } from '../components/marketplace/knowledge/KnowledgeResourcesTab';
+import { KnowledgeDetailRail } from '../components/marketplace/knowledge/KnowledgeDetailRail';
+import {
+  APPROVAL_FLOW_STEPS,
+  buildAppliesToItems,
+  buildKeyReminders,
+  buildOverviewRows,
+  buildPolicyAlignment,
+  buildSupportingMaterials,
+  getDetailVersionHistory,
+} from '../utils/knowledgeDetailContent';
+import {
+  buildKnowledgeDetailTrail,
+  getKnowledgeDetailHref,
+  resolveMarketplaceStage,
+} from '../utils/marketplaceBreadcrumbs';
+import {
+  parseMarketplaceDetailTab,
+  type MarketplaceDetailTab,
+} from '../types/marketplaceDetail';
 
 export function KnowledgeDetailPage() {
   const { knowledgeId } = useParams();
-  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const stage = resolveMarketplaceStage(searchParams.get('from'), 'discern');
+  const activeTab = parseMarketplaceDetailTab(searchParams.get('tab'));
   const {
     assets,
     isLoading,
     getAssetDetail,
     getApplicabilityForAsset,
-    getLinkedWorkForAsset,
-    getRelatedKnowledgeForAsset
+    getRelatedKnowledgeForAsset,
   } = useKnowledgeLifecycle();
 
   const [detail, setDetail] = useState<KnowledgeDetailRecord | undefined>(undefined);
   const [detailLoading, setDetailLoading] = useState(true);
 
-  const asset = assets.find(a => a.id === knowledgeId);
+  const asset = assets.find((item) => item.id === knowledgeId);
+
+  const handleTabChange = useCallback(
+    (tab: MarketplaceDetailTab) => {
+      const next = new URLSearchParams(searchParams);
+      if (tab === 'overview') {
+        next.delete('tab');
+      } else {
+        next.set('tab', tab);
+      }
+      setSearchParams(next, { replace: true });
+    },
+    [searchParams, setSearchParams],
+  );
 
   useEffect(() => {
     if (knowledgeId) {
       setDetailLoading(true);
-      getAssetDetail(knowledgeId).then(data => {
+      getAssetDetail(knowledgeId).then((data) => {
         setDetail(data);
         setDetailLoading(false);
       });
     }
   }, [knowledgeId, getAssetDetail]);
 
+  const assetsById = useMemo(
+    () => new Map(assets.map((item) => [item.id, item])),
+    [assets],
+  );
+
   if (isLoading || detailLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-surface">
-        <div className="text-sm text-text-muted">Loading knowledge asset...</div>
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="mx-auto max-w-[1440px] px-6 lg:px-8">
+          <div className="mb-6 h-4 w-72 animate-pulse rounded bg-gray-200" />
+          <div className="mb-8 h-28 animate-pulse rounded-card bg-gray-200/70" />
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+            <div className="space-y-6 lg:col-span-8">
+              <div className="h-12 animate-pulse rounded bg-gray-200" />
+              <div className="h-80 animate-pulse rounded-card bg-gray-200/70" />
+            </div>
+            <div className="lg:col-span-4">
+              <div className="sticky top-24 h-[520px] animate-pulse rounded-card bg-gray-200/70" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -52,145 +98,77 @@ export function KnowledgeDetailPage() {
     return (
       <div className="mx-auto max-w-3xl px-6 py-16 text-center">
         <AlertCircle size={48} className="mx-auto mb-4 text-warning" />
-        <h2 className="mb-2 text-2xl font-bold text-text-primary">Asset Not Found</h2>
-        <p className="mb-6 text-text-secondary">The knowledge asset you are looking for could not be found.</p>
-        <button
-          onClick={() => navigate('/marketplaces/knowledge')}
-          className="rounded-lg bg-primary px-5 py-2.5 font-bold text-white hover:bg-navy-700"
+        <h2 className="mb-2 text-2xl font-semibold text-dq-navy">Asset not found</h2>
+        <p className="mb-6 text-gray-500">
+          The knowledge asset you are looking for could not be found.
+        </p>
+        <a
+          href={`/marketplace/knowledge-discovery?from=${stage}`}
+          className="inline-flex items-center rounded-btn bg-dq-orange px-5 py-2.5 text-sm font-medium text-white hover:bg-[#F24C2A]"
         >
           Return to Knowledge Hub
-        </button>
+        </a>
       </div>
     );
   }
 
   const applicability = getApplicabilityForAsset(asset.id);
-  const linkedWork = getLinkedWorkForAsset(asset.id);
   const relatedKnowledge = getRelatedKnowledgeForAsset(asset.id);
+  const referenceHref = `/knowledge/${asset.id}/reference`;
+  const detailHref = (id: string) => getKnowledgeDetailHref(id, stage);
+
+  const relatedResources = relatedKnowledge
+    .map((record) => assetsById.get(record.toAssetId))
+    .filter((item): item is NonNullable<typeof item> => Boolean(item))
+    .map((item) => ({ id: item.id, title: item.title }));
+
+  const policyLinks = buildPolicyAlignment(relatedKnowledge, assetsById);
+  const versionHistory = getDetailVersionHistory(detail);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      {/* Hero */}
-      <KnowledgeDetailHero asset={asset} />
+    <div className="min-h-screen bg-gray-50 pb-12">
+      <div className="mx-auto max-w-[1440px] px-6 pt-8 lg:px-8">
+        <KnowledgeDetailPageHeader
+          breadcrumbItems={buildKnowledgeDetailTrail(
+            stage,
+            asset.type,
+            asset.title,
+            asset.id,
+          )}
+          asset={asset}
+          referenceHref={referenceHref}
+        />
 
-      {/* Content + Rail */}
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-
-        {/* Main Content — Left 2/3 */}
-        <div className="space-y-6 lg:col-span-2">
-
-          {/* 1. Purpose & Scope */}
-          <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-border-subtle">
-            <h2 className="mb-4 text-lg font-bold text-text-primary">Purpose & Scope</h2>
-            <p className="mb-6 text-text-secondary leading-relaxed">{asset.purpose}</p>
-
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <div>
-                <h3 className="mb-3 text-sm font-bold text-text-primary">When to Use</h3>
-                <ul className="space-y-2">
-                  {asset.whenToUse.map((item, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-text-secondary">
-                      <span className="mt-2 h-1.5 w-1.5 rounded-full bg-success shrink-0" />
-                      {item}
-                    </li>
-                  ))}
-                  {asset.whenToUse.length === 0 && (
-                    <li className="text-sm text-text-muted">No specific guidance provided.</li>
-                  )}
-                </ul>
-              </div>
-              <div>
-                <h3 className="mb-3 text-sm font-bold text-text-primary">When NOT to Use</h3>
-                <ul className="space-y-2">
-                  {asset.whenNotToUse.map((item, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-text-secondary">
-                      <span className="mt-2 h-1.5 w-1.5 rounded-full bg-danger shrink-0" />
-                      {item}
-                    </li>
-                  ))}
-                  {asset.whenNotToUse.length === 0 && (
-                    <li className="text-sm text-text-muted">No specific exclusions.</li>
-                  )}
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          {/* 2. Applicability */}
-          {applicability && <ApplicabilityCard record={applicability} />}
-
-          {/* 3. Core Guidance */}
-          <CoreGuidancePreview asset={asset} />
-
-          {/* 4. Full Detail Sections */}
-          {detail && detail.sections.length > 0 && (
-            <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-border-subtle">
-              <h2 className="mb-5 text-lg font-bold text-text-primary">Reference Content</h2>
-              {detail.content && (
-                <p className="mb-6 text-text-secondary leading-relaxed">{detail.content}</p>
-              )}
-              <div className="space-y-6">
-                {detail.sections.map(section => (
-                  <div key={section.id}>
-                    <h3 className="mb-3 text-sm font-bold text-text-primary">{section.title}</h3>
-                    <div className="rounded-lg bg-surface px-5 py-4 ring-1 ring-border-subtle">
-                      <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-secondary">{section.body}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+        <MarketplaceDetailPageGrid
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          rail={<KnowledgeDetailRail asset={asset} />}
+        >
+          {activeTab === 'overview' && (
+            <KnowledgeOverviewTab
+              overviewRows={buildOverviewRows(asset)}
+              appliesTo={buildAppliesToItems(asset, applicability)}
+              keyReminders={buildKeyReminders(asset)}
+            />
           )}
 
-          {/* 5. Evidence Expectations */}
-          <EvidenceExpectationCard asset={asset} />
-
-          {/* 6. Work Application */}
-          {detail?.workApplication && (
-            <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-border-subtle">
-              <h2 className="mb-4 text-lg font-bold text-text-primary">How This Applies to Work</h2>
-              <p className="text-sm leading-relaxed text-text-secondary">{detail.workApplication}</p>
-            </div>
+          {activeTab === 'governance' && (
+            <KnowledgeGovernanceTab
+              approvalSteps={APPROVAL_FLOW_STEPS}
+              versionHistory={versionHistory}
+              policyLinks={policyLinks}
+              detailHref={detailHref}
+            />
           )}
 
-          {/* 7. Review & Acknowledgement Expectations */}
-          {(detail?.reviewExpectation || detail?.acknowledgementExpectation) && (
-            <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-border-subtle">
-              <h2 className="mb-5 text-lg font-bold text-text-primary">Review & Acknowledgement</h2>
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                {detail.reviewExpectation && (
-                  <div>
-                    <h3 className="mb-2 text-sm font-bold text-text-primary">Review Expectation</h3>
-                    <p className="text-sm text-text-secondary">{detail.reviewExpectation}</p>
-                  </div>
-                )}
-                {detail.acknowledgementExpectation && (
-                  <div>
-                    <h3 className="mb-2 text-sm font-bold text-text-primary">Acknowledgement Expectation</h3>
-                    <p className="text-sm text-text-secondary">{detail.acknowledgementExpectation}</p>
-                  </div>
-                )}
-              </div>
-            </div>
+          {activeTab === 'resources' && (
+            <KnowledgeResourcesTab
+              relatedResources={relatedResources}
+              supportingMaterials={buildSupportingMaterials(asset)}
+              detailHref={detailHref}
+            />
           )}
-
-          {/* 8. Linked Work */}
-          <LinkedWorkPanel records={linkedWork} />
-
-          {/* 9. Related Knowledge */}
-          <RelatedKnowledgeGrid records={relatedKnowledge} allAssets={assets} />
-
-          {/* 10. Version History */}
-          {detail && <VersionHistoryList detail={detail} />}
-
-          {/* 11. Feedback */}
-          <KnowledgeFeedbackPanel assetId={asset.id} />
-        </div>
-
-        {/* Sticky Right Rail — 1/3 */}
-        <div className="lg:col-span-1">
-          <KnowledgeActionRail asset={asset} />
-        </div>
+        </MarketplaceDetailPageGrid>
       </div>
     </div>
   );
