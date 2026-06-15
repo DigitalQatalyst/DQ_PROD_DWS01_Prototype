@@ -674,9 +674,9 @@ function RecordDetailRoute({
   };
 
   return (
-    <div className="w-full bg-surface px-5 py-5 pb-10 lg:px-6">
-      <header className="mb-5">
-        <nav className="mb-3 flex flex-wrap items-center gap-2 text-sm font-semibold text-secondary" aria-label="Breadcrumb">
+    <div className="flex h-[calc(100vh-128px)] min-h-[620px] w-full flex-col overflow-hidden bg-white">
+      <header className="relative z-20 shrink-0 border-b border-border-default bg-white px-6 py-5">
+        <nav className="mb-2 flex flex-wrap items-center gap-2 text-xs font-semibold text-secondary" aria-label="Breadcrumb">
           <span>Tracker</span>
           <span>/</span>
           <button onClick={() => guardedNavigate(onHub)} className="hover:text-gray-900">Tracker Hub</button>
@@ -685,23 +685,23 @@ function RecordDetailRoute({
           <span>/</span>
           <span className="font-mono text-xs font-bold">{draft.id}</span>
         </nav>
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-[32px] font-bold leading-tight text-primary">{draft.title}</h1>
+              <h1 className="text-[24px] font-bold leading-tight text-primary">{draft.title}</h1>
               <StatusBadge status={draft.status} />
               <DqBadge label={draft.rag} tone={ragTone(draft.rag)} />
               {dirty && <DqBadge label="Unsaved" tone="warning" dot={false} />}
             </div>
-            <p className="mt-2 max-w-4xl text-sm leading-6 text-text-secondary">{tracker.name} · {draft.description}</p>
+            <p className="mt-1 max-w-4xl truncate text-sm leading-6 text-text-secondary">{tracker.name} · {draft.description}</p>
           </div>
           <div className="relative flex shrink-0 flex-wrap items-center justify-start gap-2 xl:justify-end">
-            <DqButton variant="outline" onClick={() => guardedNavigate(onBack)} className="h-11 px-4"><ArrowLeft size={16} strokeWidth={1.5} /> Back to Tracker</DqButton>
-            <DqButton variant="orange" onClick={saveDraft} disabled={!dirty} className="h-11 px-4 disabled:cursor-not-allowed disabled:opacity-50"><Check size={16} strokeWidth={1.5} /> Save Changes</DqButton>
-            <DqButton variant="navy" onClick={markComplete} className="h-11 px-4"><CheckCircle2 size={16} strokeWidth={1.5} /> Mark Complete</DqButton>
-            <DqButton variant="outline" onClick={openNote} className="h-11 px-4"><MessageSquare size={16} strokeWidth={1.5} /> Add Note</DqButton>
-            <DqButton variant="outline" onClick={openEvidence} className="h-11 px-4"><Paperclip size={16} strokeWidth={1.5} /> Add Evidence</DqButton>
-            <DqIconButton label="More record actions" onClick={() => setMoreOpen((open) => !open)} className="h-11 w-11"><MoreHorizontal size={18} strokeWidth={1.5} /></DqIconButton>
+            <DqButton variant="outline" onClick={() => guardedNavigate(onBack)} className="h-10 px-3"><ArrowLeft size={16} strokeWidth={1.5} /> Back to Tracker</DqButton>
+            <DqButton variant="orange" onClick={saveDraft} disabled={!dirty} className="h-10 px-3 disabled:cursor-not-allowed disabled:opacity-50"><Check size={16} strokeWidth={1.5} /> Save Changes</DqButton>
+            <DqButton variant="navy" onClick={markComplete} className="h-10 px-3"><CheckCircle2 size={16} strokeWidth={1.5} /> Mark Complete</DqButton>
+            <DqButton variant="outline" onClick={openNote} className="h-10 px-3"><MessageSquare size={16} strokeWidth={1.5} /> Add Note</DqButton>
+            <DqButton variant="outline" onClick={openEvidence} className="h-10 px-3"><Paperclip size={16} strokeWidth={1.5} /> Add Evidence</DqButton>
+            <DqIconButton label="More record actions" onClick={() => setMoreOpen((open) => !open)} className="h-10 w-10"><MoreHorizontal size={18} strokeWidth={1.5} /></DqIconButton>
             {moreOpen && (
               <div className="absolute right-0 top-12 z-20 w-56 rounded-card border border-border-default bg-white p-2 text-sm font-semibold text-primary shadow-lg">
                 <button onClick={duplicateCurrentRecord} className="flex w-full items-center gap-2 rounded-button px-3 py-2 text-left hover:bg-navy-50"><Copy size={15} /> Duplicate Record</button>
@@ -714,7 +714,7 @@ function RecordDetailRoute({
         </div>
       </header>
 
-      <div className="grid gap-5 xl:grid-cols-[264px_minmax(0,1fr)_276px]">
+      <div className="grid min-h-0 flex-1 grid-cols-[264px_minmax(0,1fr)_276px] gap-4 overflow-hidden bg-surface p-4">
         <RecordListPanel
           records={records}
           selectedRecordId={draft.id}
@@ -723,9 +723,9 @@ function RecordDetailRoute({
           totalRecords={tracker.slug === 'workload-distribution-tracker' ? 18 : tracker.activeRecords}
           onSelect={(id) => guardedNavigate(() => onSelect(id))}
         />
-        <main className="min-w-0 rounded-card border border-border-default bg-white shadow-sm">
+        <main className="flex min-h-0 min-w-0 flex-col overflow-hidden bg-white">
           <RecordDetailTabs activeTab={activeTab} onTab={setActiveTab} />
-          <div className="space-y-0 bg-white p-5">
+          <div className="min-h-0 flex-1 space-y-0 overflow-y-auto bg-white px-7 py-6">
             {activeTab === 'Overview' && (
               <>
                 <RecordDetailsForm tracker={tracker} draft={draft} latestUpdate={latestUpdate} onUpdate={updateDraft} onLatestUpdate={updateLatest} />
@@ -754,20 +754,22 @@ function RecordListPanel({ records, selectedRecordId, search, onSearch, totalRec
   const rangeStart = visibleRecords.length ? 1 : 0;
   const rangeEnd = visibleRecords.length;
   return (
-    <aside className="flex max-h-[calc(100vh-172px)] flex-col rounded-card border border-border-default bg-white p-4 shadow-sm">
-      <h2 className="dq-card-title">Tracker Records</h2>
-      <div className="relative mt-3">
+    <aside className="flex min-h-0 flex-col border-r border-border-default bg-white">
+      <div className="shrink-0 border-b border-border-subtle px-5 py-5">
+        <h2 className="text-sm font-bold text-primary">Tracker Records</h2>
+        <div className="relative mt-3">
         <Search size={16} strokeWidth={1.5} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
         <input value={search} onChange={(event) => onSearch(event.target.value)} placeholder="Search records..." className="dq-input pl-9" />
+        </div>
       </div>
-      <div className="mt-4 flex-1 space-y-2 overflow-y-auto pr-1">
+      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto px-4 py-4">
         {visibleRecords.map((record) => {
           const active = record.id === selectedRecordId;
           return (
             <button
               key={record.id}
               onClick={() => onSelect(record.id)}
-              className={`w-full rounded-r-lg border-l-2 px-3 py-3 text-left transition ${active ? 'border-secondary bg-orange-50 text-primary' : 'border-transparent hover:bg-navy-50'}`}>
+              className={`w-full rounded-r-md border-l-2 px-3 py-3 text-left transition ${active ? 'border-secondary bg-orange-50 text-primary' : 'border-transparent hover:bg-navy-50'}`}>
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <div className="font-mono text-[11px] font-bold text-text-muted">{record.id}</div>
@@ -780,9 +782,9 @@ function RecordListPanel({ records, selectedRecordId, search, onSearch, totalRec
             </button>
           );
         })}
-        {visibleRecords.length === 0 && <div className="rounded-card border border-border-subtle p-4 text-sm font-semibold text-text-secondary">No records found.</div>}
+        {visibleRecords.length === 0 && <div className="border border-border-subtle p-4 text-sm font-semibold text-text-secondary">No records found.</div>}
       </div>
-      <footer className="mt-4 flex items-center justify-between gap-2 border-t border-border-subtle pt-3 text-xs font-semibold text-text-muted">
+      <footer className="shrink-0 flex items-center justify-between gap-2 border-t border-border-subtle px-5 py-4 text-xs font-semibold text-text-muted">
         <button
           disabled={!previousRecord}
           onClick={() => previousRecord && onSelect(previousRecord.id)}
@@ -804,9 +806,9 @@ function RecordListPanel({ records, selectedRecordId, search, onSearch, totalRec
 function RecordDetailTabs({ activeTab, onTab }: { activeTab: DetailTab; onTab: (tab: DetailTab) => void }) {
   const detailTabs: DetailTab[] = ['Overview', 'Activity', 'Comments', 'Evidence', 'History'];
   return (
-    <div className="dq-tabs flex overflow-x-auto px-3" role="tablist" aria-label="Tracker record detail tabs">
+    <div className="sticky top-0 z-10 flex shrink-0 overflow-x-auto border-b border-border-default bg-white px-6" role="tablist" aria-label="Tracker record detail tabs">
       {detailTabs.map((tab) => (
-        <button key={tab} role="tab" aria-selected={activeTab === tab} onClick={() => onTab(tab)} className={`dq-tab whitespace-nowrap ${activeTab === tab ? 'dq-tab-active text-secondary' : ''}`}>
+        <button key={tab} role="tab" aria-selected={activeTab === tab} onClick={() => onTab(tab)} className={`border-b-2 px-4 py-3 text-sm font-semibold transition ${activeTab === tab ? 'border-secondary text-secondary' : 'border-transparent text-text-muted hover:text-primary'}`}>
           {tab}
         </button>
       ))}
@@ -817,9 +819,9 @@ function RecordDetailTabs({ activeTab, onTab }: { activeTab: DetailTab; onTab: (
 function RecordDetailsForm({ tracker, draft, latestUpdate, onUpdate, onLatestUpdate }: { tracker: TrackerDefinition; draft: TrackerRecord; latestUpdate: string; onUpdate: (patch: Partial<TrackerRecord>) => void; onLatestUpdate: (value: string) => void }) {
   return (
     <>
-      <section className="border-b border-border-subtle pb-5">
-        <h2 className="dq-card-title">Details</h2>
-        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      <section className="border-b border-border-subtle pb-6">
+        <h2 className="text-base font-bold text-primary">Details</h2>
+        <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           <DetailField label="Record ID" value={draft.id} readOnly monospace onChange={() => undefined} />
           <DetailField label="Title" value={draft.title} onChange={(title) => onUpdate({ title })} />
           <DetailField label="Owner" value={draft.owner} onChange={(owner) => onUpdate({ owner })} />
@@ -833,9 +835,9 @@ function RecordDetailsForm({ tracker, draft, latestUpdate, onUpdate, onLatestUpd
       </section>
       <DetailTextarea title="Description / Context" value={draft.description} onChange={(description) => onUpdate({ description })} />
       <DetailTextarea title="Latest Update" value={latestUpdate} onChange={onLatestUpdate} />
-      <section className="border-b border-border-subtle py-5">
-        <h2 className="dq-card-title">Next Action</h2>
-        <input value={draft.nextAction} onChange={(event) => onUpdate({ nextAction: event.target.value })} className="dq-input mt-4" />
+      <section className="border-b border-border-subtle py-6">
+        <h2 className="text-base font-bold text-primary">Next Action</h2>
+        <input value={draft.nextAction} onChange={(event) => onUpdate({ nextAction: event.target.value })} className="dq-input mt-5" />
       </section>
     </>
   );
@@ -868,32 +870,41 @@ function DetailSelect({ label, value, options, onChange }: { label: string; valu
 
 function DetailTextarea({ title, value, onChange }: { title: string; value: string; onChange: (value: string) => void }) {
   return (
-    <section className="border-b border-border-subtle py-5">
-      <h2 className="dq-card-title">{title}</h2>
-      <textarea value={value} onChange={(event) => onChange(event.target.value)} rows={5} className="dq-textarea mt-4" />
+    <section className="border-b border-border-subtle py-6">
+      <h2 className="text-base font-bold text-primary">{title}</h2>
+      <textarea value={value} onChange={(event) => onChange(event.target.value)} rows={5} className="dq-textarea mt-5" />
     </section>
   );
 }
 
 function CommentsPanel({ sectionRef, inputRef, comments, comment, onComment, onPost }: { sectionRef?: RefObject<HTMLElement>; inputRef?: RefObject<HTMLTextAreaElement>; comments: TrackerRecord['comments']; comment: string; onComment: (value: string) => void; onPost: () => void }) {
   return (
-    <section ref={sectionRef} className="scroll-mt-5 border-b border-border-subtle py-5">
+    <section ref={sectionRef} className="scroll-mt-6 border-b border-border-subtle py-6">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="dq-card-title">Comments / Notes</h2>
+        <h2 className="text-base font-bold text-primary">Comments / Notes</h2>
         <span className="text-xs font-semibold text-text-muted">{comments.length} notes</span>
       </div>
-      <div className="mt-4 space-y-3">
+      <div className="mt-5 divide-y divide-border-subtle border-y border-border-subtle">
         {comments.map((entry) => (
-          <div key={entry.id} className="rounded-button border border-border-subtle bg-surface px-3 py-2 text-sm text-primary">
-            <div className="font-bold">{entry.author}</div>
-            <p className="mt-1 leading-6">{entry.body}</p>
-            <div className="mt-1 text-xs font-semibold text-text-muted">{entry.timestamp}</div>
+          <div key={entry.id} className="flex gap-3 py-3 text-sm text-primary">
+            <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-navy-50 font-mono text-[11px] font-bold text-primary">
+              {entry.author.split(' ').map((part) => part[0]).join('').slice(0, 2)}
+            </span>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-bold">{entry.author}</span>
+                <span className="text-xs font-semibold text-text-muted">{entry.timestamp}</span>
+              </div>
+              <p className="mt-1 leading-6">{entry.body}</p>
+            </div>
           </div>
         ))}
-        {comments.length === 0 && <p className="text-sm font-semibold text-text-secondary">No notes posted yet.</p>}
+        {comments.length === 0 && <p className="py-3 text-sm font-semibold text-text-secondary">No notes posted yet.</p>}
       </div>
-      <textarea ref={inputRef} value={comment} onChange={(event) => onComment(event.target.value)} rows={3} placeholder="Add a note..." className="dq-textarea mt-4" />
-      <DqButton variant="navy" onClick={onPost} disabled={!comment.trim()} className="mt-3 disabled:cursor-not-allowed disabled:opacity-50"><MessageSquare size={15} strokeWidth={1.5} /> Post</DqButton>
+      <textarea ref={inputRef} value={comment} onChange={(event) => onComment(event.target.value)} rows={3} placeholder="Add a note..." className="dq-textarea mt-5" />
+      <div className="mt-4 flex justify-end">
+        <DqButton variant="navy" onClick={onPost} disabled={!comment.trim()} className="disabled:cursor-not-allowed disabled:opacity-50"><MessageSquare size={15} strokeWidth={1.5} /> Post</DqButton>
+      </div>
     </section>
   );
 }
@@ -933,9 +944,9 @@ function EvidencePanel({
 }) {
   const evidenceTypes: Array<TrackerRecord['evidence'][number]['type']> = ['Document', 'Link', 'File', 'Spreadsheet', 'Dashboard', 'Teams Thread'];
   return (
-    <section ref={sectionRef} className="scroll-mt-5 py-5">
+    <section ref={sectionRef} className="scroll-mt-6 py-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="dq-card-title">Evidence / Links</h2>
+        <h2 className="text-base font-bold text-primary">Evidence / Links</h2>
         <div className="flex gap-2">
           <DqButton variant="outline" onClick={() => onShowLinkFields('Document')}><Paperclip size={15} strokeWidth={1.5} /> Add Evidence</DqButton>
           <DqButton variant="outline" onClick={() => onShowLinkFields('Link')}><LinkIcon size={15} strokeWidth={1.5} /> Add Link</DqButton>
@@ -943,7 +954,7 @@ function EvidencePanel({
         </div>
       </div>
       {showLinkFields && (
-        <div className="mt-4 grid gap-2 rounded-card border border-border-subtle bg-surface p-3 md:grid-cols-[1fr_150px_1fr_auto]">
+        <div className="mt-5 grid gap-3 border-y border-border-subtle bg-surface px-4 py-4 md:grid-cols-[1fr_150px_1fr_auto]">
           <input ref={titleRef} value={linkTitle} onChange={(event) => onLinkTitle(event.target.value)} placeholder="Evidence title" className="dq-input" />
           <select value={linkType} onChange={(event) => onLinkType(event.target.value as TrackerRecord['evidence'][number]['type'])} className="dq-input">
             {evidenceTypes.map((type) => <option key={type} value={type}>{type}</option>)}
@@ -952,9 +963,9 @@ function EvidencePanel({
           <DqButton variant="navy" onClick={onAddLink} disabled={!linkTitle.trim()} className="disabled:cursor-not-allowed disabled:opacity-50">Add</DqButton>
         </div>
       )}
-      <div className="mt-4 space-y-2">
+      <div className="mt-5 divide-y divide-border-subtle border-y border-border-subtle">
         {evidence.map((entry) => (
-          <div key={entry.id} className="grid gap-3 rounded-button border border-border-subtle bg-surface px-3 py-2 text-sm text-primary md:grid-cols-[minmax(0,1fr)_110px_170px_120px] md:items-center">
+          <div key={entry.id} className="grid gap-3 py-3 text-sm text-primary md:grid-cols-[minmax(0,1fr)_110px_170px_120px] md:items-center">
             <div className="min-w-0">
               <div className="truncate font-semibold">{entry.title}</div>
               <div className="mt-0.5 text-xs font-semibold text-text-muted">Added by: {entry.addedBy}</div>
@@ -967,7 +978,7 @@ function EvidencePanel({
             </span>
           </div>
         ))}
-        {evidence.length === 0 && <p className="text-sm font-semibold text-text-secondary">No evidence linked yet.</p>}
+        {evidence.length === 0 && <p className="py-3 text-sm font-semibold text-text-secondary">No evidence linked yet.</p>}
       </div>
     </section>
   );
@@ -976,10 +987,10 @@ function EvidencePanel({
 function ActivityTimeline({ activity, title = 'Activity History' }: { activity: TrackerRecord['activity']; title?: string }) {
   return (
     <section className="py-1">
-      <h2 className="dq-card-title">{title}</h2>
-      <div className="mt-4 space-y-4">
+      <h2 className="text-base font-bold text-primary">{title}</h2>
+      <div className="mt-4 divide-y divide-border-subtle border-y border-border-subtle">
         {activity.map((entry) => (
-          <div key={entry.id} className="border-l-2 border-secondary pl-4 text-sm text-primary">
+          <div key={entry.id} className="border-l-2 border-secondary py-3 pl-4 text-sm text-primary">
             <div className="font-bold">{entry.actor}</div>
             <p className="mt-1 leading-6">{entry.action}</p>
             <div className="mt-1 text-xs font-semibold text-text-muted">{entry.timestamp}</div>
@@ -993,8 +1004,8 @@ function ActivityTimeline({ activity, title = 'Activity History' }: { activity: 
 function HistoryPanel({ history }: { history: NonNullable<TrackerRecord['history']> }) {
   return (
     <section className="py-1">
-      <h2 className="dq-card-title">Change History</h2>
-      <div className="mt-4 overflow-x-auto rounded-card border border-border-subtle">
+      <h2 className="text-base font-bold text-primary">Change History</h2>
+      <div className="mt-4 overflow-x-auto border-y border-border-subtle">
         <table className="w-full min-w-[720px] text-left text-sm">
           <thead className="bg-surface text-xs font-bold uppercase text-text-muted">
             <tr>
@@ -1026,8 +1037,8 @@ function HistoryPanel({ history }: { history: NonNullable<TrackerRecord['history
 function RecordMetadataRail({ tracker, record, dirty }: { tracker: TrackerDefinition; record: TrackerRecord; dirty: boolean }) {
   const projectUnit = record.id.startsWith('WLD-') ? 'Platform Operations' : tracker.owner;
   return (
-    <aside className="space-y-4">
-      <RailCard title="Record Metadata">
+    <aside className="min-h-0 overflow-y-auto border-l border-border-default bg-white">
+      <RecordRailSection title="Record Metadata">
         <div className="space-y-3 text-sm font-semibold text-primary">
           <MetaRow label="Tracker" value={tracker.name} />
           <MetaRow label="Record ID" value={record.id} mono />
@@ -1035,27 +1046,48 @@ function RecordMetadataRail({ tracker, record, dirty }: { tracker: TrackerDefini
           <MetaRow label="Due Date" value={record.dueDate} tone={record.isOverdue ? 'text-danger' : ''} />
           <MetaRow label="Last Updated" value={record.lastUpdated} />
         </div>
-      </RailCard>
-      <RailCard title="Linked Entities">
+      </RecordRailSection>
+      <RecordRailSection title="Linked Entities">
         <div className="space-y-3 text-sm font-semibold text-primary">
           <MetaRow label="Project / Unit" value={projectUnit} />
           <MetaRow label="Team / Squad" value={record.teamOrSquad || 'Unassigned'} />
         </div>
-      </RailCard>
-      <RailCard title="Maintenance State">
+      </RecordRailSection>
+      <RecordRailSection title="Maintenance State">
         <div className="space-y-2">
-          <RailFilterRow active={!dirty} label="Saved" value={0} color="bg-success" onClick={() => undefined} />
-          <RailFilterRow active={record.isOverdue} label="Overdue" value={record.isOverdue ? 1 : 0} color="bg-warning" onClick={() => undefined} />
-          <RailFilterRow active={record.isBlocked} label="Blocked" value={record.isBlocked ? 1 : 0} color="bg-danger" onClick={() => undefined} />
+          <CompactStateRow label="Saved" value={0} color="bg-success" />
+          <CompactStateRow label="Overdue" value={record.isOverdue ? 1 : 0} color="bg-warning" />
+          <CompactStateRow label="Blocked" value={record.isBlocked ? 1 : 0} color="bg-danger" />
         </div>
-      </RailCard>
+      </RecordRailSection>
     </aside>
+  );
+}
+
+function RecordRailSection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="border-b border-border-subtle px-5 py-5">
+      <h2 className="text-sm font-bold text-primary">{title}</h2>
+      <div className="mt-5">{children}</div>
+    </section>
+  );
+}
+
+function CompactStateRow({ label, value, color }: { label: string; value: number; color: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3 text-sm font-semibold text-primary">
+      <span className="inline-flex items-center gap-2">
+        <span className={`h-2 w-2 rounded-full ${color}`} />
+        {label}
+      </span>
+      <span className="font-mono text-xs text-text-muted">{value}</span>
+    </div>
   );
 }
 
 function MetaRow({ label, value, mono, tone = '' }: { label: string; value: string; mono?: boolean; tone?: string }) {
   return (
-    <div className="flex items-start justify-between gap-3 border-b border-border-subtle pb-2 last:border-b-0 last:pb-0">
+    <div className="flex items-start justify-between gap-3">
       <span className="text-text-muted">{label}</span>
       <span className={`text-right ${mono ? 'font-mono text-xs' : ''} ${tone}`}>{value}</span>
     </div>
