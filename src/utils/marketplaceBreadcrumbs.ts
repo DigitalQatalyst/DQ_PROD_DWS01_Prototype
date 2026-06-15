@@ -147,7 +147,7 @@ export function buildMarketplaceHubTrail(groupTitle: string): MarketplaceBreadcr
   ];
 }
 
-export const KNOWLEDGE_HUB_LABEL = 'Knowledge Hub';
+export const KNOWLEDGE_DISCOVERY_LABEL = 'Knowledge Discovery';
 
 export function getKnowledgeHubHref(stage: MarketplaceCategoryKey = 'discern'): string {
   return `/marketplace/knowledge-discovery?from=${stage}`;
@@ -167,10 +167,9 @@ export function buildKnowledgeDetailTrail(
   assetId: string,
 ): MarketplaceBreadcrumbItem[] {
   return [
-    { label: assetType },
     MARKETPLACE_ROOT,
     stageSegment(stage),
-    { label: KNOWLEDGE_HUB_LABEL, href: getKnowledgeHubHref(stage) },
+    { label: KNOWLEDGE_DISCOVERY_LABEL, href: getKnowledgeHubHref(stage) },
     { label: assetTitle, href: getKnowledgeDetailHref(assetId, stage) },
   ];
 }
