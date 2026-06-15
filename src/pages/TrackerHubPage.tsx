@@ -712,13 +712,14 @@ function applyTrackerView(trackers: HubTracker[], activeTab: HubTab, filters: Fi
     .filter((item) => filters.health === 'All' || item.healthStatus === filters.health)
     .filter((item) => filters.updateFrequency === 'All' || item.updateFrequency === filters.updateFrequency);
 
-  if (!sort.key) return filtered;
+  const sortKey = sort.key;
+  if (!sortKey) return filtered;
   return [...filtered].sort((a, b) => {
     const direction = sort.direction === 'asc' ? 1 : -1;
-    if (sort.key === 'healthStatus') return (healthRank(a.healthStatus) - healthRank(b.healthStatus)) * direction;
-    if (sort.key === 'lastUpdated') return (dateRank(a.lastUpdated) - dateRank(b.lastUpdated)) * direction;
-    const left = a[sort.key];
-    const right = b[sort.key];
+    if (sortKey === 'healthStatus') return (healthRank(a.healthStatus) - healthRank(b.healthStatus)) * direction;
+    if (sortKey === 'lastUpdated') return (dateRank(a.lastUpdated) - dateRank(b.lastUpdated)) * direction;
+    const left = a[sortKey];
+    const right = b[sortKey];
     if (typeof left === 'number' && typeof right === 'number') return (left - right) * direction;
     return String(left).localeCompare(String(right)) * direction;
   });
