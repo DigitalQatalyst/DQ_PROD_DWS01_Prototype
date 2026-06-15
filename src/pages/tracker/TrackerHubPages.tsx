@@ -59,12 +59,12 @@ export function MyTrackerOverviewPage() {
   return (
     <TrackerPageFrame
       {...TRACKER_PAGE_META.myTrackerOverview}
-      kpis={[
-        { label: 'Assigned to me', value: '8', status: 'info' },
-        { label: 'Due soon', value: '3', status: 'warning' },
-        { label: 'Missing update', value: '5', status: 'danger' },
-        { label: 'Needs evidence', value: '2', status: 'warning' },
-      ]}
+      // kpis={[
+      //   { label: 'Assigned to me', value: '8', status: 'info' },
+      //   { label: 'Due soon', value: '3', status: 'warning' },
+      //   { label: 'Missing update', value: '5', status: 'danger' },
+      //   { label: 'Needs evidence', value: '2', status: 'warning' },
+      // ]}
     >
     <WorkbenchShell
       left={
@@ -93,9 +93,9 @@ export function MyTrackerOverviewPage() {
           </div>
         </div>
       }
-      right={
-        <TrackerRowInbox rows={myRowInbox} selectedId={selectedRow?.id} onSelect={setSelectedRow} />
-      }
+      // right={
+      //   <TrackerRowInbox rows={myRowInbox} selectedId={selectedRow?.id} onSelect={setSelectedRow} />
+      // }
       bottom={
         <div className="rounded-card border border-border-subtle bg-white p-3 shadow-sm">
           <h3 className="mb-2 text-xs font-bold uppercase text-text-muted">Recently Opened</h3>

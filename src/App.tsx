@@ -341,7 +341,7 @@ function renderTaskFeaturePage(route: string): React.ReactNode | null {
 function renderTrackerFeaturePage(route: string): React.ReactNode | null {
   const trackerFeatureMap: Record<string, React.ReactNode> = {
     // Tracker Hub
-    "/tracker/tracker-hub/my-tracker-overview": <MyTrackerOverviewPage />,
+    "/tracker/tracker-hub/my-tracker-overview": <TrackerHubPage />,
     "/tracker/tracker-hub/team-tracker-overview": <TeamTrackerOverviewPage />,
     "/tracker/tracker-hub/open-items": <OpenItemsPage />,
     "/tracker/tracker-hub/at-risk-items": <AtRiskItemsPage />,
@@ -835,6 +835,7 @@ function AppRoutes() {
         <Route path="/tasks/my-work/assigned-tasks/:taskId" element={<RouteGuard><TaskDetailsPage /></RouteGuard>} />
         <Route path="/tasks/task-board/kanban-view" element={<RouteGuard><KanbanBoardPage /></RouteGuard>} />
         <Route path="/tracker/tracker-hub" element={<RouteGuard><TrackerHubPage /></RouteGuard>} />
+        <Route path="/tracker/active-tracker/:trackerSlug/records/:recordId" element={<RouteGuard><ActiveTrackerPage /></RouteGuard>} />
         <Route path="/tracker/active-tracker/:trackerSlug" element={<RouteGuard><ActiveTrackerPage /></RouteGuard>} />
         <Route
           path="/analytics/execution-analytics/execution-overview"
