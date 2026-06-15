@@ -77,12 +77,12 @@ export const trackerDefinitions: TrackerDefinition[] = [
     id: 'project-health',
     slug: 'project-health-tracker',
     name: 'Project Health Tracker',
-    purpose: 'Track project health signals across DQ workstreams.',
+    purpose: 'Monitor project health signals, RAG status, overdue updates, blockers, and evidence across active DQ workstreams.',
     owner: 'DQ Operations',
     trackerType: 'Project Health Tracker',
     requiredFields: ['Title', 'Owner', 'Status', 'Due Date', 'RAG', 'Last Update'],
     optionalFields: ['Impact', 'Priority', 'Notes', 'Links', 'Attachments'],
-    defaultStatuses: ['In Progress', 'Blocked', 'On Hold', 'Completed'],
+    defaultStatuses: ['In Progress', 'Needs Update', 'Blocked', 'Awaiting Review', 'On Track', 'Completed'],
     ownershipModel: 'Functional ownership',
     updateFrequency: 'Weekly',
     governanceRules: 'All red items require review.',
@@ -181,13 +181,14 @@ type RecordSeed = {
   isBlocked?: boolean;
   missingOwner?: boolean;
   notUpdatedRecently?: boolean;
+  description?: string;
 };
 
 function record(seed: RecordSeed): TrackerRecord {
   const owner = seed.owner || 'Unassigned';
   return {
     ...seed,
-    description: `${seed.title} requires governed tracking, owner confirmation, current status, and supporting evidence before the next review cycle.`,
+    description: seed.description || `${seed.title} requires governed tracking, owner confirmation, current status, and supporting evidence before the next review cycle.`,
     evidenceCount: seed.rag === 'Green' ? 2 : seed.rag === 'Amber' ? 1 : 0,
     commentCount: seed.status.includes('Review') || seed.isBlocked ? 3 : 1,
     isOverdue: Boolean(seed.isOverdue || seed.status === 'Overdue' || seed.dueDate === 'Today' && seed.rag === 'Red'),
@@ -233,11 +234,11 @@ export const trackerRecords: TrackerRecord[] = [
   record({ id: 'STI-1004', trackerId: 'strategic-initiatives', title: 'Automation initiative checkpoint', owner: 'Ali Raza', teamOrSquad: 'Automation', priority: 'Medium', status: 'In Progress', dueDate: '25 May', rag: 'Amber', lastUpdated: 'Today', nextAction: 'Add risk note' }),
   record({ id: 'STI-1005', trackerId: 'strategic-initiatives', title: 'Operating rhythm initiative closeout', owner: 'Sara Khan', teamOrSquad: 'Delivery Ops', priority: 'Low', status: 'Completed', dueDate: '18 May', rag: 'Green', lastUpdated: 'Today', nextAction: 'Publish closeout note' }),
 
-  record({ id: 'PH-1042', trackerId: 'project-health', title: 'Vendor risk workstream update', owner: 'Bilal Waqar', teamOrSquad: 'DQ Ops', priority: 'High', status: 'In Progress', dueDate: 'Today', rag: 'Amber', lastUpdated: '09:30 AM', nextAction: 'Add weekly update' }),
-  record({ id: 'PH-1087', trackerId: 'project-health', title: 'Service review readiness', owner: 'Sara Khan', teamOrSquad: 'Delivery Ops', priority: 'Medium', status: 'Needs Update', dueDate: '16 May', rag: 'Red', lastUpdated: 'Yesterday', nextAction: 'Upload evidence', isOverdue: true }),
-  record({ id: 'PH-1131', trackerId: 'project-health', title: 'Backlog clean-up progress', owner: 'Ali Raza', teamOrSquad: 'Squad Alpha', priority: 'High', status: 'Blocked', dueDate: '18 May', rag: 'Red', lastUpdated: '2 days ago', nextAction: 'Resolve dependency', isBlocked: true, notUpdatedRecently: true }),
-  record({ id: 'PH-1203', trackerId: 'project-health', title: 'Governance review pack', owner: 'Hina Adam', teamOrSquad: 'Governance', priority: 'Medium', status: 'Awaiting Review', dueDate: '19 May', rag: 'Amber', lastUpdated: 'Today', nextAction: 'Review comments' }),
-  record({ id: 'RI-1221', trackerId: 'project-health', title: 'Infrastructure issue log', owner: 'Musa Kibet', teamOrSquad: 'Platform Team', priority: 'Low', status: 'On Track', dueDate: '22 May', rag: 'Green', lastUpdated: 'Today', nextAction: 'Confirm closure' }),
+  record({ id: 'PH-1042', trackerId: 'project-health', title: 'Vendor risk workstream update', owner: 'Bilal Waqar', teamOrSquad: 'DQ Ops', priority: 'High', status: 'In Progress', dueDate: 'Today', rag: 'Amber', lastUpdated: '09:30 AM', nextAction: 'Add weekly update', description: 'Weekly update required for vendor risk workstream status.' }),
+  record({ id: 'PH-1087', trackerId: 'project-health', title: 'Service review readiness', owner: 'Sara Khan', teamOrSquad: 'Delivery Ops', priority: 'Medium', status: 'Needs Update', dueDate: '16 May', rag: 'Red', lastUpdated: 'Yesterday', nextAction: 'Upload evidence', description: 'Service review pack requires supporting evidence before review.', isOverdue: true }),
+  record({ id: 'PH-1131', trackerId: 'project-health', title: 'Backlog clean-up progress', owner: 'Ali Raza', teamOrSquad: 'Squad Alpha', priority: 'High', status: 'Blocked', dueDate: '18 May', rag: 'Red', lastUpdated: '2 days ago', nextAction: 'Resolve dependency', description: 'Backlog clean-up is blocked by dependency confirmation.', isOverdue: true, isBlocked: true, notUpdatedRecently: true }),
+  record({ id: 'PH-1203', trackerId: 'project-health', title: 'Governance review pack', owner: 'Hina Adam', teamOrSquad: 'Governance', priority: 'Medium', status: 'Awaiting Review', dueDate: '19 May', rag: 'Amber', lastUpdated: 'Today', nextAction: 'Review comments', description: 'Governance pack awaiting review comments before submission.' }),
+  record({ id: 'RI-1221', trackerId: 'project-health', title: 'Infrastructure issue log', owner: 'Musa Khan', teamOrSquad: 'Platform Team', priority: 'Low', status: 'On Track', dueDate: '22 May', rag: 'Green', lastUpdated: 'Today', nextAction: 'Confirm closure', description: 'Infrastructure issue log is ready for closure confirmation.' }),
 
   record({ id: 'GOV-1001', trackerId: 'governance-follow-up', title: 'Board action closure evidence', owner: 'Bilal Waqar', teamOrSquad: 'Governance Forum', priority: 'High', status: 'In Progress', dueDate: 'Today', rag: 'Amber', lastUpdated: '08:45 AM', nextAction: 'Attach evidence' }),
   record({ id: 'GOV-1002', trackerId: 'governance-follow-up', title: 'Policy exception follow-up', owner: 'Hina Adam', teamOrSquad: 'Policy Review', priority: 'Critical', status: 'Open', dueDate: '16 May', rag: 'Red', lastUpdated: '3 days ago', nextAction: 'Escalate exception', isOverdue: true, notUpdatedRecently: true }),
@@ -264,12 +265,33 @@ export const trackerRecords: TrackerRecord[] = [
   record({ id: 'RSK-1005', trackerId: 'risk-issue', title: 'Open risk without mitigation', owner: '', teamOrSquad: 'Risk Office', priority: 'Critical', status: 'Open', dueDate: '16 May', rag: 'Red', lastUpdated: '3 days ago', nextAction: 'Assign risk owner', missingOwner: true, isOverdue: true, notUpdatedRecently: true }),
 ];
 
+const customTrackerStorageKey = 'dws-tracker-hub-custom-trackers';
+
+function getCustomTrackers(): TrackerDefinition[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = window.localStorage.getItem(customTrackerStorageKey);
+    return raw ? JSON.parse(raw) as TrackerDefinition[] : [];
+  } catch {
+    return [];
+  }
+}
+
+function getAllTrackerDefinitions() {
+  const customTrackers = getCustomTrackers();
+  return [...customTrackers, ...trackerDefinitions.filter((tracker) => !customTrackers.some((customTracker) => customTracker.slug === tracker.slug))];
+}
+
+export function getAllTrackers() {
+  return getAllTrackerDefinitions();
+}
+
 export function getTrackerBySlug(slug?: string) {
-  return trackerDefinitions.find((tracker) => tracker.slug === slug);
+  return getAllTrackerDefinitions().find((tracker) => tracker.slug === slug);
 }
 
 export function getTrackerByName(name: string) {
-  return trackerDefinitions.find((tracker) => tracker.name === name);
+  return getAllTrackerDefinitions().find((tracker) => tracker.name === name);
 }
 
 export function getRecordsForTracker(trackerId: string) {
