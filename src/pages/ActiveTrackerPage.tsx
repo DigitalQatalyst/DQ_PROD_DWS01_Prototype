@@ -674,8 +674,9 @@ function RecordDetailRoute({
   };
 
   return (
-    <div className="flex h-[calc(100vh-128px)] min-h-[620px] w-full flex-col overflow-hidden bg-white">
-      <header className="relative z-20 shrink-0 border-b border-border-default bg-white px-6 py-5">
+    <div className="flex h-full min-h-0 w-full min-w-0 flex-col overflow-hidden bg-surface p-4">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden border border-border-default bg-white">
+      <header className="relative z-20 shrink-0 border-b border-border-default bg-white px-5 py-4">
         <nav className="mb-2 flex flex-wrap items-center gap-2 text-xs font-semibold text-secondary" aria-label="Breadcrumb">
           <span>Tracker</span>
           <span>/</span>
@@ -685,8 +686,8 @@ function RecordDetailRoute({
           <span>/</span>
           <span className="font-mono text-xs font-bold">{draft.id}</span>
         </nav>
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-          <div className="min-w-0">
+        <div className="flex min-w-0 flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+          <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-[24px] font-bold leading-tight text-primary">{draft.title}</h1>
               <StatusBadge status={draft.status} />
@@ -695,7 +696,7 @@ function RecordDetailRoute({
             </div>
             <p className="mt-1 max-w-4xl truncate text-sm leading-6 text-text-secondary">{tracker.name} · {draft.description}</p>
           </div>
-          <div className="relative flex shrink-0 flex-wrap items-center justify-start gap-2 xl:justify-end">
+          <div className="relative flex max-w-full flex-wrap items-center justify-start gap-2 xl:justify-end">
             <DqButton variant="outline" onClick={() => guardedNavigate(onBack)} className="h-10 px-3"><ArrowLeft size={16} strokeWidth={1.5} /> Back to Tracker</DqButton>
             <DqButton variant="orange" onClick={saveDraft} disabled={!dirty} className="h-10 px-3 disabled:cursor-not-allowed disabled:opacity-50"><Check size={16} strokeWidth={1.5} /> Save Changes</DqButton>
             <DqButton variant="navy" onClick={markComplete} className="h-10 px-3"><CheckCircle2 size={16} strokeWidth={1.5} /> Mark Complete</DqButton>
@@ -714,7 +715,7 @@ function RecordDetailRoute({
         </div>
       </header>
 
-      <div className="grid min-h-0 flex-1 grid-cols-[264px_minmax(0,1fr)_276px] gap-4 overflow-hidden bg-surface p-4">
+      <div className="grid min-h-0 flex-1 grid-cols-[280px_minmax(0,1fr)_minmax(280px,320px)] gap-4 overflow-hidden border-b border-border-default bg-surface">
         <RecordListPanel
           records={records}
           selectedRecordId={draft.id}
@@ -725,7 +726,7 @@ function RecordDetailRoute({
         />
         <main className="flex min-h-0 min-w-0 flex-col overflow-hidden bg-white">
           <RecordDetailTabs activeTab={activeTab} onTab={setActiveTab} />
-          <div className="min-h-0 flex-1 space-y-0 overflow-y-auto bg-white px-7 py-6">
+          <div className="min-h-0 flex-1 space-y-0 overflow-y-auto bg-white px-6 py-5">
             {activeTab === 'Overview' && (
               <>
                 <RecordDetailsForm tracker={tracker} draft={draft} latestUpdate={latestUpdate} onUpdate={updateDraft} onLatestUpdate={updateLatest} />
@@ -740,6 +741,12 @@ function RecordDetailRoute({
           </div>
         </main>
         <RecordMetadataRail tracker={tracker} record={draft} dirty={dirty} />
+      </div>
+      <footer className="flex h-11 shrink-0 items-center justify-between border-t border-border-subtle bg-white px-6 text-xs text-text-muted">
+        <span>DWS.01</span>
+        <span>Tracker Record Maintenance</span>
+        <span>{new Date().getFullYear()}</span>
+      </footer>
       </div>
     </div>
   );
@@ -1087,9 +1094,9 @@ function CompactStateRow({ label, value, color }: { label: string; value: number
 
 function MetaRow({ label, value, mono, tone = '' }: { label: string; value: string; mono?: boolean; tone?: string }) {
   return (
-    <div className="flex items-start justify-between gap-3">
-      <span className="text-text-muted">{label}</span>
-      <span className={`text-right ${mono ? 'font-mono text-xs' : ''} ${tone}`}>{value}</span>
+    <div className="flex min-w-0 items-start justify-between gap-4">
+      <span className="shrink-0 text-text-muted">{label}</span>
+      <span className={`min-w-0 text-right ${mono ? 'font-mono text-xs' : ''} ${tone}`}>{value}</span>
     </div>
   );
 }
