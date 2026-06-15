@@ -182,39 +182,95 @@ type RecordSeed = {
   missingOwner?: boolean;
   notUpdatedRecently?: boolean;
   description?: string;
+  comments?: TrackerRecord['comments'];
+  evidence?: TrackerRecord['evidence'];
+  activity?: TrackerRecord['activity'];
+  history?: NonNullable<TrackerRecord['history']>;
+  linkedEntities?: TrackerRecord['linkedEntities'];
+  createdBy?: string;
+  createdAt?: string;
 };
 
 function record(seed: RecordSeed): TrackerRecord {
   const owner = seed.owner || 'Unassigned';
+  const comments = seed.comments || [
+    { id: `${seed.id}-comment-1`, author: owner, body: `${seed.nextAction} is the next action for this tracker record.`, timestamp: seed.lastUpdated },
+    { id: `${seed.id}-comment-2`, author: 'DQ Operations', body: 'Status review logged in the tracker workspace.', timestamp: 'Yesterday' },
+  ];
+  const evidence = seed.evidence || [
+    { id: `${seed.id}-evidence-1`, title: `${seed.id} evidence note`, type: seed.rag === 'Green' ? 'Document' : 'Link', addedBy: owner, addedAt: seed.lastUpdated },
+  ];
+  const activity = seed.activity || [
+    { id: `${seed.id}-activity-1`, actor: owner, action: `Updated status to ${seed.status}`, timestamp: seed.lastUpdated },
+    { id: `${seed.id}-activity-2`, actor: 'Tracker Hub', action: `RAG set to ${seed.rag}`, timestamp: 'Yesterday' },
+  ];
   return {
     ...seed,
     description: seed.description || `${seed.title} requires governed tracking, owner confirmation, current status, and supporting evidence before the next review cycle.`,
-    evidenceCount: seed.rag === 'Green' ? 2 : seed.rag === 'Amber' ? 1 : 0,
-    commentCount: seed.status.includes('Review') || seed.isBlocked ? 3 : 1,
+    evidenceCount: evidence.length,
+    commentCount: comments.length,
     isOverdue: Boolean(seed.isOverdue || seed.status === 'Overdue' || seed.dueDate === 'Today' && seed.rag === 'Red'),
     isBlocked: Boolean(seed.isBlocked || seed.status === 'Blocked'),
     missingOwner: Boolean(seed.missingOwner || !seed.owner),
     notUpdatedRecently: Boolean(seed.notUpdatedRecently || seed.lastUpdated.includes('days')),
-    comments: [
-      { id: `${seed.id}-comment-1`, author: owner, body: `${seed.nextAction} is the next action for this tracker record.`, timestamp: seed.lastUpdated },
-      { id: `${seed.id}-comment-2`, author: 'DQ Operations', body: 'Status review logged in the tracker workspace.', timestamp: 'Yesterday' },
+    createdBy: seed.createdBy || 'Tracker Hub',
+    createdAt: seed.createdAt || '15 May',
+    linkedEntities: seed.linkedEntities || [
+      { id: `${seed.id}-entity-1`, type: 'Squad', label: seed.teamOrSquad || 'Unassigned squad' },
     ],
-    evidence: [
-      { id: `${seed.id}-evidence-1`, title: `${seed.id} evidence note`, type: seed.rag === 'Green' ? 'Document' : 'Link', addedBy: owner, addedAt: seed.lastUpdated },
-    ],
-    activity: [
-      { id: `${seed.id}-activity-1`, actor: owner, action: `Updated status to ${seed.status}`, timestamp: seed.lastUpdated },
-      { id: `${seed.id}-activity-2`, actor: 'Tracker Hub', action: `RAG set to ${seed.rag}`, timestamp: 'Yesterday' },
-    ],
+    comments,
+    evidence,
+    activity,
+    history: seed.history || activity.map((entry) => ({ ...entry, id: entry.id.replace('activity', 'history') })),
   };
 }
 
 export const trackerRecords: TrackerRecord[] = [
-  record({ id: 'WLD-1001', trackerId: 'workload-distribution', title: 'Squad Alpha capacity rebalance', owner: 'Maya Khan', teamOrSquad: 'Squad Alpha', priority: 'High', status: 'Overloaded', dueDate: 'Today', rag: 'Amber', lastUpdated: 'Today', nextAction: 'Confirm capacity move', isOverdue: true }),
+  record({
+    id: 'WLD-1001',
+    trackerId: 'workload-distribution',
+    title: 'Squad Alpha capacity rebalance',
+    owner: 'Maya Khan',
+    teamOrSquad: 'Squad Alpha',
+    priority: 'High',
+    status: 'Overloaded',
+    dueDate: '15 Jun 2025',
+    rag: 'Amber',
+    lastUpdated: '15 Jun 2025, 3:08 PM',
+    nextAction: 'Confirm capacity plan with owner and attach workload reallocation evidence.',
+    isOverdue: true,
+    description: 'Squad Alpha capacity rebalance requires governed tracking, owner confirmation, current status, and supporting evidence before the next review cycle.',
+    createdBy: 'PMO',
+    createdAt: '13 Jun 2025',
+    linkedEntities: [
+      { id: 'WLD-1001-entity-1', type: 'Squad', label: 'Squad Alpha' },
+      { id: 'WLD-1001-entity-2', type: 'Request', label: 'Platform Operations' },
+    ],
+    comments: [
+      { id: 'WLD-1001-comment-1', author: 'Maya Khan', body: 'Owner confirmed current capacity constraints. Awaiting rebalancing plan.', timestamp: '15 Jun 2025, 11:42 AM' },
+      { id: 'WLD-1001-comment-2', author: 'Ahmed Rashid', body: 'Data shows backlog increase in last sprint. Escalation flagged.', timestamp: '14 Jun 2025, 4:15 PM' },
+    ],
+    evidence: [
+      { id: 'WLD-1001-evidence-1', title: 'Capacity Analysis Report - May 2025.pdf', type: 'Document', url: '#capacity-analysis-report', addedBy: 'Maya Khan', addedAt: '15 Jun 2025, 2:45 PM' },
+      { id: 'WLD-1001-evidence-2', title: 'Squad Alpha Capacity Plan (Confluence)', type: 'Link', url: '#squad-alpha-capacity-plan', addedBy: 'Maya Khan', addedAt: '14 Jun 2025, 10:20 AM' },
+    ],
+    activity: [
+      { id: 'WLD-1001-activity-1', actor: 'Maya Khan', action: 'Updated status to Overloaded.', timestamp: '15 Jun 2025, 3:08 PM' },
+      { id: 'WLD-1001-activity-2', actor: 'Ahmed Rashid', action: 'Added escalation note', timestamp: '14 Jun 2025, 4:15 PM' },
+      { id: 'WLD-1001-activity-3', actor: 'System', action: 'Flagged overdue due date', timestamp: '15 Jun 2025, 8:00 AM' },
+      { id: 'WLD-1001-activity-4', actor: 'Maya Khan', action: 'Uploaded evidence', timestamp: '15 Jun 2025, 2:45 PM' },
+    ],
+    history: [
+      { id: 'WLD-1001-history-1', actor: 'Maya Khan', action: 'Changed status from In Progress to Overloaded.', field: 'Status', previousValue: 'In Progress', newValue: 'Overloaded', changedBy: 'Maya Khan', timestamp: '15 Jun 2025, 3:08 PM' },
+      { id: 'WLD-1001-history-2', actor: 'Maya Khan', action: 'Changed RAG from Green to Amber.', field: 'RAG', previousValue: 'Green', newValue: 'Amber', changedBy: 'Maya Khan', timestamp: '15 Jun 2025, 3:08 PM' },
+      { id: 'WLD-1001-history-3', actor: 'System', action: 'Overdue flag set.', field: 'Overdue', previousValue: '0', newValue: '1', changedBy: 'System', timestamp: '15 Jun 2025, 8:00 AM' },
+    ],
+  }),
   record({ id: 'WLD-1002', trackerId: 'workload-distribution', title: 'Platform team workload review', owner: 'Rohan Patel', teamOrSquad: 'Platform Team', priority: 'Medium', status: 'In Progress', dueDate: '20 May', rag: 'Green', lastUpdated: 'Today', nextAction: 'Update allocation notes' }),
   record({ id: 'WLD-1003', trackerId: 'workload-distribution', title: 'Governance pod overload check', owner: 'Hina Adam', teamOrSquad: 'Governance', priority: 'High', status: 'Overloaded', dueDate: '18 May', rag: 'Amber', lastUpdated: 'Yesterday', nextAction: 'Escalate resourcing' }),
   record({ id: 'WLD-1004', trackerId: 'workload-distribution', title: 'Delivery Ops assignment cleanup', owner: 'Sara Khan', teamOrSquad: 'Delivery Ops', priority: 'Low', status: 'Balanced', dueDate: '24 May', rag: 'Green', lastUpdated: 'Today', nextAction: 'Close review' }),
   record({ id: 'WLD-1005', trackerId: 'workload-distribution', title: 'Unassigned workload intake', owner: '', teamOrSquad: 'PMO', priority: 'Medium', status: 'Open', dueDate: '22 May', rag: 'Amber', lastUpdated: '3 days ago', nextAction: 'Assign owner', missingOwner: true, notUpdatedRecently: true }),
+  record({ id: 'WLD-1006', trackerId: 'workload-distribution', title: 'Service Quality escalation review', owner: 'Jon Bell', teamOrSquad: 'Service Quality', priority: 'Medium', status: 'Resolved', dueDate: '25 May', rag: 'Green', lastUpdated: '5 days ago', nextAction: 'Confirm closure evidence' }),
 
   record({ id: 'SQB-1001', trackerId: 'squad-backlog', title: 'Ageing API backlog triage', owner: 'James Tan', teamOrSquad: 'Squad Beta', priority: 'High', status: 'Blocked', dueDate: '17 May', rag: 'Red', lastUpdated: '2 days ago', nextAction: 'Resolve dependency', isBlocked: true, isOverdue: true }),
   record({ id: 'SQB-1002', trackerId: 'squad-backlog', title: 'Ready queue grooming', owner: 'Maya Khan', teamOrSquad: 'Squad Alpha', priority: 'Medium', status: 'Ready', dueDate: '21 May', rag: 'Green', lastUpdated: 'Today', nextAction: 'Confirm sprint slot' }),

@@ -40,6 +40,14 @@ export type TrackerRecord = {
   isBlocked: boolean;
   missingOwner: boolean;
   notUpdatedRecently: boolean;
+  archived?: boolean;
+  createdBy?: string;
+  createdAt?: string;
+  linkedEntities?: {
+    id: string;
+    type: 'Task' | 'Request' | 'Squad' | 'Decision' | 'Evidence Pack' | 'Working Session';
+    label: string;
+  }[];
   comments: {
     id: string;
     author: string;
@@ -58,6 +66,16 @@ export type TrackerRecord = {
     id: string;
     actor: string;
     action: string;
+    timestamp: string;
+  }[];
+  history?: {
+    id: string;
+    actor: string;
+    action: string;
+    field?: string;
+    previousValue?: string;
+    newValue?: string;
+    changedBy?: string;
     timestamp: string;
   }[];
 };

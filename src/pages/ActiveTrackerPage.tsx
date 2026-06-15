@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import type { ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   AlertCircle,
@@ -13,6 +13,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Clock3,
+  Copy,
   Database,
   Download,
   Filter,
@@ -24,6 +25,7 @@ import {
   Paperclip,
   Plus,
   RefreshCw,
+  RotateCcw,
   Search,
   Settings,
   Upload,
@@ -31,7 +33,7 @@ import {
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { DqBadge, PriorityBadge, StatusBadge } from '../components/DqBadge';
+import { DqBadge, StatusBadge } from '../components/DqBadge';
 import { DqButton, DqIconButton } from '../components/DqButton';
 import {
   getAllTrackers,
@@ -43,6 +45,8 @@ import type { TrackerDefinition, TrackerHealth, TrackerPriority, TrackerRecord }
 const currentUser = 'Bilal Waqar';
 const viewStorageKey = 'dws-active-tracker-saved-view';
 const settingsStorageKey = 'dws-active-tracker-settings';
+const recordsStorageKeyPrefix = 'dws-active-tracker-records';
+const recordsStorageVersion = 'tracker-maintenance-v1';
 const closedStatuses = ['closed', 'completed', 'done', 'resolved', 'implemented', 'balanced'];
 const tabs = ['Records', 'My Items', 'Overdue', 'At Risk', 'Recently Updated', 'About Tracker'] as const;
 
@@ -164,7 +168,7 @@ export function ActiveTrackerPage() {
   const savedFilters = normalizeRecordFilters(savedView?.filters);
   const [trackerSearch, setTrackerSearch] = useState('');
   const [recordSearch, setRecordSearch] = useState('');
-  const [records, setRecords] = useState<TrackerRecord[]>(() => tracker ? getRecordsForTracker(tracker.id) : []);
+  const [records, setRecords] = useState<TrackerRecord[]>(() => tracker ? loadTrackerRecords(tracker.id) : []);
   const [activeTab, setActiveTab] = useState<ActiveTab>(savedView?.activeTab || 'Records');
   const [filters, setFilters] = useState<FilterState>(savedFilters);
   const [metricFilter, setMetricFilter] = useState<MetricFilter>(savedView?.metricFilter || null);
@@ -181,7 +185,7 @@ export function ActiveTrackerPage() {
 
   useEffect(() => {
     if (!tracker) return;
-    setRecords(getRecordsForTracker(tracker.id));
+    setRecords(loadTrackerRecords(tracker.id));
     setPage(1);
     if (savedView && savedView.trackerSlug !== tracker.slug) {
       setActiveTab(savedView.activeTab || 'Records');
@@ -272,14 +276,17 @@ export function ActiveTrackerPage() {
       comments: [],
       evidence: [],
       activity: [{ id: `activity-${Date.now()}`, actor: currentUser, action: 'Created tracker record', timestamp: 'Today' }],
+      history: [{ id: `history-${Date.now()}`, actor: currentUser, action: 'Created tracker record', timestamp: 'Today' }],
+      linkedEntities: [{ id: `entity-${Date.now()}`, type: 'Squad', label: draft.teamOrSquad || 'Unassigned squad' }],
+      createdBy: currentUser,
+      createdAt: 'Today',
     };
-    setRecords((current) => [nextRecord, ...current]);
+    setRecords((current) => persistTrackerRecords(tracker.id, [nextRecord, ...current]));
     setAddOpen(false);
     toast.success('Tracker record added');
   };
   const updateRecord = (record: TrackerRecord) => {
-    setRecords((current) => current.map((item) => item.id === record.id ? record : item));
-    toast.success('Tracker record updated');
+    setRecords((current) => persistTrackerRecords(tracker.id, current.map((item) => item.id === record.id ? record : item)));
   };
   const updateRecordField = (record: TrackerRecord, patch: Partial<TrackerRecord>) => {
     const updated = {
@@ -289,9 +296,36 @@ export function ActiveTrackerPage() {
       isBlocked: patch.status !== undefined ? patch.status.toLowerCase().includes('blocked') : record.isBlocked,
     };
     updateRecord(updated);
+    toast.success('Tracker record updated');
   };
   const openRecord = (record: TrackerRecord) => {
     navigate(`/tracker/active-tracker/${tracker.slug}/records/${record.id}`);
+  };
+  const duplicateRecord = (record: TrackerRecord) => {
+    const duplicateId = nextRecordId(tracker, records);
+    const timestamp = Date.now();
+    const duplicate: TrackerRecord = {
+      ...record,
+      id: duplicateId,
+      title: `${record.title} copy`,
+      status: tracker.defaultStatuses[0] || 'Open',
+      rag: 'Amber',
+      lastUpdated: 'Today',
+      isOverdue: false,
+      isBlocked: false,
+      archived: false,
+      createdBy: currentUser,
+      createdAt: 'Today',
+      comments: [],
+      evidence: [],
+      activity: [{ id: `activity-${timestamp}`, actor: currentUser, action: `Duplicated from ${record.id}`, timestamp: 'Now' }],
+      history: [{ id: `history-${timestamp}`, actor: currentUser, action: `Record duplicated from ${record.id}`, timestamp: 'Now' }],
+      commentCount: 0,
+      evidenceCount: 0,
+    };
+    setRecords((current) => persistTrackerRecords(tracker.id, [duplicate, ...current]));
+    toast.success('Record duplicated');
+    navigate(`/tracker/active-tracker/${tracker.slug}/records/${duplicate.id}`);
   };
   const applySettings = (nextSettings: SettingsState) => {
     setSettings(nextSettings);
@@ -324,6 +358,7 @@ export function ActiveTrackerPage() {
         search={recordSearch}
         onSearch={setRecordSearch}
         onSave={updateRecord}
+        onDuplicate={duplicateRecord}
         onBack={() => navigate(`/tracker/active-tracker/${tracker.slug}`)}
         onHub={() => navigate('/tracker/tracker-hub')}
         onSelect={(id) => navigate(`/tracker/active-tracker/${tracker.slug}/records/${id}`)}
@@ -430,6 +465,7 @@ function RecordDetailRoute({
   search,
   onSearch,
   onSave,
+  onDuplicate,
   onBack,
   onHub,
   onSelect,
@@ -441,6 +477,7 @@ function RecordDetailRoute({
   search: string;
   onSearch: (value: string) => void;
   onSave: (record: TrackerRecord) => void;
+  onDuplicate: (record: TrackerRecord) => void;
   onBack: () => void;
   onHub: () => void;
   onSelect: (recordId: string) => void;
@@ -450,9 +487,14 @@ function RecordDetailRoute({
   const [comment, setComment] = useState('');
   const [linkTitle, setLinkTitle] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
+  const [linkType, setLinkType] = useState<TrackerRecord['evidence'][number]['type']>('Document');
   const [showLinkFields, setShowLinkFields] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const commentsRef = useRef<HTMLElement | null>(null);
+  const commentInputRef = useRef<HTMLTextAreaElement | null>(null);
+  const evidenceRef = useRef<HTMLElement | null>(null);
+  const evidenceTitleRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     setDraft(record);
@@ -460,6 +502,7 @@ function RecordDetailRoute({
     setComment('');
     setLinkTitle('');
     setLinkUrl('');
+    setLinkType('Document');
     setShowLinkFields(false);
     setMoreOpen(false);
     setActiveTab('Overview');
@@ -469,11 +512,12 @@ function RecordDetailRoute({
     return <RecordNotFound tracker={tracker} recordId={recordId} onBack={onBack} onHub={onHub} />;
   }
 
+  const confirmDiscard = () => {
+    if (!dirty) return true;
+    return window.confirm('You have unsaved changes. Leave without saving?');
+  };
   const guardedNavigate = (navigate: () => void) => {
-    if (dirty) {
-      toast.warning('Save changes before navigating away from this record');
-      return;
-    }
+    if (!confirmDiscard()) return;
     navigate();
   };
   const updateDraft = (patch: Partial<TrackerRecord>) => {
@@ -486,26 +530,40 @@ function RecordDetailRoute({
     setDirty(true);
   };
   const saveDraft = () => {
+    const historyEntry = {
+      id: `history-${Date.now()}`,
+      actor: currentUser,
+      action: 'Saved record changes',
+      field: 'Record',
+      previousValue: 'Unsaved draft',
+      newValue: 'Saved',
+      changedBy: currentUser,
+      timestamp: 'Now',
+    };
     const updated = {
       ...draft,
-      lastUpdated: draft.lastUpdated || 'Today',
+      lastUpdated: 'Today',
       commentCount: draft.comments.length,
       evidenceCount: draft.evidence.length,
+      history: [historyEntry, ...(draft.history || [])],
     };
     onSave(updated);
     setDraft(updated);
     setDirty(false);
+    toast.success('Tracker record updated');
   };
   const markComplete = () => {
-    const completedStatus = tracker.defaultStatuses.find((status) => closedStatuses.includes(status.toLowerCase())) || 'Completed';
+    const timestamp = Date.now();
     const updated = {
       ...draft,
-      status: completedStatus,
+      status: 'Completed',
       rag: 'Green' as TrackerHealth,
       isOverdue: false,
       isBlocked: false,
+      archived: false,
       lastUpdated: 'Today',
-      activity: [{ id: `activity-${Date.now()}`, actor: currentUser, action: 'Marked record complete', timestamp: 'Now' }, ...draft.activity],
+      activity: [{ id: `activity-${timestamp}`, actor: currentUser, action: 'Marked record complete', timestamp: 'Now' }, ...draft.activity],
+      history: [{ id: `history-${timestamp}`, actor: currentUser, action: 'Marked record complete', timestamp: 'Now' }, ...(draft.history || [])],
     };
     setDraft(updated);
     onSave(updated);
@@ -513,40 +571,101 @@ function RecordDetailRoute({
     toast.success('Tracker record marked complete');
   };
   const openNote = () => {
-    setActiveTab('Comments');
-    toast.message('Add a note in the comments panel');
+    setActiveTab('Overview');
+    window.requestAnimationFrame(() => {
+      commentsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      commentInputRef.current?.focus();
+    });
   };
   const openEvidence = () => {
-    setActiveTab('Evidence');
+    setActiveTab('Overview');
+    setLinkType('Document');
     setShowLinkFields(true);
-    toast.message('Evidence input opened');
+    window.requestAnimationFrame(() => {
+      evidenceRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      evidenceTitleRef.current?.focus();
+    });
   };
   const postComment = () => {
     if (!comment.trim()) return;
+    const timestamp = Date.now();
     updateDraft({
-      comments: [{ id: `comment-${Date.now()}`, author: currentUser, body: comment.trim(), timestamp: 'Now' }, ...draft.comments],
-      activity: [{ id: `activity-${Date.now()}-note`, actor: currentUser, action: 'Added a note', timestamp: 'Now' }, ...draft.activity],
+      comments: [{ id: `comment-${timestamp}`, author: currentUser, body: comment.trim(), timestamp: 'Now' }, ...draft.comments],
+      activity: [{ id: `activity-${timestamp}-note`, actor: currentUser, action: 'Added a note', timestamp: 'Now' }, ...draft.activity],
+      history: [{ id: `history-${timestamp}-note`, actor: currentUser, action: 'Added note', timestamp: 'Now' }, ...(draft.history || [])],
     });
     setComment('');
     toast.success('Note added');
   };
   const addLink = () => {
     if (!linkTitle.trim()) return;
+    const timestamp = Date.now();
     updateDraft({
-      evidence: [{ id: `evidence-${Date.now()}`, title: linkTitle.trim(), type: 'Link', url: linkUrl.trim(), addedBy: currentUser, addedAt: 'Now' }, ...draft.evidence],
-      activity: [{ id: `activity-${Date.now()}-link`, actor: currentUser, action: 'Added evidence link', timestamp: 'Now' }, ...draft.activity],
+      evidence: [{ id: `evidence-${timestamp}`, title: linkTitle.trim(), type: linkType, url: linkUrl.trim(), addedBy: currentUser, addedAt: 'Now' }, ...draft.evidence],
+      activity: [{ id: `activity-${timestamp}-link`, actor: currentUser, action: 'Added evidence', timestamp: 'Now' }, ...draft.activity],
+      history: [{ id: `history-${timestamp}-link`, actor: currentUser, action: 'Added evidence', field: 'Evidence', previousValue: '-', newValue: linkTitle.trim(), changedBy: currentUser, timestamp: 'Now' }, ...(draft.history || [])],
     });
     setLinkTitle('');
     setLinkUrl('');
+    setLinkType('Document');
     setShowLinkFields(false);
-    toast.success('Evidence link added');
+    toast.success('Evidence added');
   };
   const uploadEvidence = () => {
+    const timestamp = Date.now();
     updateDraft({
-      evidence: [{ id: `evidence-${Date.now()}`, title: 'Mock uploaded evidence', type: 'File', addedBy: currentUser, addedAt: 'Now' }, ...draft.evidence],
-      activity: [{ id: `activity-${Date.now()}-upload`, actor: currentUser, action: 'Uploaded evidence', timestamp: 'Now' }, ...draft.activity],
+      evidence: [{ id: `evidence-${timestamp}`, title: 'Uploaded evidence placeholder', type: 'File', addedBy: currentUser, addedAt: 'Now' }, ...draft.evidence],
+      activity: [{ id: `activity-${timestamp}-upload`, actor: currentUser, action: 'Uploaded evidence', timestamp: 'Now' }, ...draft.activity],
+      history: [{ id: `history-${timestamp}-upload`, actor: currentUser, action: 'Uploaded evidence', timestamp: 'Now' }, ...(draft.history || [])],
     });
     toast.success('Evidence uploaded');
+  };
+  const removeEvidence = (evidenceId: string) => {
+    const evidenceItem = draft.evidence.find((entry) => entry.id === evidenceId);
+    const timestamp = Date.now();
+    updateDraft({
+      evidence: draft.evidence.filter((entry) => entry.id !== evidenceId),
+      activity: [{ id: `activity-${timestamp}-remove`, actor: currentUser, action: 'Removed evidence', timestamp: 'Now' }, ...draft.activity],
+      history: [{ id: `history-${timestamp}-remove`, actor: currentUser, action: 'Removed evidence', field: 'Evidence', previousValue: evidenceItem?.title || evidenceId, newValue: '-', changedBy: currentUser, timestamp: 'Now' }, ...(draft.history || [])],
+    });
+    toast.success('Evidence removed');
+  };
+  const openEvidenceLink = (url?: string) => {
+    if (!url) return;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+  const archiveRecord = () => {
+    const timestamp = Date.now();
+    const updated = {
+      ...draft,
+      status: 'Archived',
+      archived: true,
+      lastUpdated: 'Today',
+      activity: [{ id: `activity-${timestamp}`, actor: currentUser, action: 'Archived record', timestamp: 'Now' }, ...draft.activity],
+      history: [{ id: `history-${timestamp}`, actor: currentUser, action: 'Archived record', timestamp: 'Now' }, ...(draft.history || [])],
+    };
+    setDraft(updated);
+    onSave(updated);
+    setDirty(false);
+    setMoreOpen(false);
+    toast.success('Record archived');
+  };
+  const copyRecordLink = () => {
+    const href = window.location.href;
+    navigator.clipboard?.writeText(href);
+    setMoreOpen(false);
+    toast.success('Record link copied');
+  };
+  const resetUnsavedChanges = () => {
+    setDraft(record);
+    setDirty(false);
+    setMoreOpen(false);
+    toast.message('Unsaved changes reset');
+  };
+  const duplicateCurrentRecord = () => {
+    if (!confirmDiscard()) return;
+    setMoreOpen(false);
+    onDuplicate(draft);
   };
   const latestUpdate = draft.activity[0]?.action || '';
   const updateLatest = (value: string) => {
@@ -555,7 +674,7 @@ function RecordDetailRoute({
   };
 
   return (
-    <div className="w-full px-6 py-6 pb-12 lg:px-8">
+    <div className="w-full bg-surface px-5 py-5 pb-10 lg:px-6">
       <header className="mb-5">
         <nav className="mb-3 flex flex-wrap items-center gap-2 text-sm font-semibold text-secondary" aria-label="Breadcrumb">
           <span>Tracker</span>
@@ -572,50 +691,52 @@ function RecordDetailRoute({
               <h1 className="text-[32px] font-bold leading-tight text-primary">{draft.title}</h1>
               <StatusBadge status={draft.status} />
               <DqBadge label={draft.rag} tone={ragTone(draft.rag)} />
+              {dirty && <DqBadge label="Unsaved" tone="warning" dot={false} />}
             </div>
-            <p className="mt-2 max-w-4xl text-sm leading-6 text-primary">{tracker.name} · {draft.description}</p>
+            <p className="mt-2 max-w-4xl text-sm leading-6 text-text-secondary">{tracker.name} · {draft.description}</p>
           </div>
           <div className="relative flex shrink-0 flex-wrap items-center justify-start gap-2 xl:justify-end">
             <DqButton variant="outline" onClick={() => guardedNavigate(onBack)} className="h-11 px-4"><ArrowLeft size={16} strokeWidth={1.5} /> Back to Tracker</DqButton>
-            <DqButton variant="orange" onClick={saveDraft} className="h-11 px-4"><Check size={16} strokeWidth={1.5} /> Save Changes</DqButton>
-            <DqButton variant="navy" onClick={markComplete} className="h-11 px-4">Mark Complete</DqButton>
+            <DqButton variant="orange" onClick={saveDraft} disabled={!dirty} className="h-11 px-4 disabled:cursor-not-allowed disabled:opacity-50"><Check size={16} strokeWidth={1.5} /> Save Changes</DqButton>
+            <DqButton variant="navy" onClick={markComplete} className="h-11 px-4"><CheckCircle2 size={16} strokeWidth={1.5} /> Mark Complete</DqButton>
             <DqButton variant="outline" onClick={openNote} className="h-11 px-4"><MessageSquare size={16} strokeWidth={1.5} /> Add Note</DqButton>
             <DqButton variant="outline" onClick={openEvidence} className="h-11 px-4"><Paperclip size={16} strokeWidth={1.5} /> Add Evidence</DqButton>
             <DqIconButton label="More record actions" onClick={() => setMoreOpen((open) => !open)} className="h-11 w-11"><MoreHorizontal size={18} strokeWidth={1.5} /></DqIconButton>
             {moreOpen && (
-              <div className="absolute right-0 top-12 z-20 w-52 rounded-card border border-border-default bg-white p-2 text-sm font-semibold text-primary shadow-lg">
-                <button onClick={() => { navigator.clipboard?.writeText(draft.id); setMoreOpen(false); toast.success('Record ID copied'); }} className="w-full rounded-button px-3 py-2 text-left hover:bg-navy-50">Copy record ID</button>
-                <button onClick={() => { updateDraft({ isBlocked: true, status: tracker.defaultStatuses.find((status) => status.toLowerCase().includes('blocked')) || draft.status, rag: 'Red' }); setMoreOpen(false); }} className="w-full rounded-button px-3 py-2 text-left hover:bg-navy-50">Flag as blocked</button>
-                <button onClick={() => { setDraft(record); setDirty(false); setMoreOpen(false); toast.message('Draft reset'); }} className="w-full rounded-button px-3 py-2 text-left hover:bg-navy-50">Reset unsaved edits</button>
+              <div className="absolute right-0 top-12 z-20 w-56 rounded-card border border-border-default bg-white p-2 text-sm font-semibold text-primary shadow-lg">
+                <button onClick={duplicateCurrentRecord} className="flex w-full items-center gap-2 rounded-button px-3 py-2 text-left hover:bg-navy-50"><Copy size={15} /> Duplicate Record</button>
+                <button onClick={copyRecordLink} className="flex w-full items-center gap-2 rounded-button px-3 py-2 text-left hover:bg-navy-50"><LinkIcon size={15} /> Copy Record Link</button>
+                <button onClick={resetUnsavedChanges} className="flex w-full items-center gap-2 rounded-button px-3 py-2 text-left hover:bg-navy-50"><RotateCcw size={15} /> Reset Unsaved Changes</button>
+                <button onClick={archiveRecord} className="flex w-full items-center gap-2 rounded-button px-3 py-2 text-left text-danger hover:bg-danger-surface">Archive Record</button>
               </div>
             )}
           </div>
         </div>
       </header>
 
-      <div className="grid gap-5 xl:grid-cols-[300px_minmax(0,1fr)_280px]">
+      <div className="grid gap-5 xl:grid-cols-[264px_minmax(0,1fr)_276px]">
         <RecordListPanel
           records={records}
           selectedRecordId={draft.id}
           search={search}
           onSearch={onSearch}
+          totalRecords={tracker.slug === 'workload-distribution-tracker' ? 18 : tracker.activeRecords}
           onSelect={(id) => guardedNavigate(() => onSelect(id))}
         />
         <main className="min-w-0 rounded-card border border-border-default bg-white shadow-sm">
           <RecordDetailTabs activeTab={activeTab} onTab={setActiveTab} />
-          <div className="space-y-4 bg-surface p-5">
+          <div className="space-y-0 bg-white p-5">
             {activeTab === 'Overview' && (
               <>
                 <RecordDetailsForm tracker={tracker} draft={draft} latestUpdate={latestUpdate} onUpdate={updateDraft} onLatestUpdate={updateLatest} />
-                <CommentsPanel comments={draft.comments} comment={comment} onComment={setComment} onPost={postComment} />
-                <EvidencePanel evidence={draft.evidence} showLinkFields={showLinkFields} linkTitle={linkTitle} linkUrl={linkUrl} onShowLinkFields={() => setShowLinkFields(true)} onLinkTitle={setLinkTitle} onLinkUrl={setLinkUrl} onAddLink={addLink} onUpload={uploadEvidence} />
-                <ActivityTimeline activity={draft.activity} />
+                <CommentsPanel sectionRef={commentsRef} inputRef={commentInputRef} comments={draft.comments} comment={comment} onComment={setComment} onPost={postComment} />
+                <EvidencePanel sectionRef={evidenceRef} titleRef={evidenceTitleRef} evidence={draft.evidence} showLinkFields={showLinkFields} linkTitle={linkTitle} linkUrl={linkUrl} linkType={linkType} onShowLinkFields={(type) => { setLinkType(type); setShowLinkFields(true); }} onLinkTitle={setLinkTitle} onLinkUrl={setLinkUrl} onLinkType={setLinkType} onAddLink={addLink} onUpload={uploadEvidence} onRemove={removeEvidence} onOpen={openEvidenceLink} />
               </>
             )}
             {activeTab === 'Activity' && <ActivityTimeline activity={draft.activity} />}
-            {activeTab === 'Comments' && <CommentsPanel comments={draft.comments} comment={comment} onComment={setComment} onPost={postComment} />}
-            {activeTab === 'Evidence' && <EvidencePanel evidence={draft.evidence} showLinkFields={showLinkFields} linkTitle={linkTitle} linkUrl={linkUrl} onShowLinkFields={() => setShowLinkFields(true)} onLinkTitle={setLinkTitle} onLinkUrl={setLinkUrl} onAddLink={addLink} onUpload={uploadEvidence} />}
-            {activeTab === 'History' && <ActivityTimeline title="Change History" activity={draft.activity} />}
+            {activeTab === 'Comments' && <CommentsPanel sectionRef={commentsRef} inputRef={commentInputRef} comments={draft.comments} comment={comment} onComment={setComment} onPost={postComment} />}
+            {activeTab === 'Evidence' && <EvidencePanel sectionRef={evidenceRef} titleRef={evidenceTitleRef} evidence={draft.evidence} showLinkFields={showLinkFields} linkTitle={linkTitle} linkUrl={linkUrl} linkType={linkType} onShowLinkFields={(type) => { setLinkType(type); setShowLinkFields(true); }} onLinkTitle={setLinkTitle} onLinkUrl={setLinkUrl} onLinkType={setLinkType} onAddLink={addLink} onUpload={uploadEvidence} onRemove={removeEvidence} onOpen={openEvidenceLink} />}
+            {activeTab === 'History' && <HistoryPanel history={draft.history || []} />}
           </div>
         </main>
         <RecordMetadataRail tracker={tracker} record={draft} dirty={dirty} />
@@ -624,17 +745,22 @@ function RecordDetailRoute({
   );
 }
 
-function RecordListPanel({ records, selectedRecordId, search, onSearch, onSelect }: { records: TrackerRecord[]; selectedRecordId: string; search: string; onSearch: (value: string) => void; onSelect: (recordId: string) => void }) {
+function RecordListPanel({ records, selectedRecordId, search, onSearch, totalRecords, onSelect }: { records: TrackerRecord[]; selectedRecordId: string; search: string; onSearch: (value: string) => void; totalRecords: number; onSelect: (recordId: string) => void }) {
   const query = search.trim().toLowerCase();
   const visibleRecords = records.filter((record) => !query || `${record.id} ${record.title} ${record.owner} ${record.status} ${record.rag}`.toLowerCase().includes(query));
+  const selectedIndex = visibleRecords.findIndex((record) => record.id === selectedRecordId);
+  const previousRecord = selectedIndex > 0 ? visibleRecords[selectedIndex - 1] : null;
+  const nextRecord = selectedIndex >= 0 && selectedIndex < visibleRecords.length - 1 ? visibleRecords[selectedIndex + 1] : null;
+  const rangeStart = visibleRecords.length ? 1 : 0;
+  const rangeEnd = visibleRecords.length;
   return (
-    <aside className="rounded-card border border-border-default bg-white p-4 shadow-sm">
+    <aside className="flex max-h-[calc(100vh-172px)] flex-col rounded-card border border-border-default bg-white p-4 shadow-sm">
       <h2 className="dq-card-title">Tracker Records</h2>
       <div className="relative mt-3">
         <Search size={16} strokeWidth={1.5} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
         <input value={search} onChange={(event) => onSearch(event.target.value)} placeholder="Search records..." className="dq-input pl-9" />
       </div>
-      <div className="mt-4 max-h-[calc(100vh-250px)] space-y-2 overflow-y-auto pr-1">
+      <div className="mt-4 flex-1 space-y-2 overflow-y-auto pr-1">
         {visibleRecords.map((record) => {
           const active = record.id === selectedRecordId;
           return (
@@ -649,16 +775,28 @@ function RecordListPanel({ records, selectedRecordId, search, onSearch, onSelect
                 </div>
                 <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${healthColor(record.rag)}`} />
               </div>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                <StatusBadge status={record.status} />
-                <DqBadge label={record.rag} tone={ragTone(record.rag)} />
-              </div>
-              <div className={`mt-2 text-xs font-semibold ${record.isOverdue ? 'text-danger' : 'text-text-muted'}`}>{record.isOverdue ? `Overdue · ${record.dueDate}` : `Updated ${record.lastUpdated}`}</div>
+              <div className="mt-2 text-xs font-semibold text-text-secondary">{record.status} · {record.rag}</div>
+              <div className={`mt-1 text-xs font-semibold ${record.isOverdue ? 'text-warning' : 'text-text-muted'}`}>{record.isOverdue ? `Due: ${record.dueDate === '15 Jun 2025' ? 'Today' : record.dueDate}` : `Updated ${record.lastUpdated}`}</div>
             </button>
           );
         })}
         {visibleRecords.length === 0 && <div className="rounded-card border border-border-subtle p-4 text-sm font-semibold text-text-secondary">No records found.</div>}
       </div>
+      <footer className="mt-4 flex items-center justify-between gap-2 border-t border-border-subtle pt-3 text-xs font-semibold text-text-muted">
+        <button
+          disabled={!previousRecord}
+          onClick={() => previousRecord && onSelect(previousRecord.id)}
+          className="rounded-button border border-border-default px-2.5 py-1.5 text-primary disabled:cursor-not-allowed disabled:opacity-40">
+          Prev
+        </button>
+        <span>{rangeStart}-{rangeEnd} of {Math.max(totalRecords, rangeEnd)}</span>
+        <button
+          disabled={!nextRecord}
+          onClick={() => nextRecord && onSelect(nextRecord.id)}
+          className="rounded-button border border-border-default px-2.5 py-1.5 text-primary disabled:cursor-not-allowed disabled:opacity-40">
+          Next
+        </button>
+      </footer>
     </aside>
   );
 }
@@ -679,7 +817,7 @@ function RecordDetailTabs({ activeTab, onTab }: { activeTab: DetailTab; onTab: (
 function RecordDetailsForm({ tracker, draft, latestUpdate, onUpdate, onLatestUpdate }: { tracker: TrackerDefinition; draft: TrackerRecord; latestUpdate: string; onUpdate: (patch: Partial<TrackerRecord>) => void; onLatestUpdate: (value: string) => void }) {
   return (
     <>
-      <section className="dq-card">
+      <section className="border-b border-border-subtle pb-5">
         <h2 className="dq-card-title">Details</h2>
         <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           <DetailField label="Record ID" value={draft.id} readOnly monospace onChange={() => undefined} />
@@ -690,12 +828,12 @@ function RecordDetailsForm({ tracker, draft, latestUpdate, onUpdate, onLatestUpd
           <DetailSelect label="Status" value={draft.status} options={tracker.defaultStatuses} onChange={(status) => onUpdate({ status })} />
           <DetailField label="Due Date" value={draft.dueDate} onChange={(dueDate) => onUpdate({ dueDate })} />
           <DetailSelect label="RAG" value={draft.rag} options={['Green', 'Amber', 'Red']} onChange={(rag) => onUpdate({ rag: rag as TrackerHealth })} />
-          <DetailField label="Last Updated" value={draft.lastUpdated} onChange={(lastUpdated) => onUpdate({ lastUpdated })} />
+          <DetailField label="Last Updated" value={draft.lastUpdated} readOnly onChange={() => undefined} />
         </div>
       </section>
       <DetailTextarea title="Description / Context" value={draft.description} onChange={(description) => onUpdate({ description })} />
       <DetailTextarea title="Latest Update" value={latestUpdate} onChange={onLatestUpdate} />
-      <section className="dq-card">
+      <section className="border-b border-border-subtle py-5">
         <h2 className="dq-card-title">Next Action</h2>
         <input value={draft.nextAction} onChange={(event) => onUpdate({ nextAction: event.target.value })} className="dq-input mt-4" />
       </section>
@@ -730,19 +868,19 @@ function DetailSelect({ label, value, options, onChange }: { label: string; valu
 
 function DetailTextarea({ title, value, onChange }: { title: string; value: string; onChange: (value: string) => void }) {
   return (
-    <section className="dq-card">
+    <section className="border-b border-border-subtle py-5">
       <h2 className="dq-card-title">{title}</h2>
       <textarea value={value} onChange={(event) => onChange(event.target.value)} rows={5} className="dq-textarea mt-4" />
     </section>
   );
 }
 
-function CommentsPanel({ comments, comment, onComment, onPost }: { comments: TrackerRecord['comments']; comment: string; onComment: (value: string) => void; onPost: () => void }) {
+function CommentsPanel({ sectionRef, inputRef, comments, comment, onComment, onPost }: { sectionRef?: RefObject<HTMLElement>; inputRef?: RefObject<HTMLTextAreaElement>; comments: TrackerRecord['comments']; comment: string; onComment: (value: string) => void; onPost: () => void }) {
   return (
-    <section className="dq-card">
+    <section ref={sectionRef} className="scroll-mt-5 border-b border-border-subtle py-5">
       <div className="flex items-center justify-between gap-3">
         <h2 className="dq-card-title">Comments / Notes</h2>
-        <DqBadge label={`${comments.length} notes`} tone="gray" dot={false} />
+        <span className="text-xs font-semibold text-text-muted">{comments.length} notes</span>
       </div>
       <div className="mt-4 space-y-3">
         {comments.map((entry) => (
@@ -754,34 +892,79 @@ function CommentsPanel({ comments, comment, onComment, onPost }: { comments: Tra
         ))}
         {comments.length === 0 && <p className="text-sm font-semibold text-text-secondary">No notes posted yet.</p>}
       </div>
-      <textarea value={comment} onChange={(event) => onComment(event.target.value)} rows={3} placeholder="Add comment..." className="dq-textarea mt-4" />
-      <DqButton variant="navy" onClick={onPost} className="mt-3"><MessageSquare size={15} strokeWidth={1.5} /> Post comment</DqButton>
+      <textarea ref={inputRef} value={comment} onChange={(event) => onComment(event.target.value)} rows={3} placeholder="Add a note..." className="dq-textarea mt-4" />
+      <DqButton variant="navy" onClick={onPost} disabled={!comment.trim()} className="mt-3 disabled:cursor-not-allowed disabled:opacity-50"><MessageSquare size={15} strokeWidth={1.5} /> Post</DqButton>
     </section>
   );
 }
 
-function EvidencePanel({ evidence, showLinkFields, linkTitle, linkUrl, onShowLinkFields, onLinkTitle, onLinkUrl, onAddLink, onUpload }: { evidence: TrackerRecord['evidence']; showLinkFields: boolean; linkTitle: string; linkUrl: string; onShowLinkFields: () => void; onLinkTitle: (value: string) => void; onLinkUrl: (value: string) => void; onAddLink: () => void; onUpload: () => void }) {
+function EvidencePanel({
+  sectionRef,
+  titleRef,
+  evidence,
+  showLinkFields,
+  linkTitle,
+  linkUrl,
+  linkType,
+  onShowLinkFields,
+  onLinkTitle,
+  onLinkUrl,
+  onLinkType,
+  onAddLink,
+  onUpload,
+  onRemove,
+  onOpen,
+}: {
+  sectionRef?: RefObject<HTMLElement>;
+  titleRef?: RefObject<HTMLInputElement>;
+  evidence: TrackerRecord['evidence'];
+  showLinkFields: boolean;
+  linkTitle: string;
+  linkUrl: string;
+  linkType: TrackerRecord['evidence'][number]['type'];
+  onShowLinkFields: (type: TrackerRecord['evidence'][number]['type']) => void;
+  onLinkTitle: (value: string) => void;
+  onLinkUrl: (value: string) => void;
+  onLinkType: (value: TrackerRecord['evidence'][number]['type']) => void;
+  onAddLink: () => void;
+  onUpload: () => void;
+  onRemove: (evidenceId: string) => void;
+  onOpen: (url?: string) => void;
+}) {
+  const evidenceTypes: Array<TrackerRecord['evidence'][number]['type']> = ['Document', 'Link', 'File', 'Spreadsheet', 'Dashboard', 'Teams Thread'];
   return (
-    <section className="dq-card">
+    <section ref={sectionRef} className="scroll-mt-5 py-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="dq-card-title">Evidence / Links</h2>
         <div className="flex gap-2">
-          <DqButton variant="outline" onClick={onShowLinkFields}><LinkIcon size={15} strokeWidth={1.5} /> Add Link</DqButton>
+          <DqButton variant="outline" onClick={() => onShowLinkFields('Document')}><Paperclip size={15} strokeWidth={1.5} /> Add Evidence</DqButton>
+          <DqButton variant="outline" onClick={() => onShowLinkFields('Link')}><LinkIcon size={15} strokeWidth={1.5} /> Add Link</DqButton>
           <DqButton variant="outline" onClick={onUpload}><Upload size={15} strokeWidth={1.5} /> Upload Evidence</DqButton>
         </div>
       </div>
       {showLinkFields && (
-        <div className="mt-4 grid gap-2 rounded-card border border-border-subtle bg-surface p-3 md:grid-cols-[1fr_1fr_auto]">
-          <input value={linkTitle} onChange={(event) => onLinkTitle(event.target.value)} placeholder="Evidence title" className="dq-input" />
-          <input value={linkUrl} onChange={(event) => onLinkUrl(event.target.value)} placeholder="Evidence link" className="dq-input" />
-          <DqButton variant="navy" onClick={onAddLink}>Save Link</DqButton>
+        <div className="mt-4 grid gap-2 rounded-card border border-border-subtle bg-surface p-3 md:grid-cols-[1fr_150px_1fr_auto]">
+          <input ref={titleRef} value={linkTitle} onChange={(event) => onLinkTitle(event.target.value)} placeholder="Evidence title" className="dq-input" />
+          <select value={linkType} onChange={(event) => onLinkType(event.target.value as TrackerRecord['evidence'][number]['type'])} className="dq-input">
+            {evidenceTypes.map((type) => <option key={type} value={type}>{type}</option>)}
+          </select>
+          <input value={linkUrl} onChange={(event) => onLinkUrl(event.target.value)} placeholder="URL or file name" className="dq-input" />
+          <DqButton variant="navy" onClick={onAddLink} disabled={!linkTitle.trim()} className="disabled:cursor-not-allowed disabled:opacity-50">Add</DqButton>
         </div>
       )}
       <div className="mt-4 space-y-2">
         {evidence.map((entry) => (
-          <div key={entry.id} className="flex flex-wrap items-center justify-between gap-3 rounded-button border border-border-subtle bg-surface px-3 py-2 text-sm font-semibold text-primary">
-            <span>{entry.title} · {entry.type}</span>
-            <span className="text-xs text-text-muted">{entry.addedBy} · {entry.addedAt}</span>
+          <div key={entry.id} className="grid gap-3 rounded-button border border-border-subtle bg-surface px-3 py-2 text-sm text-primary md:grid-cols-[minmax(0,1fr)_110px_170px_120px] md:items-center">
+            <div className="min-w-0">
+              <div className="truncate font-semibold">{entry.title}</div>
+              <div className="mt-0.5 text-xs font-semibold text-text-muted">Added by: {entry.addedBy}</div>
+            </div>
+            <span className="text-xs font-semibold text-text-muted">Type: {entry.type}</span>
+            <span className="text-xs font-semibold text-text-muted">Added on: {entry.addedAt}</span>
+            <span className="flex justify-start gap-2 md:justify-end">
+              {entry.url && <button onClick={() => onOpen(entry.url)} className="text-xs font-bold text-info hover:underline">Open</button>}
+              <button onClick={() => onRemove(entry.id)} className="text-xs font-bold text-danger hover:underline">Remove</button>
+            </span>
           </div>
         ))}
         {evidence.length === 0 && <p className="text-sm font-semibold text-text-secondary">No evidence linked yet.</p>}
@@ -792,7 +975,7 @@ function EvidencePanel({ evidence, showLinkFields, linkTitle, linkUrl, onShowLin
 
 function ActivityTimeline({ activity, title = 'Activity History' }: { activity: TrackerRecord['activity']; title?: string }) {
   return (
-    <section className="dq-card">
+    <section className="py-1">
       <h2 className="dq-card-title">{title}</h2>
       <div className="mt-4 space-y-4">
         {activity.map((entry) => (
@@ -807,7 +990,41 @@ function ActivityTimeline({ activity, title = 'Activity History' }: { activity: 
   );
 }
 
+function HistoryPanel({ history }: { history: NonNullable<TrackerRecord['history']> }) {
+  return (
+    <section className="py-1">
+      <h2 className="dq-card-title">Change History</h2>
+      <div className="mt-4 overflow-x-auto rounded-card border border-border-subtle">
+        <table className="w-full min-w-[720px] text-left text-sm">
+          <thead className="bg-surface text-xs font-bold uppercase text-text-muted">
+            <tr>
+              <th className="px-3 py-2">Field changed</th>
+              <th className="px-3 py-2">Previous value</th>
+              <th className="px-3 py-2">New value</th>
+              <th className="px-3 py-2">Changed by</th>
+              <th className="px-3 py-2">Timestamp</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border-subtle">
+            {history.map((entry) => (
+              <tr key={entry.id} className="bg-white">
+                <td className="px-3 py-3 font-semibold text-primary">{entry.field || entry.action}</td>
+                <td className="px-3 py-3 text-text-secondary">{entry.previousValue || '-'}</td>
+                <td className="px-3 py-3 text-text-secondary">{entry.newValue || entry.action}</td>
+                <td className="px-3 py-3 text-text-secondary">{entry.changedBy || entry.actor}</td>
+                <td className="px-3 py-3 text-text-muted">{entry.timestamp}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {history.length === 0 && <p className="px-3 py-4 text-sm font-semibold text-text-secondary">No changes saved yet.</p>}
+      </div>
+    </section>
+  );
+}
+
 function RecordMetadataRail({ tracker, record, dirty }: { tracker: TrackerDefinition; record: TrackerRecord; dirty: boolean }) {
+  const projectUnit = record.id.startsWith('WLD-') ? 'Platform Operations' : tracker.owner;
   return (
     <aside className="space-y-4">
       <RailCard title="Record Metadata">
@@ -819,10 +1036,16 @@ function RecordMetadataRail({ tracker, record, dirty }: { tracker: TrackerDefini
           <MetaRow label="Last Updated" value={record.lastUpdated} />
         </div>
       </RailCard>
+      <RailCard title="Linked Entities">
+        <div className="space-y-3 text-sm font-semibold text-primary">
+          <MetaRow label="Project / Unit" value={projectUnit} />
+          <MetaRow label="Team / Squad" value={record.teamOrSquad || 'Unassigned'} />
+        </div>
+      </RailCard>
       <RailCard title="Maintenance State">
         <div className="space-y-2">
-          <RailFilterRow active={dirty} label={dirty ? 'Unsaved edits' : 'Saved'} value={dirty ? 1 : 0} color={dirty ? 'bg-warning' : 'bg-success'} onClick={() => undefined} />
-          <RailFilterRow active={record.isOverdue} label="Overdue" value={record.isOverdue ? 1 : 0} color="bg-danger" onClick={() => undefined} />
+          <RailFilterRow active={!dirty} label="Saved" value={0} color="bg-success" onClick={() => undefined} />
+          <RailFilterRow active={record.isOverdue} label="Overdue" value={record.isOverdue ? 1 : 0} color="bg-warning" onClick={() => undefined} />
           <RailFilterRow active={record.isBlocked} label="Blocked" value={record.isBlocked ? 1 : 0} color="bg-danger" onClick={() => undefined} />
         </div>
       </RailCard>
@@ -1023,7 +1246,7 @@ function RecordsTable({
           <tbody className="divide-y divide-border-subtle bg-white">
             {records.map((record) => (
               <tr key={record.id} onClick={() => onOpen(record)} className={`cursor-pointer border-l-4 transition hover:bg-navy-50 ${selectedRecordId === record.id ? 'border-l-secondary bg-orange-50/40' : highlightOverdue && record.isOverdue ? 'border-l-danger/50' : 'border-l-transparent'}`}>
-                {activeColumns.map((column) => <RecordCell key={column} tracker={tracker} column={column} record={record} rowPadding={rowPadding} onUpdate={onUpdate} />)}
+                {activeColumns.map((column) => <RecordCell key={column} tracker={tracker} column={column} record={record} rowPadding={rowPadding} onOpen={() => onOpen(record)} onUpdate={onUpdate} />)}
               </tr>
             ))}
             {records.length === 0 && (
@@ -1176,9 +1399,9 @@ function ColumnFilterPopover({
   );
 }
 
-function RecordCell({ tracker, column, record, rowPadding, onUpdate }: { tracker: TrackerDefinition; column: ColumnKey; record: TrackerRecord; rowPadding: string; onUpdate: (record: TrackerRecord, patch: Partial<TrackerRecord>) => void }) {
-  if (column === 'id') return <td className={`${rowPadding} font-mono text-xs font-bold text-primary`}>{record.id}</td>;
-  if (column === 'title') return <td className={`${rowPadding} max-w-[260px] text-sm font-semibold text-primary`}>{record.title}</td>;
+function RecordCell({ tracker, column, record, rowPadding, onOpen, onUpdate }: { tracker: TrackerDefinition; column: ColumnKey; record: TrackerRecord; rowPadding: string; onOpen: () => void; onUpdate: (record: TrackerRecord, patch: Partial<TrackerRecord>) => void }) {
+  if (column === 'id') return <td className={`${rowPadding} font-mono text-xs font-bold text-primary`}><button onClick={(event) => { event.stopPropagation(); onOpen(); }} className="text-left hover:text-secondary">{record.id}</button></td>;
+  if (column === 'title') return <td className={`${rowPadding} max-w-[260px] text-sm font-semibold text-primary`}><button onClick={(event) => { event.stopPropagation(); onOpen(); }} className="text-left hover:text-secondary">{record.title}</button></td>;
   if (column === 'owner') return <td className={rowPadding}><InlineText value={record.owner} onSave={(value) => onUpdate(record, { owner: value })} /></td>;
   if (column === 'team') return <td className={`${rowPadding} text-sm font-semibold text-primary`}>{record.teamOrSquad}</td>;
   if (column === 'priority') return <td className={rowPadding}><InlineSelect value={record.priority} options={['Low', 'Medium', 'High', 'Critical']} onSave={(value) => onUpdate(record, { priority: value as TrackerPriority })} /></td>;
@@ -1932,6 +2155,32 @@ function nextRecordId(tracker: TrackerDefinition, records: TrackerRecord[]) {
   const prefix = tracker.slug.split('-').map((part) => part[0]).join('').slice(0, 3).toUpperCase();
   const numbers = records.map((record) => Number(record.id.split('-')[1])).filter(Number.isFinite);
   return `${prefix}-${Math.max(1221, ...numbers) + 1}`;
+}
+
+function recordsStorageKey(trackerId: string) {
+  return `${recordsStorageKeyPrefix}:${trackerId}`;
+}
+
+function loadTrackerRecords(trackerId: string) {
+  const seededRecords = getRecordsForTracker(trackerId);
+  const storedPayload = readJson<TrackerRecord[] | { version: string; records: TrackerRecord[] }>(recordsStorageKey(trackerId));
+  const storedRecords = !Array.isArray(storedPayload) && storedPayload?.version === recordsStorageVersion && Array.isArray(storedPayload.records)
+      ? storedPayload.records
+      : null;
+  if (!storedRecords) {
+    const legacyRecords = Array.isArray(storedPayload) ? storedPayload : Array.isArray(storedPayload?.records) ? storedPayload.records : [];
+    const seededIds = new Set(seededRecords.map((record) => record.id));
+    const legacyCustomRecords = legacyRecords.filter((record) => !seededIds.has(record.id));
+    return [...seededRecords, ...legacyCustomRecords];
+  }
+  const storedIds = new Set(storedRecords.map((record) => record.id));
+  const newSeededRecords = seededRecords.filter((record) => !storedIds.has(record.id));
+  return [...storedRecords, ...newSeededRecords];
+}
+
+function persistTrackerRecords(trackerId: string, records: TrackerRecord[]) {
+  localStorage.setItem(recordsStorageKey(trackerId), JSON.stringify({ version: recordsStorageVersion, records }));
+  return records;
 }
 
 function healthColor(health: TrackerHealth) {
