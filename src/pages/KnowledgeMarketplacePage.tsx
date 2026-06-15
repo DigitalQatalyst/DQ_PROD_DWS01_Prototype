@@ -33,8 +33,7 @@ export function KnowledgeMarketplacePage() {
   const [searchParams] = useSearchParams();
   const { assets, isLoading } = useKnowledgeLifecycle();
   const stage = resolveMarketplaceStage(searchParams.get('from'), 'discern');
-  const initialTab =
-    searchParams.get('focus') === 'playbooks-templates' ? 'Playbook' : ALL_TAB_ID;
+  const initialTab = 'Guideline';
 
   const [activeTab, setActiveTab] = useState(initialTab);
   const [search, setSearch] = useState('');
@@ -78,6 +77,7 @@ export function KnowledgeMarketplacePage() {
       KNOWLEDGE_TABS.map((tab) => ({
         id: tab.id,
         label: tab.label,
+        disabled: tab.id !== ALL_TAB_ID && tab.id !== 'Guideline',
         count:
           tab.id === ALL_TAB_ID
             ? assets.length
@@ -128,6 +128,7 @@ export function KnowledgeMarketplacePage() {
   });
 
   const activeTabMeta = KNOWLEDGE_TABS.find((tab) => tab.id === activeTab);
+  const activeTabDescription = activeTab !== ALL_TAB_ID ? TAB_DESCRIPTIONS[activeTab] : undefined;
 
   return (
     <MarketplaceCatalogLayout
@@ -144,8 +145,8 @@ export function KnowledgeMarketplacePage() {
       activeTabId={activeTab}
       onTabChange={setActiveTab}
       toneStrip={
-        activeTabMeta && activeTab !== ALL_TAB_ID && TAB_DESCRIPTIONS[activeTab]
-          ? { code: activeTab, description: TAB_DESCRIPTIONS[activeTab]! }
+        activeTabMeta && activeTabDescription
+          ? { code: activeTab, description: activeTabDescription }
           : null
       }
       filterHelperText="Refine by knowledge type, lifecycle status, and acknowledgement requirement."
