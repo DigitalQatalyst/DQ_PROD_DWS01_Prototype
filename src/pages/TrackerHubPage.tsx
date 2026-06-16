@@ -6,7 +6,6 @@ import {
   ChevronDown,
   Download,
   FileSearch,
-  HelpCircle,
   History,
   Plus,
   RotateCcw,
@@ -132,7 +131,6 @@ export function TrackerHubPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [recentOpen, setRecentOpen] = useState(false);
-  const [infoOpen, setInfoOpen] = useState(false);
   const [settings, setSettings] = useState<SettingsState>(defaultSettings);
 
   const visibleTrackers = useMemo(
@@ -297,7 +295,6 @@ export function TrackerHubPage() {
             }}
             onOpen={openTracker}
             onViewAll={() => setRecentOpen(true)}
-            onInfo={() => setInfoOpen(true)}
           />
         )}
       </div>
@@ -305,7 +302,6 @@ export function TrackerHubPage() {
       <CreateTrackerModal open={createOpen} onClose={() => setCreateOpen(false)} onCreate={createTracker} />
       <SettingsModal open={settingsOpen} settings={settings} onClose={() => setSettingsOpen(false)} onApply={applySettings} />
       <RecentlyOpenedModal open={recentOpen} rows={recentRows} onClose={() => setRecentOpen(false)} onOpen={openTracker} />
-      <InfoModal open={infoOpen} onClose={() => setInfoOpen(false)} />
     </div>
   );
 }
@@ -425,7 +421,7 @@ function HealthBadge({ health }: { health: TrackerHealth }) {
   return <DqBadge label={health} tone={tone} />;
 }
 
-function RightRail({ summary, recentRows, onHealthFilter, onOpen, onViewAll, onInfo }: { summary: { total: number; healthy: number; attention: number; critical: number }; recentRows: Array<{ slug: string; name: string; owner: string; lastOpened: string; healthStatus: TrackerHealth; available: boolean }>; onHealthFilter: (health: string) => void; onOpen: (tracker: { slug: string; available?: boolean }) => void; onViewAll: () => void; onInfo: () => void }) {
+function RightRail({ summary, recentRows, onHealthFilter, onOpen, onViewAll }: { summary: { total: number; healthy: number; attention: number; critical: number }; recentRows: Array<{ slug: string; name: string; owner: string; lastOpened: string; healthStatus: TrackerHealth; available: boolean }>; onHealthFilter: (health: string) => void; onOpen: (tracker: { slug: string; available?: boolean }) => void; onViewAll: () => void }) {
   return (
     <aside className="space-y-5">
       <RailCard title="Tracker Summary" action={<span className="h-6 w-6 rounded-full border-[3px] border-secondary border-l-info border-b-warning" />}>
@@ -453,10 +449,6 @@ function RightRail({ summary, recentRows, onHealthFilter, onOpen, onViewAll, onI
           ))}
         </div>
         <button onClick={onViewAll} className="mt-5 border-t border-border-subtle pt-4 text-sm font-bold text-info-text hover:text-primary">View all recently opened →</button>
-      </RailCard>
-
-      <RailCard title="How it works" action={<button onClick={onInfo} aria-label="How Tracker Hub works" className="text-primary hover:text-secondary"><HelpCircle size={20} strokeWidth={1.5} /></button>}>
-        <p className="text-sm font-medium leading-6 text-primary">Open tracker to view its records. On the tracker details page, the left panel will list all trackers and the right panel will show the records/items in the selected tracker.</p>
       </RailCard>
     </aside>
   );
@@ -585,23 +577,6 @@ function RecentlyOpenedModal({ open, rows, onClose, onOpen }: { open: boolean; r
             <button onClick={() => onOpen(row)} className="text-sm font-bold text-info-text hover:text-primary">Open tracker →</button>
           </div>
         ))}
-      </div>
-    </ModalFrame>
-  );
-}
-
-function InfoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  if (!open) return null;
-  return (
-    <ModalFrame title="How Tracker Hub works" onClose={onClose} width="max-w-lg">
-      <div className="space-y-3 text-sm font-semibold leading-6 text-primary">
-        <p>Step 1: Select a tracker from the overview list.</p>
-        <p>Step 2: Open the tracker details page.</p>
-        <p>Step 3: Use the left tracker list to switch trackers.</p>
-        <p>Step 4: Use the records table to update tracker items.</p>
-      </div>
-      <div className="mt-6 flex justify-end">
-        <DqButton variant="orange" onClick={onClose}>Got it</DqButton>
       </div>
     </ModalFrame>
   );

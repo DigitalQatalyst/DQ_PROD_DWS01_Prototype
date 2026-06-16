@@ -233,11 +233,6 @@ import {
 
 // Tracker Feature Area Pages (purpose-built with distinct layouts per page)
 import {
-  MyTrackerOverviewPage,
-  TeamTrackerOverviewPage,
-  OpenItemsPage,
-  AtRiskItemsPage,
-  RecentlyClosedItemsPage,
   SubmittedRequestsPage,
   RequestDraftsPage,
   RequestStatusPage as TrackerRequestStatusPage,
@@ -341,11 +336,7 @@ function renderTaskFeaturePage(route: string): React.ReactNode | null {
 function renderTrackerFeaturePage(route: string): React.ReactNode | null {
   const trackerFeatureMap: Record<string, React.ReactNode> = {
     // Tracker Hub
-    "/tracker/tracker-hub/my-tracker-overview": <TrackerHubPage />,
-    "/tracker/tracker-hub/team-tracker-overview": <TeamTrackerOverviewPage />,
-    "/tracker/tracker-hub/open-items": <OpenItemsPage />,
-    "/tracker/tracker-hub/at-risk-items": <AtRiskItemsPage />,
-    "/tracker/tracker-hub/recently-closed-items": <RecentlyClosedItemsPage />,
+    "/tracker/tracker-hub": <TrackerHubPage />,
     // Request Status Tracker
     "/tracker/request-status-tracker/submitted-requests": (
       <SubmittedRequestsPage />
@@ -834,7 +825,6 @@ function AppRoutes() {
         <Route path="/tasks/my-work/assigned-tasks" element={<RouteGuard><AssignedWorkPage /></RouteGuard>} />
         <Route path="/tasks/my-work/assigned-tasks/:taskId" element={<RouteGuard><TaskDetailsPage /></RouteGuard>} />
         <Route path="/tasks/task-board/kanban-view" element={<RouteGuard><KanbanBoardPage /></RouteGuard>} />
-        <Route path="/tracker/tracker-hub" element={<RouteGuard><TrackerHubPage /></RouteGuard>} />
         <Route path="/tracker/active-tracker/:trackerSlug/records/:recordId" element={<RouteGuard><ActiveTrackerPage /></RouteGuard>} />
         <Route path="/tracker/active-tracker/:trackerSlug" element={<RouteGuard><ActiveTrackerPage /></RouteGuard>} />
         <Route
@@ -1024,7 +1014,7 @@ function AppRoutes() {
         <Route
           path="/trackers/my-items"
           element={
-            <Navigate to="/tracker/tracker-hub/my-tracker-overview" replace />
+            <Navigate to="/tracker/tracker-hub" replace />
           }
         />
         <Route
@@ -1048,7 +1038,7 @@ function AppRoutes() {
         <Route
           path="/trackers/workload-distribution"
           element={
-            <Navigate to="/tracker/tracker-hub/team-tracker-overview" replace />
+            <Navigate to="/tracker/tracker-hub" replace />
           }
         />
         <Route

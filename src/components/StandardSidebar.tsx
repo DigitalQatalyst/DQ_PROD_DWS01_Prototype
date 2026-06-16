@@ -181,12 +181,29 @@ export function StandardSidebar() {
         <div className="sidebar-feature-area">{area.label}</div>
         <div className="mt-1 space-y-1">
           {area.children.map((group) => {
-            if (!group.icon || !group.children || group.children.length === 0 || !group.route) return null;
+            if (!group.icon || !group.route) return null;
 
             const GroupIcon = group.icon;
-            const isGroupOpen = expandedFeatureGroups.includes(group.route);
+            const hasChildren = group.children && group.children.length > 0;
             const groupIsActive = isGroupActive(location.pathname, group);
-            const groupClickRoute = group.children[0]?.route ?? group.route;
+
+            if (!hasChildren) {
+              return (
+                <NavLink
+                  key={group.id}
+                  to={group.route!}
+                  className={`relative sidebar-feature-group ${groupIsActive ? 'sidebar-feature-group-active' : ''}`}>
+                  {groupIsActive && (
+                    <span className="absolute bottom-1.5 left-0 top-1.5 w-0.5 rounded-r bg-secondary" />
+                  )}
+                  <GroupIcon size={17} strokeWidth={1.5} className="shrink-0" />
+                  <span className="min-w-0 flex-1 truncate">{group.label}</span>
+                </NavLink>
+              );
+            }
+
+            const isGroupOpen = expandedFeatureGroups.includes(group.route);
+            const groupClickRoute = group.children![0]?.route ?? group.route;
 
             return (
               <div key={group.id}>
@@ -211,7 +228,7 @@ export function StandardSidebar() {
                 </button>
                 {isGroupOpen && (
                   <div className="sidebar-child-line">
-                    {group.children.map((feature) => {
+                    {group.children!.map((feature) => {
                       if (!feature.route) return null;
                       return (
                         <FeatureItemLink key={feature.id} label={feature.label} route={feature.route} />

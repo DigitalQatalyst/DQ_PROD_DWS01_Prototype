@@ -312,7 +312,6 @@ export function ActiveTrackerPage() {
   };
 
   const showTable = activeTab !== 'About Tracker';
-  const showTrackerList = false;
 
   if (recordId) {
     return (
@@ -337,7 +336,6 @@ export function ActiveTrackerPage() {
         <Breadcrumb trackerName={tracker.name} onHub={() => navigate('/tracker/tracker-hub')} />
         <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div className="min-w-0">
-            {/* <div className="dq-overline mb-2">ACTIVE TRACKER WORKSPACE</div> */}
             <h1 className="text-[32px] font-bold leading-tight text-primary">{tracker.name}</h1>
             <p className="mt-2 max-w-4xl text-sm leading-6 text-primary">{tracker.purpose}</p>
           </div>
@@ -352,17 +350,7 @@ export function ActiveTrackerPage() {
 
       <div
         className="grid gap-5"
-        style={{ gridTemplateColumns: showTrackerList ? (settings.showRightRail ? '260px minmax(0,1fr) 300px' : '260px minmax(0,1fr)') : (settings.showRightRail ? 'minmax(0,1fr) 300px' : 'minmax(0,1fr)') }}>
-        {showTrackerList && (
-          <TrackerListPanel
-            trackers={filteredTrackers}
-            selectedSlug={tracker.slug}
-            search={trackerSearch}
-            onSearch={setTrackerSearch}
-            onSelect={(slug) => navigate(`/tracker/active-tracker/${slug}`)}
-          />
-        )}
-
+        style={{ gridTemplateColumns: settings.showRightRail ? 'minmax(0,1fr) 300px' : 'minmax(0,1fr)' }}>
         <main className="min-w-0 space-y-4">
           {/* <KpiStrip metrics={metrics} activeFilter={metricFilter} onFilter={applyMetric} /> */}
           <section className="overflow-hidden rounded-card border border-border-default bg-white shadow-sm">
@@ -555,8 +543,8 @@ function RecordDetailRoute({
   };
 
   return (
-    <div className="w-full px-6 py-6 pb-12 lg:px-8">
-      <header className="mb-5">
+    <div className="flex h-full flex-col overflow-hidden px-6 lg:px-8">
+      <header className="shrink-0 pt-6">
         <nav className="mb-3 flex flex-wrap items-center gap-2 text-sm font-semibold text-secondary" aria-label="Breadcrumb">
           <span>Tracker</span>
           <span>/</span>
@@ -593,15 +581,17 @@ function RecordDetailRoute({
         </div>
       </header>
 
-      <div className="grid gap-5 xl:grid-cols-[300px_minmax(0,1fr)_280px]">
-        <RecordListPanel
-          records={records}
-          selectedRecordId={draft.id}
-          search={search}
-          onSearch={onSearch}
-          onSelect={(id) => guardedNavigate(() => onSelect(id))}
-        />
-        <main className="min-w-0 rounded-card border border-border-default bg-white shadow-sm">
+      <div className="min-h-0 flex-1 grid gap-5 overflow-hidden pb-6 pt-5 xl:grid-cols-[300px_minmax(0,1fr)_280px]">
+        <div className="overflow-y-auto rounded-card border border-border-default bg-white shadow-sm">
+          <RecordListPanel
+            records={records}
+            selectedRecordId={draft.id}
+            search={search}
+            onSearch={onSearch}
+            onSelect={(id) => guardedNavigate(() => onSelect(id))}
+          />
+        </div>
+        <main className="min-w-0 overflow-y-auto rounded-card border border-border-default bg-white shadow-sm">
           <RecordDetailTabs activeTab={activeTab} onTab={setActiveTab} />
           <div className="space-y-4 bg-surface p-5">
             {activeTab === 'Overview' && (
@@ -618,7 +608,9 @@ function RecordDetailRoute({
             {activeTab === 'History' && <ActivityTimeline title="Change History" activity={draft.activity} />}
           </div>
         </main>
-        <RecordMetadataRail tracker={tracker} record={draft} dirty={dirty} />
+        <div className="overflow-y-auto">
+          <RecordMetadataRail tracker={tracker} record={draft} dirty={dirty} />
+        </div>
       </div>
     </div>
   );
@@ -989,12 +981,9 @@ function RecordsTable({
   const activeColumns = (Object.keys(columnLabels) as ColumnKey[]).filter((key) => columns[key]);
   const rowPadding = compact ? 'px-4 py-2.5' : 'px-4 py-3.5';
   const [openFilter, setOpenFilter] = useState<ColumnKey | null>(null);
+  const anyFilterActive = filters.idSearch || filters.titleSearch || filters.ownerSearch || filters.nextActionSearch || filters.owners.length > 0 || filters.teams.length > 0 || filters.priorities.length > 0 || filters.statuses.length > 0 || filters.dueDate.length > 0 || filters.rag.length > 0 || filters.lastUpdated.length > 0;
   return (
     <>
-      <div className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-3">
-        <div className="text-xs font-semibold uppercase text-text-muted">Column filters</div>
-        <button onClick={onClearFilters} className="h-9 whitespace-nowrap rounded-button border border-border-default px-3 text-sm font-bold text-primary hover:bg-navy-50">Clear Filters</button>
-      </div>
       {openFilter && <button aria-label="Close column filter" className="fixed inset-0 z-[140] cursor-default bg-transparent" onClick={() => setOpenFilter(null)} />}
       <div className="overflow-x-auto">
         <table className="w-full table-fixed border-collapse text-left">
@@ -1002,6 +991,13 @@ function RecordsTable({
             {activeColumns.map((column) => <col key={column} style={{ width: columnWidth(column) }} />)}
           </colgroup>
           <thead>
+            {anyFilterActive && (
+              <tr className="border-b border-border-subtle bg-navy-50/30">
+                <th colSpan={activeColumns.length} className="px-4 py-1.5 text-right">
+                  <button onClick={onClearFilters} className="text-xs font-bold text-info-text hover:text-primary">Clear all filters</button>
+                </th>
+              </tr>
+            )}
             <tr className="border-b border-border-subtle bg-surface">
               {activeColumns.map((column) => (
                 <th key={column} className="px-4 py-3 text-xs font-semibold uppercase text-[#454560]">
