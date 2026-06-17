@@ -38,7 +38,7 @@ export function resolveMarketplaceStage(
 }
 
 export function getStageHref(stage: MarketplaceCategoryKey): string {
-  return MARKETPLACE_4D_DESTINATIONS[stage];
+  return `/marketplace/${stage}`;
 }
 
 export function getServicesCatalogHref(
