@@ -4,6 +4,7 @@ export const MARKETPLACE_4D_DESTINATIONS = {
   design: '/marketplace/task-library?from=design',
   deploy: '/marketplace/services?from=deploy',
   drive: '/marketplace/analytics-discovery?from=drive',
+  trackerMarketplace: '/marketplace/drive/tracker-marketplace',
 } as const;
 
 export type Marketplace4dStage = keyof typeof MARKETPLACE_4D_DESTINATIONS;
