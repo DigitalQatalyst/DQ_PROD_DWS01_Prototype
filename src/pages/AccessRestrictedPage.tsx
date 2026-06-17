@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Lock, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWorkspaceRole } from '../context/WorkspaceRoleContext';
@@ -7,7 +7,34 @@ import { useWorkspaceRole } from '../context/WorkspaceRoleContext';
 function RequestAccessModal({ onClose }: { onClose: () => void }) {
   const [reason, setReason] = useState('');
   const [scope, setScope] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const canSubmit = reason.trim() && scope.trim();
+  const submitRequest = async () => {
+    if (!canSubmit) return;
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/permission-exceptions', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scope, reason }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Access request failed with status ${response.status}`);
+      }
+
+      toast.success('Access request submitted for review.');
+      onClose();
+    } catch (error) {
+      toast.error('Unable to submit access request.');
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <>
       <div className="fixed inset-0 z-[210] bg-primary/20" onClick={onClose} />
@@ -32,13 +59,10 @@ function RequestAccessModal({ onClose }: { onClose: () => void }) {
         <div className="mt-6 flex justify-end gap-3">
           <button onClick={onClose} className="rounded-button px-4 py-2 text-sm font-semibold text-text-secondary hover:bg-surface">Cancel</button>
           <button
-            disabled={!canSubmit}
-            onClick={() => {
-              toast.success('Access request submitted for review.');
-              onClose();
-            }}
+            disabled={!canSubmit || isSubmitting}
+            onClick={submitRequest}
             className="rounded-button bg-primary px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">
-            Submit request
+            {isSubmitting ? 'Submitting...' : 'Submit request'}
           </button>
         </div>
       </section>
@@ -50,6 +74,22 @@ export function AccessRestrictedPage() {
   const [requestOpen, setRequestOpen] = useState(false);
   const { activeRole, getDefaultRoute } = useWorkspaceRole();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    fetch('/api/access/denied', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        resource: location.pathname,
+        reason: 'route_permission_denied',
+        activeRole,
+      }),
+    }).catch((error) => {
+      console.error('Unable to record access denied event', error);
+    });
+  }, [activeRole, location.pathname]);
 
   return (
     <main className="min-h-[calc(100vh-64px)] bg-surface px-8 py-10">

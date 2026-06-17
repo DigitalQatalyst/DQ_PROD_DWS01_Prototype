@@ -2,6 +2,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { getRoleFamily, getSegmentForRole, segments, type RoleFamily, type SegmentDefinition, type WorkspaceRole } from '../config/segments';
 import { normalizeRole, getDefaultRouteForRole, type DwsRole } from '../types/roles';
+import { useAuth } from './AuthContext';
+import { usePersona } from './PersonaContext';
+import type { PersonaId } from '../types/platform';
 
 interface WorkspaceRoleContextType {
   activeRole: WorkspaceRole;
@@ -15,11 +18,24 @@ interface WorkspaceRoleContextType {
   getDefaultRoute: (role: WorkspaceRole) => string;
 }
 
-const roles = segments.map((segment) => segment.label);
+const fallbackRoles = segments.map((segment) => segment.label);
+const personaByRole: Record<WorkspaceRole, PersonaId> = {
+  Associate: 'associate',
+  'Scrum Master': 'scrum-master',
+  'Team / Squad Lead': 'team-lead',
+  'Unit Lead': 'unit-lead',
+  HRA: 'hra',
+  Admin: 'admin',
+  Support: 'support',
+  CEO: 'ceo',
+};
 
 const WorkspaceRoleContext = createContext<WorkspaceRoleContextType | undefined>(undefined);
 
 export function WorkspaceRoleProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  const { setActivePersona } = usePersona();
+  const roles = user?.roles?.length ? user.roles : fallbackRoles;
   const [activeRole, setActiveRole] = useState<WorkspaceRole>(() => {
     const storedRole = localStorage.getItem('dws-active-role') as WorkspaceRole | null;
     return storedRole && roles.includes(storedRole) ? storedRole : 'Associate';
@@ -34,8 +50,14 @@ export function WorkspaceRoleProvider({ children }: { children: React.ReactNode 
   };
 
   useEffect(() => {
+    if (!roles.includes(activeRole)) {
+      setActiveRole(roles[0] || 'Associate');
+      return;
+    }
+
     localStorage.setItem('dws-active-role', activeRole);
-  }, [activeRole]);
+    setActivePersona(personaByRole[activeRole]);
+  }, [activeRole, roles, setActivePersona]);
 
   return (
     <WorkspaceRoleContext.Provider value={{ 

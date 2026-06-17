@@ -38,7 +38,7 @@ export function RoleSelector() {
     setActivePersona(personaByRole[role]);
     setIsOpen(false);
     if (location.pathname === '/platform-admin' && role !== 'Admin') navigate('/workspace');
-    toast.success(`Prototype role changed to ${role}.`);
+    toast.success(`Viewing as ${role}.`);
   };
 
   return (
@@ -46,7 +46,7 @@ export function RoleSelector() {
       <button
         onClick={() => setIsOpen((current) => !current)}
         aria-expanded={isOpen}
-        aria-label="Select prototype validation role"
+        aria-label="Select assigned workspace role"
         className="flex h-10 items-center gap-2 rounded-button border-[1.5px] border-border-default bg-white px-3 text-left hover:bg-navy-50 focus:outline-none focus:ring-4 focus:ring-primary/10">
         <span className="hidden text-[10px] font-bold uppercase tracking-wider text-text-muted xl:block">Role</span>
         <span className="max-w-36 truncate text-xs font-bold text-primary">{activeRole}</span>
@@ -56,7 +56,7 @@ export function RoleSelector() {
       {isOpen && (
         <div className="absolute right-0 top-full z-[130] mt-2 w-64 overflow-hidden rounded-card border border-border-default bg-white py-2 shadow-lg">
           <div className="px-4 pb-2 pt-1 text-[10px] font-bold uppercase tracking-wider text-text-muted">
-            Prototype validation role
+            Assigned workspace roles
           </div>
           {roles.map((role) => (
             <button

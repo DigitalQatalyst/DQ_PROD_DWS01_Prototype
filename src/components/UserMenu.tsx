@@ -4,12 +4,35 @@ import { useNavigate } from 'react-router-dom';
 import { Check, HelpCircle, LogOut, Settings, SlidersHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';
+import { usePersona } from '../context/PersonaContext';
 import { useWorkspaceRole } from '../context/WorkspaceRoleContext';
 import { getDefaultRouteForRole } from '../config/navigation';
+import type { WorkspaceRole } from '../config/segments';
+
+const personaByRole: Record<WorkspaceRole, Parameters<ReturnType<typeof usePersona>['setActivePersona']>[0]> = {
+  Associate: 'associate',
+  'Scrum Master': 'scrum-master',
+  'Team / Squad Lead': 'team-lead',
+  'Unit Lead': 'unit-lead',
+  HRA: 'hra',
+  Admin: 'admin',
+  Support: 'support',
+  CEO: 'ceo',
+};
+
+function initialsFor(name: string) {
+  return name
+    .split(' ')
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+}
 
 export function UserMenu() {
-  const { signOut } = useAuth();
-  const { activeRole, setActiveRole, roles, activeSegment } = useWorkspaceRole();
+  const { signOut, user } = useAuth();
+  const { setActivePersona } = usePersona();
+  const { activeRole, setActiveRole, roles } = useWorkspaceRole();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -33,25 +56,28 @@ export function UserMenu() {
   };
   const handleRoleChange = (role: typeof activeRole) => {
     setActiveRole(role);
+    setActivePersona(personaByRole[role]);
     setIsOpen(false);
     navigate(getDefaultRouteForRole(role));
     toast.success(`Viewing as ${role}.`);
   };
+  const displayName = user?.name || 'Authenticated user';
+  const initials = initialsFor(displayName) || 'DU';
   const dropdownPanel = <div ref={dropdownRef} className="fixed right-6 top-[76px] w-[320px] bg-white rounded-2xl shadow-xl border border-border-default overflow-hidden z-[120]">
       <div className="px-5 py-5 border-b border-border-subtle bg-white">
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-white text-sm font-bold">
-            {activeSegment.initials}
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-white text-sm font-bold">
+            {initials}
           </div>
           <div className="min-w-0">
             <p className="text-sm font-bold text-primary leading-tight">
-              {activeSegment.profileName}
+              {displayName}
             </p>
             <p className="text-xs font-medium text-text-secondary mt-1">
               {activeRole}
             </p>
             <p className="text-[11px] text-text-muted mt-1">
-              {activeSegment.subtitle}
+              {user?.email || 'DWS authenticated user'}
             </p>
           </div>
         </div>
@@ -105,7 +131,7 @@ export function UserMenu() {
     </div>;
   return <div className="relative">
       <button ref={buttonRef} onClick={() => setIsOpen(!isOpen)} aria-expanded={isOpen} aria-label="Open profile menu" className="flex items-center justify-center w-8 h-8 rounded-full bg-navy-100 text-primary font-semibold text-sm hover:bg-navy-200 transition-colors">
-        {activeSegment.initials}
+        {initials}
       </button>
 
       {isOpen && createPortal(dropdownPanel, document.body)}

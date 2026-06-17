@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Fingerprint, Lock, ShieldCheck } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { AlertCircle, Fingerprint, Lock, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { ProductIdentity } from '../components/ProductIdentity';
 
@@ -24,7 +24,10 @@ function MicrosoftIcon() {
 export function LoginPage() {
   const { isAuthenticated, signInWithMicrosoft } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [isSigningIn, setIsSigningIn] = useState(false);
+  const authError = searchParams.get('error');
+  const authErrorDescription = searchParams.get('error_description');
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -36,7 +39,6 @@ export function LoginPage() {
     setIsSigningIn(true);
     try {
       await signInWithMicrosoft();
-      navigate('/home', { replace: true });
     } finally {
       setIsSigningIn(false);
     }
@@ -98,6 +100,20 @@ export function LoginPage() {
               Use your DigitalQatalyst Microsoft account to enter DWS.01.
             </p>
 
+            {authError && (
+              <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <div>
+                    <p className="font-semibold">Sign-in failed</p>
+                    <p className="mt-1 leading-5">
+                      {authErrorDescription || authError}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <button
               type="button"
               onClick={handleSignIn}
@@ -109,7 +125,7 @@ export function LoginPage() {
             </button>
 
             <p className="mt-8 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-gray-400">
-              Prototype — SSO simulation
+              Microsoft Entra ID SSO
             </p>
           </div>
         </div>
