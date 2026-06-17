@@ -16,6 +16,7 @@ export interface NavItem {
   route?: string;
   icon?: LucideIcon;
   children?: NavItem[];
+  flag?: string;
   visibleTo?: DwsRole[];
   badge?: string;
   helper?: string;

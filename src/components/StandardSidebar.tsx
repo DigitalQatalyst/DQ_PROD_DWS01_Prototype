@@ -15,6 +15,7 @@ import {
   hasRouteAccess as checkRouteAccess,
 } from '../config/roleBasedNavigation';
 import type { NavItem } from '../types/navigation';
+import { filterNavigationByFlags } from '../utils/filterNavigationByFlags';
 
 function routePath(route: string) {
   return route.split('?')[0];
@@ -89,22 +90,26 @@ export function StandardSidebar() {
   const { activeDwsRole, getDefaultRoute, activeRole } = useWorkspaceRole();
 
   const filteredOrientationArea = useMemo(() => {
-    const [area] = filterNavByRole([orientationFeatureArea], activeDwsRole);
+    const [area] = filterNavigationByFlags(
+      filterNavByRole([orientationFeatureArea], activeDwsRole)
+    );
     return area;
   }, [activeDwsRole]);
 
   const filteredMarketplaceArea = useMemo(() => {
-    const [area] = filterNavByRole([marketplaceFeatureArea], activeDwsRole);
+    const [area] = filterNavigationByFlags(
+      filterNavByRole([marketplaceFeatureArea], activeDwsRole)
+    );
     return area;
   }, [activeDwsRole]);
 
   const filteredFeatureAreas = useMemo(
-    () => filterNavByRole(featureAreas, activeDwsRole),
+    () => filterNavigationByFlags(filterNavByRole(featureAreas, activeDwsRole)),
     [activeDwsRole]
   );
 
   const filteredUtility = useMemo(
-    () => filterNavByRole(utilityNav, activeDwsRole),
+    () => filterNavigationByFlags(filterNavByRole(utilityNav, activeDwsRole)),
     [activeDwsRole]
   );
 
@@ -132,14 +137,16 @@ export function StandardSidebar() {
     return stored ? JSON.parse(stored) : [];
   });
 
+  const activeFeatureGroupRoute = activeFeatureGroup?.route;
+
   useEffect(() => {
-    if (!activeFeatureGroup?.route) return;
+    if (!activeFeatureGroupRoute) return;
     setExpandedFeatureGroups((current) =>
-      current.includes(activeFeatureGroup.route!)
+      current.includes(activeFeatureGroupRoute)
         ? current
-        : [...current, activeFeatureGroup.route!]
+        : [...current, activeFeatureGroupRoute]
     );
-  }, [activeFeatureGroup?.route]);
+  }, [activeFeatureGroupRoute]);
 
   useEffect(() => {
     localStorage.setItem('dws-feature-groups-expanded', JSON.stringify(expandedFeatureGroups));
@@ -184,14 +191,16 @@ export function StandardSidebar() {
             if (!group.icon || !group.route) return null;
 
             const GroupIcon = group.icon;
-            const hasChildren = group.children && group.children.length > 0;
+            const groupRoute = group.route;
+            const children = group.children ?? [];
+            const hasChildren = children.length > 0;
             const groupIsActive = isGroupActive(location.pathname, group);
 
             if (!hasChildren) {
               return (
                 <NavLink
                   key={group.id}
-                  to={group.route!}
+                  to={groupRoute}
                   className={`relative sidebar-feature-group ${groupIsActive ? 'sidebar-feature-group-active' : ''}`}>
                   {groupIsActive && (
                     <span className="absolute bottom-1.5 left-0 top-1.5 w-0.5 rounded-r bg-secondary" />
@@ -202,15 +211,15 @@ export function StandardSidebar() {
               );
             }
 
-            const isGroupOpen = expandedFeatureGroups.includes(group.route);
-            const groupClickRoute = group.children![0]?.route ?? group.route;
+            const isGroupOpen = expandedFeatureGroups.includes(groupRoute);
+            const groupClickRoute = children[0]?.route ?? groupRoute;
 
             return (
               <div key={group.id}>
                 <button
                   type="button"
                   onClick={() => {
-                    toggleFeatureGroup(group.route!);
+                    toggleFeatureGroup(groupRoute);
                     navigate(groupClickRoute);
                   }}
                   aria-expanded={isGroupOpen}
@@ -228,7 +237,7 @@ export function StandardSidebar() {
                 </button>
                 {isGroupOpen && (
                   <div className="sidebar-child-line">
-                    {group.children!.map((feature) => {
+                    {children.map((feature) => {
                       if (!feature.route) return null;
                       return (
                         <FeatureItemLink key={feature.id} label={feature.label} route={feature.route} />
