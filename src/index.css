@@ -1,7 +1,7 @@
 /* --- MANAGED FONT IMPORTS START (do not edit manually) --- */
 /* INTERNAL USE NAME: Heading @weight:700 */
 /* INTERNAL USE NAME: Body */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
@@ -50,7 +50,7 @@
   --color-orange-100: #FDE5DF;
   --color-orange-600: #F24C2A;
   --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, "SF Mono", monospace;
+  --font-mono: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --radius-card: 12px;
   --radius-modal: 12px;
   --radius-button: 8px;
