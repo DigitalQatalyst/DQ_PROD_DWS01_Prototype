@@ -530,20 +530,17 @@ function RecordDetailRoute({
   return (
     <div className="flex h-[calc(100vh-64px)] flex-col overflow-hidden px-6 lg:px-8">
       <header className="shrink-0 pt-6">
-        <nav className="mb-3 flex flex-wrap items-center gap-2 text-sm font-semibold text-secondary" aria-label="Breadcrumb">
-          <span>Tracker</span>
-          <span>/</span>
-          <button onClick={() => guardedNavigate(onHub)} className="hover:text-gray-900">Tracker Hub</button>
-          <span>/</span>
-          <button onClick={() => guardedNavigate(onBack)} className="hover:text-gray-900">{tracker.name}</button>
-          <span>/</span>
-          <span className="font-mono text-xs font-bold">{draft.id}</span>
-        </nav>
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-          <div className="min-w-0">
-            <p className="max-w-4xl text-sm leading-6 text-primary">{tracker.name}</p>
-          </div>
-          <div className="relative flex shrink-0 flex-wrap items-center justify-start gap-2 xl:justify-end">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <nav className="flex flex-wrap items-center gap-2 text-sm font-semibold text-secondary" aria-label="Breadcrumb">
+            <span>Tracker</span>
+            <span>/</span>
+            <button onClick={() => guardedNavigate(onHub)} className="hover:text-gray-900">Tracker Hub</button>
+            <span>/</span>
+            <button onClick={() => guardedNavigate(onBack)} className="hover:text-gray-900">{tracker.name}</button>
+            <span>/</span>
+            <span className="font-mono text-xs font-bold">{draft.id}</span>
+          </nav>
+          <div className="relative flex shrink-0 flex-wrap items-center justify-end gap-2">
             <DqButton variant="outline" onClick={() => guardedNavigate(onBack)} className="h-11 px-4"><ArrowLeft size={16} strokeWidth={1.5} /> Back to Tracker</DqButton>
             <DqButton variant="outline" onClick={openNote} className="h-11 px-4"><MessageSquare size={16} strokeWidth={1.5} /> Add Note</DqButton>
             <DqButton variant="outline" onClick={openEvidence} className="h-11 px-4"><Paperclip size={16} strokeWidth={1.5} /> Add Evidence</DqButton>
@@ -571,50 +568,44 @@ function RecordDetailRoute({
           />
         </section>
 
-        {/* Tabs + Content + Metadata Card */}
-        <div className="flex flex-col gap-5">
-          <section className="flex min-w-0 flex-col overflow-hidden rounded-card border border-border-default bg-white shadow-sm h-full">
-            <div className="sticky top-0 z-10 border-b border-border-subtle bg-white">
-              <div className="flex flex-wrap items-start justify-between gap-3 px-5 pb-3 pt-4">
-                <div className="min-w-0 flex-1">
-                  <input
-                    value={draft.title}
-                    onChange={(event) => updateDraft({ title: event.target.value })}
-                    aria-label="Record title"
-                    className="w-full border-0 bg-transparent p-0 text-xl font-bold leading-tight text-primary outline-none placeholder:text-text-muted focus:ring-0"
-                  />
-                  <div className="mt-1 flex flex-wrap items-center gap-3">
-                    <span className="text-sm font-semibold text-text-muted">{draft.status}</span>
-                    <span className={`text-sm font-bold ${draft.rag === 'Red' ? 'text-danger' : draft.rag === 'Amber' ? 'text-warning' : 'text-success'}`}>{draft.rag}</span>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <DqButton variant="orange" onClick={saveDraft} className="h-10 px-4"><Check size={16} strokeWidth={1.5} /> Save Changes</DqButton>
-                  <DqButton variant="navy" onClick={markComplete} className="h-10 px-4">Mark Complete</DqButton>
+        {/* Tabs + Content */}
+        <section className="flex min-w-0 flex-col overflow-hidden rounded-card border border-border-default bg-white shadow-sm h-full">
+          <div className="sticky top-0 z-10 border-b border-border-subtle bg-white">
+            <div className="flex flex-wrap items-start justify-between gap-3 px-5 pb-3 pt-4">
+              <div className="min-w-0 flex-1">
+                <input
+                  value={draft.title}
+                  onChange={(event) => updateDraft({ title: event.target.value })}
+                  aria-label="Record title"
+                  className="w-full border-0 bg-transparent p-0 text-xl font-bold leading-tight text-primary outline-none placeholder:text-text-muted focus:ring-0"
+                />
+                <div className="mt-1 flex flex-wrap items-center gap-3">
+                  <span className="text-sm font-semibold text-text-muted">{draft.status}</span>
+                  <span className={`text-sm font-bold ${draft.rag === 'Red' ? 'text-danger' : draft.rag === 'Amber' ? 'text-warning' : 'text-success'}`}>{draft.rag}</span>
                 </div>
               </div>
-              <RecordDetailTabs activeTab={activeTab} onTab={setActiveTab} />
+              <div className="flex flex-wrap gap-2">
+                <DqButton variant="orange" onClick={saveDraft} className="h-10 px-4"><Check size={16} strokeWidth={1.5} /> Save Changes</DqButton>
+                <DqButton variant="navy" onClick={markComplete} className="h-10 px-4">Mark Complete</DqButton>
+              </div>
             </div>
-            <div className="flex-1 min-h-0 overflow-y-auto space-y-4 bg-surface p-5">
-              {activeTab === 'Overview' && (
-                <>
-                  <RecordDetailsForm tracker={tracker} draft={draft} latestUpdate={latestUpdate} onUpdate={updateDraft} onLatestUpdate={updateLatest} />
-                  <CommentsPanel comments={draft.comments} comment={comment} onComment={setComment} onPost={postComment} />
-                  <EvidencePanel evidence={draft.evidence} showLinkFields={showLinkFields} linkTitle={linkTitle} linkUrl={linkUrl} onShowLinkFields={() => setShowLinkFields(true)} onLinkTitle={setLinkTitle} onLinkUrl={setLinkUrl} onAddLink={addLink} onUpload={uploadEvidence} />
-                  <ActivityTimeline activity={draft.activity} />
-                </>
-              )}
-              {activeTab === 'Activity' && <ActivityTimeline activity={draft.activity} />}
-              {activeTab === 'Comments' && <CommentsPanel comments={draft.comments} comment={comment} onComment={setComment} onPost={postComment} />}
-              {activeTab === 'Evidence' && <EvidencePanel evidence={draft.evidence} showLinkFields={showLinkFields} linkTitle={linkTitle} linkUrl={linkUrl} onShowLinkFields={() => setShowLinkFields(true)} onLinkTitle={setLinkTitle} onLinkUrl={setLinkUrl} onAddLink={addLink} onUpload={uploadEvidence} />}
-              {activeTab === 'History' && <ActivityTimeline title="Change History" activity={draft.activity} />}
-            </div>
-          </section>
-
-          <section className="h-full">
-            <RecordMetadataRail tracker={tracker} record={draft} dirty={dirty} />
-          </section>
-        </div>
+            <RecordDetailTabs activeTab={activeTab} onTab={setActiveTab} />
+          </div>
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-4 bg-surface p-5">
+            {activeTab === 'Overview' && (
+              <>
+                <RecordDetailsForm tracker={tracker} draft={draft} latestUpdate={latestUpdate} onUpdate={updateDraft} onLatestUpdate={updateLatest} />
+                <CommentsPanel comments={draft.comments} comment={comment} onComment={setComment} onPost={postComment} />
+                <EvidencePanel evidence={draft.evidence} showLinkFields={showLinkFields} linkTitle={linkTitle} linkUrl={linkUrl} onShowLinkFields={() => setShowLinkFields(true)} onLinkTitle={setLinkTitle} onLinkUrl={setLinkUrl} onAddLink={addLink} onUpload={uploadEvidence} />
+                <ActivityTimeline activity={draft.activity} />
+              </>
+            )}
+            {activeTab === 'Activity' && <ActivityTimeline activity={draft.activity} />}
+            {activeTab === 'Comments' && <CommentsPanel comments={draft.comments} comment={comment} onComment={setComment} onPost={postComment} />}
+            {activeTab === 'Evidence' && <EvidencePanel evidence={draft.evidence} showLinkFields={showLinkFields} linkTitle={linkTitle} linkUrl={linkUrl} onShowLinkFields={() => setShowLinkFields(true)} onLinkTitle={setLinkTitle} onLinkUrl={setLinkUrl} onAddLink={addLink} onUpload={uploadEvidence} />}
+            {activeTab === 'History' && <ActivityTimeline title="Change History" activity={draft.activity} />}
+          </div>
+        </section>
       </div>
 
     </div>
@@ -645,10 +636,6 @@ function RecordListPanel({ records, selectedRecordId, search, onSearch, onSelect
                   <div className="mt-1 truncate text-sm font-bold text-primary">{record.title}</div>
                 </div>
                 <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${healthColor(record.rag)}`} />
-              </div>
-              <div className="mt-2 flex flex-wrap gap-3 text-xs font-semibold">
-                <span className="text-text-muted">{record.status}</span>
-                <span className={record.rag === 'Red' ? 'text-danger' : record.rag === 'Amber' ? 'text-warning' : 'text-success'}>{record.rag}</span>
               </div>
               <div className={`mt-2 text-xs font-semibold ${record.isOverdue ? 'text-danger' : 'text-text-muted'}`}>{record.isOverdue ? `Overdue · ${record.dueDate}` : `Updated ${record.lastUpdated}`}</div>
             </button>
@@ -800,38 +787,6 @@ function ActivityTimeline({ activity, title = 'Activity History' }: { activity: 
         ))}
       </div>
     </section>
-  );
-}
-
-function RecordMetadataRail({ tracker, record, dirty }: { tracker: TrackerDefinition; record: TrackerRecord; dirty: boolean }) {
-  return (
-    <aside className="space-y-4 h-full overflow-y-auto pr-1 pb-4">
-      <RailCard title="Record Metadata">
-        <div className="space-y-3 text-sm font-semibold text-primary">
-          <MetaRow label="Tracker" value={tracker.name} />
-          <MetaRow label="Record ID" value={record.id} mono />
-          <MetaRow label="Owner" value={record.owner || 'Unassigned'} />
-          <MetaRow label="Due Date" value={record.dueDate} tone={record.isOverdue ? 'text-danger' : ''} />
-          <MetaRow label="Last Updated" value={record.lastUpdated} />
-        </div>
-      </RailCard>
-      <RailCard title="Maintenance State">
-        <div className="space-y-2">
-          <RailFilterRow active={dirty} label={dirty ? 'Unsaved edits' : 'Saved'} value={dirty ? 1 : 0} color={dirty ? 'bg-warning' : 'bg-success'} onClick={() => undefined} />
-          <RailFilterRow active={record.isOverdue} label="Overdue" value={record.isOverdue ? 1 : 0} color="bg-danger" onClick={() => undefined} />
-          <RailFilterRow active={record.isBlocked} label="Blocked" value={record.isBlocked ? 1 : 0} color="bg-danger" onClick={() => undefined} />
-        </div>
-      </RailCard>
-    </aside>
-  );
-}
-
-function MetaRow({ label, value, mono, tone = '' }: { label: string; value: string; mono?: boolean; tone?: string }) {
-  return (
-    <div className="flex items-start justify-between gap-3 border-b border-border-subtle pb-2 last:border-b-0 last:pb-0">
-      <span className="text-text-muted">{label}</span>
-      <span className={`text-right ${mono ? 'font-mono text-xs' : ''} ${tone}`}>{value}</span>
-    </div>
   );
 }
 
@@ -1252,27 +1207,6 @@ function PagerButton({ children, disabled, active, onClick }: { children: ReactN
 
 function RightRail(_props: { tracker: TrackerDefinition; records: TrackerRecord[]; metrics: TrackerMetrics; activeExtraFilter: ExtraFilter; onRagFilter: (value: TrackerHealth | 'No RAG') => void; onDisciplineFilter: (value: 'lt3' | '3to7' | 'gt7' | 'none') => void }) {
   return null;
-}
-
-function RailCard({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
-  return (
-    <section className="rounded-card border border-border-default bg-white shadow-sm">
-      <div className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-3">
-        <h2 className="dq-card-title">{title}</h2>
-        {action}
-      </div>
-      <div className="p-4">{children}</div>
-    </section>
-  );
-}
-
-function RailFilterRow({ label, value, color, active, onClick }: { label: string; value: number; color: string; active?: boolean; onClick: () => void }) {
-  return (
-    <button onClick={onClick} className={`flex w-full items-center justify-between gap-3 rounded-button px-2 py-1.5 text-left text-sm font-semibold text-primary hover:bg-navy-50 ${active ? 'bg-orange-50 text-secondary' : ''}`}>
-      <span className="inline-flex items-center gap-2"><span className={`h-2 w-2 rounded-full ${color}`} />{label}</span>
-      <span>{value}</span>
-    </button>
-  );
 }
 
 function AboutTrackerPanel({ tracker, onBack }: { tracker: TrackerDefinition; onBack: () => void }) {
