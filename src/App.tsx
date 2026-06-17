@@ -81,10 +81,12 @@ import { MyBlockersPage } from "./pages/MyBlockersPage";
 import { KnowledgeContextPage } from "./pages/KnowledgeContextPage";
 import { AssignedWorkPage } from "./pages/AssignedWorkPage";
 import { MyWorkPage } from "./pages/MyWorkPage";
-import { TaskDetailsPage } from './pages/TaskDetailsPage';
-import { KanbanBoardPage } from './pages/KanbanBoardPage';
-import { TrackerHubPage } from './pages/TrackerHubPage';
-import { ActiveTrackerPage } from './pages/ActiveTrackerPage';
+import { TaskDetailsPage } from "./pages/TaskDetailsPage";
+import { KanbanBoardPage } from "./pages/KanbanBoardPage";
+import { TrackerHubPage } from "./pages/TrackerHubPage";
+import { ActiveTrackerPage } from "./pages/ActiveTrackerPage";
+import { TrackerMarketplacePage } from "./pages/TrackerMarketplacePage";
+import { TrackerDetailsPage } from "./pages/TrackerDetailsPage";
 import { RequestStatusPage } from "./pages/RequestStatusPage";
 import { EvidenceQueuePage } from "./pages/EvidenceQueuePage";
 import { ClosureRequestsPage } from "./pages/ClosureRequestsPage";
@@ -454,1703 +456,1812 @@ function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
 
       <Route element={<ProtectedRoute />}>
-      <Route path="/" element={<RootRedirect />} />
+        <Route path="/" element={<RootRedirect />} />
 
-      {/* Full Page Routes (No Layout) */}
-      <Route
-        path="/knowledge/:knowledgeId/reference"
-        element={
-          <RouteGuard>
-            <KnowledgeReferencePage />
-          </RouteGuard>
-        }
-      />
-      <Route
-        path="/tasks/create/:templateId"
-        element={
-          <RouteGuard>
-            <TaskCreationWorkflowPage />
-          </RouteGuard>
-        }
-      />
-      <Route
-        path="/tasks/create/from-knowledge/:knowledgeId"
-        element={
-          <RouteGuard>
-            <KnowledgeStartTaskPage />
-          </RouteGuard>
-        }
-      />
-
-      {/* Stage 0 Orientation Shell Routes */}
-      <Route element={<Stage0ShellLayout />}>
+        {/* Full Page Routes (No Layout) */}
         <Route
-          path="/stage-0/orientation"
-          element={<Navigate to="/home" replace />}
-        />
-
-        <Route
-          path="/stage-0/operating-guide"
+          path="/knowledge/:knowledgeId/reference"
           element={
             <RouteGuard>
-              <OperatingGuidePage />
+              <KnowledgeReferencePage />
+            </RouteGuard>
+          }
+        />
+        <Route
+          path="/tasks/create/:templateId"
+          element={
+            <RouteGuard>
+              <TaskCreationWorkflowPage />
+            </RouteGuard>
+          }
+        />
+        <Route
+          path="/tasks/create/from-knowledge/:knowledgeId"
+          element={
+            <RouteGuard>
+              <KnowledgeStartTaskPage />
             </RouteGuard>
           }
         />
 
-        <Route
-          path="/onboarding"
-          element={
-            <RouteGuard>
-              <OnboardingPage />
-            </RouteGuard>
-          }
-        />
-        <Route
-          path="/stage-0/action/:actionId"
-          element={
-            <RouteGuard>
-              <Stage0ActionPage />
-            </RouteGuard>
-          }
-        />
-        <Route
-          path="/stage-0/platform-updates"
-          element={
-            <RouteGuard>
-              <Stage0PlatformUpdatesPage />
-            </RouteGuard>
-          }
-        />
-        <Route
-          path="/stage-0/platform-updates/:updateId"
-          element={
-            <RouteGuard>
-              <Stage0PlatformUpdatesPage />
-            </RouteGuard>
-          }
-        />
-      </Route>
-
-      {/* Marketplace Layout Routes */}
-      <Route element={<MarketplaceLayout />}>
-        <Route
-          path="/requests/start/:serviceId"
-          element={
-            <RouteGuard>
-              <RequestWorkflowPage />
-            </RouteGuard>
-          }
-        />
-        <Route
-          path="/marketplace"
-          element={<Navigate to={DEFAULT_MARKETPLACE_ROUTE} replace />}
-        />
-        <Route
-          path="/marketplaces"
-          element={<Navigate to="/marketplace" replace />}
-        />
-        <Route
-          path="/marketplaces/discern"
-          element={<Navigate to="/marketplace/discern" replace />}
-        />
-        <Route
-          path="/marketplaces/design"
-          element={<Navigate to="/marketplace/design" replace />}
-        />
-        <Route
-          path="/marketplaces/deploy"
-          element={<Navigate to="/marketplace/deploy" replace />}
-        />
-        <Route
-          path="/marketplaces/drive"
-          element={<Navigate to="/marketplace/drive" replace />}
-        />
-        <Route
-          path="/marketplace/deliver"
-          element={<Navigate to="/marketplace/deploy" replace />}
-        />
-        <Route
-          path="/marketplaces/deliver"
-          element={<Navigate to="/marketplace/deploy" replace />}
-        />
-        <Route
-          path="/marketplaces/feedback"
-          element={<Navigate to="/marketplace/feedback" replace />}
-        />
-        <Route
-          path="/marketplaces/services"
-          element={<Navigate to="/marketplace/services" replace />}
-        />
-        <Route
-          path="/marketplaces/services/:serviceId"
-          element={
-            <RouteGuard>
-              <ServiceDetailPage />
-            </RouteGuard>
-          }
-        />
-        <Route
-          path="/marketplace/knowledge"
-          element={<Navigate to="/marketplace/knowledge-discovery" replace />}
-        />
-        <Route
-          path="/marketplaces/knowledge"
-          element={<Navigate to="/marketplace/knowledge-discovery" replace />}
-        />
-        <Route
-          path="/marketplaces/knowledge/:knowledgeId"
-          element={
-            <RouteGuard>
-              <KnowledgeDetailPage />
-            </RouteGuard>
-          }
-        />
-        <Route
-          path="/marketplace/task-templates"
-          element={<Navigate to="/marketplace/task-library" replace />}
-        />
-        <Route
-          path="/marketplaces/task-templates"
-          element={<Navigate to="/marketplace/task-library" replace />}
-        />
-        <Route
-          path="/marketplaces/task-templates/:templateId"
-          element={
-            <RouteGuard>
-              <TaskTemplateDetailPage />
-            </RouteGuard>
-          }
-        />
-        <Route
-          path="/marketplaces/work-directory"
-          element={<Navigate to="/marketplace/work-directory" replace />}
-        />
-        <Route
-          path="/marketplace/analytics"
-          element={<Navigate to="/marketplace/analytics-discovery" replace />}
-        />
-        <Route
-          path="/marketplaces/analytics"
-          element={<Navigate to="/marketplace/analytics-discovery" replace />}
-        />
-
-        <Route
-          path="/marketplace/discern"
-          element={<Navigate to={MARKETPLACE_4D_DESTINATIONS.discern} replace />}
-        />
-        <Route
-          path="/marketplace/design"
-          element={<Navigate to={MARKETPLACE_4D_DESTINATIONS.design} replace />}
-        />
-        <Route
-          path="/marketplace/deploy"
-          element={<Navigate to={MARKETPLACE_4D_DESTINATIONS.deploy} replace />}
-        />
-        <Route
-          path="/marketplace/drive"
-          element={<Navigate to={MARKETPLACE_4D_DESTINATIONS.drive} replace />}
-        />
-
-        <Route
-          path="/marketplace/services"
-          element={
-            <RouteGuard>
-              <ServicesMarketplacePage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/marketplace/services/:serviceId"
-          element={
-            <RouteGuard>
-              <ServiceDetailPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/marketplace/task-library"
-          element={
-            <RouteGuard>
-              <TaskTemplatesMarketplacePage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/marketplace/task-library/:templateId"
-          element={
-            <RouteGuard>
-              <TaskTemplateDetailPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/marketplaces/task-review"
-          element={
-            <RouteGuard>
-              <TaskReviewQueuePage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/marketplaces/task-closure-quality"
-          element={
-            <RouteGuard>
-              <TaskClosureQualityPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/marketplaces/task-signals"
-          element={
-            <RouteGuard>
-              <ExecutiveTaskSignalPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/marketplace/knowledge-discovery"
-          element={
-            <RouteGuard>
-              <KnowledgeMarketplacePage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/marketplace/knowledge-discovery/:knowledgeId"
-          element={
-            <RouteGuard>
-              <KnowledgeDetailPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/knowledge/review"
-          element={
-            <RouteGuard>
-              <KnowledgeReviewQueuePage />
-            </RouteGuard>
-          }
-        />
-
-        {/* Legacy redirect */}
-        <Route
-          path="/marketplaces/knowledge-review"
-          element={<Navigate to="/knowledge/review" replace />}
-        />
-
-        <Route
-          path="/intelligence/knowledge-signals"
-          element={
-            <RouteGuard>
-              <ExecutiveKnowledgeSignalPage />
-            </RouteGuard>
-          }
-        />
-
-        {/* Legacy redirect */}
-        <Route
-          path="/marketplaces/knowledge-signals"
-          element={<Navigate to="/intelligence/knowledge-signals" replace />}
-        />
-
-        <Route
-          path="/marketplace/work-directory"
-          element={
-            <RouteGuard>
-              <WorkDirectoryMarketplacePage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/marketplace/analytics-discovery"
-          element={<AnalyticsMarketplacePage />}
-        />
-
-        <Route
-          path="/marketplace/feedback"
-          element={
-            <RouteGuard>
-              <MarketplaceFeedbackPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/requests/:requestId/status"
-          element={
-            <RouteGuard>
-              <RequestStatusPage />
-            </RouteGuard>
-          }
-        />
-      </Route>
-      <Route
-        path="/services/submit-request"
-        element={<Navigate to="/marketplace/services" replace />}
-      />
-
-      <Route element={<Stage02Layout />}>
-        <Route path="/home" element={<HomeLandingPage />} />
-        <Route path="/orientation" element={<Navigate to="/home" replace />} />
-        <Route path="/orientation/dashboard" element={<Stage0OrientationPage />} />
-        <Route path="/orientation/:groupId" element={<OrientationFeatureGroupPage />} />
-        <Route path="/marketplace/catalogue" element={<MarketplaceFeatureGroupPage />} />
-        <Route path="/marketplace/transaction" element={<MarketplaceFeatureGroupPage />} />
-        <Route path="/marketplace/collaboration" element={<MarketplaceFeatureGroupPage />} />
-        <Route path="/marketplace/catalogues" element={<Navigate to="/marketplace/catalogue" replace />} />
-        <Route path="/marketplace/transactions" element={<Navigate to="/marketplace/transaction" replace />} />
-        <Route path="/dashboard" element={<Stage02WorkspacePage />} />
-        <Route path="/ai-cockpit" element={<AiCockpitPage />} />
-        <Route path="/help-support" element={<OperatingGuidePage />} />
-        <Route path="/workspace" element={<WorkspaceMyWorkPage />} />
-        <Route
-          path="/stage02/workspace"
-          element={<Navigate to="/workspace" replace />}
-        />
-        <Route
-          path="/stage02/tasks"
-          element={<Stage02SectionPage section="tasks" />}
-        />
-        <Route
-          path="/stage02/workflows"
-          element={<Stage02SectionPage section="workflows" />}
-        />
-        <Route
-          path="/stage02/trackers"
-          element={<Stage02SectionPage section="trackers" />}
-        />
-        <Route path="/tasks/my-work" element={<RouteGuard><MyWorkPage /></RouteGuard>} />
-        <Route path="/tasks/my-work/assigned-tasks" element={<RouteGuard><AssignedWorkPage /></RouteGuard>} />
-        <Route path="/tasks/my-work/assigned-tasks/:taskId" element={<RouteGuard><TaskDetailsPage /></RouteGuard>} />
-        <Route path="/tasks/task-board/kanban-view" element={<RouteGuard><KanbanBoardPage /></RouteGuard>} />
-        <Route path="/tracker/tracker-hub" element={<RouteGuard><TrackerHubPage /></RouteGuard>} />
-        <Route path="/tracker/active-tracker/:trackerSlug/records/:recordId" element={<RouteGuard><ActiveTrackerPage /></RouteGuard>} />
-        <Route path="/tracker/active-tracker/:trackerSlug" element={<RouteGuard><ActiveTrackerPage /></RouteGuard>} />
-        <Route
-          path="/analytics/execution-analytics/execution-overview"
-          element={
-            <RouteGuard>
-              <ExecutionDashboardPage />
-            </RouteGuard>
-          }
-        />
-        <Route
-          path="/reports/execution-dashboard"
-          element={<Navigate to="/analytics/execution-analytics/execution-overview" replace />}
-        />
-        {featureAreas.map((area) => (
-          <React.Fragment key={area.id}>
-            <Route
-              path={area.route}
-              element={
-                <RouteGuard>
-                  <FeatureAreaRoute areaId={area.id} />
-                </RouteGuard>
-              }
-            />
-            {area.featureGroups.map((group) => (
-              <React.Fragment key={group.id}>
-                <Route
-                  path={group.route}
-                  element={
-                    <RouteGuard>
-                      <FeatureGroupRoute areaId={area.id} groupId={group.id} />
-                    </RouteGuard>
-                  }
-                />
-                {group.features.map((feature) => {
-                  const taskPage =
-                    area.id === "tasks"
-                      ? renderTaskFeaturePage(feature.route)
-                      : null;
-                  const trackerPage =
-                    area.id === "tracker"
-                      ? renderTrackerFeaturePage(feature.route)
-                      : null;
-                  return (
-                    <Route
-                      key={feature.id}
-                      path={feature.route}
-                      element={
-                        <RouteGuard>
-                          {taskPage || trackerPage || (
-                            <FeatureWorkspaceRoute
-                              areaId={area.id}
-                              groupId={group.id}
-                              featureId={feature.id}
-                            />
-                          )}
-                        </RouteGuard>
-                      }
-                    />
-                  );
-                })}
-              </React.Fragment>
-            ))}
-          </React.Fragment>
-        ))}
-        <Route
-          path="/stage02/performance"
-          element={<Navigate to="/performance/overview" replace />}
-        />
-        <Route
-          path="/stage02/performance/overview"
-          element={<Navigate to="/performance/overview" replace />}
-        />
-        <Route
-          path="/stage02/performance/goals"
-          element={<Navigate to="/performance/goals" replace />}
-        />
-        <Route
-          path="/stage02/performance/evaluation"
-          element={<Navigate to="/performance/evaluation" replace />}
-        />
-        <Route
-          path="/stage02/performance/feedback"
-          element={<Navigate to="/performance/feedback" replace />}
-        />
-        <Route
-          path="/stage02/performance/learning"
-          element={<Navigate to="/performance/learning-progress" replace />}
-        />
-        <Route
-          path="/stage02/performance/contribution-history"
-          element={<Navigate to="/performance/contribution-history" replace />}
-        />
-        <Route
-          path="/stage02/performance/role-performance"
-          element={<Navigate to="/performance/role" replace />}
-        />
-        <Route
-          path="/stage02/governance"
-          element={<Stage02SectionPage section="governance" />}
-        />
-        <Route
-          path="/stage02/knowledge"
-          element={<Stage02SectionPage section="knowledge" />}
-        />
-        <Route
-          path="/stage02/people"
-          element={<Stage02SectionPage section="people" />}
-        />
-        <Route
-          path="/stage02/reports"
-          element={<Stage02SectionPage section="reports" />}
-        />
-        <Route
-          path="/workspace/my-work"
-          element={<Navigate to="/workspace" replace />}
-        />
-        <Route
-          path="/workspace/notifications"
-          element={<Navigate to="/workspace/activity" replace />}
-        />
-        <Route
-          path="/knowledge"
-          element={<Navigate to="/marketplace/knowledge-discovery" replace />}
-        />
-        <Route
-          path="/knowledge/ghc"
-          element={<Navigate to="/marketplace/knowledge-discovery" replace />}
-        />
-        <Route
-          path="/knowledge/6xd"
-          element={<Navigate to="/marketplace/knowledge-discovery" replace />}
-        />
-        <Route
-          path="/knowledge/references"
-          element={<Navigate to="/marketplace/knowledge-discovery" replace />}
-        />
-        <Route
-          path="/knowledge/playbooks-templates"
-          element={<Navigate to="/marketplace/knowledge-discovery" replace />}
-        />
-        <Route
-          path="/knowledge/learning-references"
-          element={<Navigate to="/marketplace/knowledge-discovery" replace />}
-        />
-        <Route
-          path="/knowledge/recommendations"
-          element={<Navigate to="/marketplace/knowledge-discovery" replace />}
-        />
-        <Route
-          path="/people/directory"
-          element={<Navigate to="/marketplace/work-directory" replace />}
-        />
-        <Route
-          path="/people/teams"
-          element={<Navigate to="/marketplace/work-directory" replace />}
-        />
-        <Route
-          path="/people/units"
-          element={<Navigate to="/marketplace/work-directory" replace />}
-        />
-        <Route
-          path="/people/owners-experts"
-          element={<Navigate to="/marketplace/work-directory" replace />}
-        />
-        <Route
-          path="/people/service-owners"
-          element={<Navigate to="/marketplace/work-directory" replace />}
-        />
-        <Route
-          path="/people/contact-points"
-          element={<Navigate to="/marketplace/work-directory" replace />}
-        />
-        <Route
-          path="/people/roles"
-          element={<Navigate to="/marketplace/work-directory" replace />}
-        />
-        <Route
-          path="/performance/team"
-          element={<Navigate to="/reports/team-unit-performance" replace />}
-        />
-        <Route
-          path="/performance/unit"
-          element={<Navigate to="/reports/team-unit-performance" replace />}
-        />
-        <Route path="/trackers" element={<Navigate to="/tracker" replace />} />
-        <Route
-          path="/trackers/my-items"
-          element={
-            <Navigate to="/tracker/tracker-hub/my-tracker-overview" replace />
-          }
-        />
-        <Route
-          path="/trackers/governance-actions"
-          element={
-            <Navigate
-              to="/tracker/decision-outcome-tracker/decision-log"
-              replace
-            />
-          }
-        />
-        <Route
-          path="/trackers/strategic-initiatives"
-          element={
-            <Navigate
-              to="/tracker/decision-outcome-tracker/outcome-progress"
-              replace
-            />
-          }
-        />
-        <Route
-          path="/trackers/workload-distribution"
-          element={
-            <Navigate to="/tracker/tracker-hub/team-tracker-overview" replace />
-          }
-        />
-        <Route
-          path="/workflows/centre"
-          element={<Navigate to="/workflows/workflow-centre" replace />}
-        />
-        <Route
-          path="/workflows/my-workflows"
-          element={
-            <Navigate
-              to="/workflows/workflow-centre/active-workflows"
-              replace
-            />
-          }
-        />
-        <Route
-          path="/workflows/pending-approvals"
-          element={
-            <Navigate
-              to="/workflows/workflow-inbox/my-pending-actions"
-              replace
-            />
-          }
-        />
-        <Route
-          path="/workflows/sla-risks"
-          element={
-            <Navigate
-              to="/workflows/workflow-routing-state-control/sla-timer-trigger"
-              replace
-            />
-          }
-        />
-        <Route
-          path="/workflow/approvals"
-          element={
-            <Navigate
-              to="/workflows/workflow-inbox/my-pending-actions"
-              replace
-            />
-          }
-        />
-        <Route
-          path="/tasks/my-tasks"
-          element={<Navigate to="/workspace/my-tasks" replace />}
-        />
-        <Route
-          path="/tasks/all"
-          element={
-            <RouteGuard>
-              <TasksAllPage />
-            </RouteGuard>
-          }
-        />
-        <Route
-          path="/tasks/create"
-          element={
-            <RouteGuard>
-              <TasksCreatePage />
-            </RouteGuard>
-          }
-        />
-        <Route
-          path="/tasks/templates"
-          element={
-            <RouteGuard>
-              <TasksTemplatesPage />
-            </RouteGuard>
-          }
-        />
-        <Route
-          path="/tasks/review"
-          element={
-            <RouteGuard>
-              <TasksReviewPage />
-            </RouteGuard>
-          }
-        />
-        <Route
-          path="/tasks/blocked"
-          element={
-            <RouteGuard>
-              <TasksBlockedPage />
-            </RouteGuard>
-          }
-        />
-        <Route
-          path="/tasks/closure-quality"
-          element={
-            <RouteGuard>
-              <TasksClosureQualityPage />
-            </RouteGuard>
-          }
-        />
-        <Route
-          path="/tasks/evidence"
-          element={
-            <RouteGuard>
-              <TasksEvidencePage />
-            </RouteGuard>
-          }
-        />
-        {navigationItems.map((item) => (
+        {/* Stage 0 Orientation Shell Routes */}
+        <Route element={<Stage0ShellLayout />}>
           <Route
-            key={item.id}
-            path={item.route}
+            path="/stage-0/orientation"
+            element={<Navigate to="/home" replace />}
+          />
+
+          <Route
+            path="/stage-0/operating-guide"
             element={
-              <DwsRouteGuard route={item.route}>
-                {renderDwsRoute(item.route)}
-              </DwsRouteGuard>
+              <RouteGuard>
+                <OperatingGuidePage />
+              </RouteGuard>
             }
           />
-        ))}
-      </Route>
 
-      {/* App Layout Routes */}
-      <Route element={<AppLayout />}>
-        <Route
-          path="/workspace/my-work"
-          element={<Navigate to="/workspace" replace />}
-        />
-
-        <Route
-          path="/workspace/my-tasks"
-          element={
-            <RouteGuard>
-              <MyTasksPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/workspace/my-requests"
-          element={
-            <RouteGuard>
-              <MyRequestsPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/workspace/my-updates"
-          element={
-            <RouteGuard>
-              <MyUpdatesPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/workspace/my-blockers"
-          element={
-            <RouteGuard>
-              <MyBlockersPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/workspace/notifications"
-          element={<Navigate to="/workspace/activity" replace />}
-        />
-
-        <Route
-          path="/workspace/knowledge-context"
-          element={
-            <RouteGuard>
-              <KnowledgeContextPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/workspace/assigned-work"
-          element={
-            <RouteGuard>
-              <AssignedWorkPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/tasks/my-work/assigned-tasks"
-          element={
-          <RouteGuard>
-              <AssignedWorkPage />
-            </RouteGuard>
-          } />
-
-        <Route
-          path="/tasks/my-work/assigned-tasks/:taskId"
-          element={
-          <RouteGuard>
-              <TaskDetailsPage />
-            </RouteGuard>
-          } />
-
-        <Route
-          path="/workspace/evidence-queue"
-          element={
-            <RouteGuard>
-              <EvidenceQueuePage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/workspace/closure-requests"
-          element={
-            <RouteGuard>
-              <ClosureRequestsPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/workspace/objective-linked-tasks"
-          element={
-            <RouteGuard>
-              <ObjectiveLinkedTasksPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/tasks/:taskId"
-          element={
-            <RouteGuard>
-              <TaskDetailStatusPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/agile/agile-execution"
-          element={
-            <RouteGuard>
-              <AgileExecutionPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/agile/missing-updates"
-          element={
-            <RouteGuard>
-              <MissingUpdatesPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/agile/blocker-review"
-          element={
-            <RouteGuard>
-              <BlockerReviewPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/agile/task-hygiene"
-          element={
-            <RouteGuard>
-              <TaskHygieneReviewPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/agile/closure-risks"
-          element={
-            <RouteGuard>
-              <ClosureQualityRisksPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/agile/working-sessions"
-          element={
-            <RouteGuard>
-              <WorkingSessionsPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/agile/reminders"
-          element={
-            <RouteGuard>
-              <ReminderPromptsPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/agile/objective-task-review"
-          element={
-            <RouteGuard>
-              <ObjectiveLinkedTasksPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/agile/task-structure-gaps"
-          element={
-            <RouteGuard>
-              <TaskStructureReviewPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/workflow/escalations"
-          element={
-            <RouteGuard>
-              <EscalationsPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/execution/decision-log"
-          element={
-            <RouteGuard>
-              <DecisionLogPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/operations/team-execution"
-          element={
-            <RouteGuard>
-              <TeamExecutionPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/team/tasks"
-          element={
-            <RouteGuard>
-              <TeamTasksPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/team/workload"
-          element={
-            <RouteGuard>
-              <WorkloadBoardPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/team/assign-task"
-          element={
-            <RouteGuard>
-              <AssignTaskPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/team/blocked-overdue"
-          element={
-            <RouteGuard>
-              <BlockedOverduePage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/team/approvals"
-          element={
-            <RouteGuard>
-              <PendingApprovalsPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/team/closure-quality"
-          element={
-            <RouteGuard>
-              <ClosureQualityPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/team/performance"
-          element={
-            <RouteGuard>
-              <TeamPerformancePage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/team/sessions"
-          element={
-            <RouteGuard>
-              <SessionBoardPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/team/session-actions"
-          element={
-            <RouteGuard>
-              <SessionActionsPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/team/session-decisions"
-          element={
-            <RouteGuard>
-              <SessionDecisionsPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/team/objective-linked-tasks"
-          element={
-            <RouteGuard>
-              <ObjectiveLinkedTasksPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/team/task-structure-review"
-          element={
-            <RouteGuard>
-              <TaskStructureReviewPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/team/task-templates"
-          element={
-            <RouteGuard>
-              <TaskTemplateGovernancePage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/operations/unit-visibility"
-          element={
-            <RouteGuard>
-              <UnitVisibilityPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/unit/workload"
-          element={
-            <RouteGuard>
-              <UnitWorkloadPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/unit/delivery-health"
-          element={
-            <RouteGuard>
-              <DeliveryHealthPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/unit/sla-trends"
-          element={
-            <RouteGuard>
-              <SlaTrendsPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/unit/governance-risks"
-          element={
-            <RouteGuard>
-              <GovernanceRisksPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/unit/outcome-progress"
-          element={
-            <RouteGuard>
-              <OutcomeProgressPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/unit/performance"
-          element={
-            <RouteGuard>
-              <UnitPerformancePage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/unit/approvals"
-          element={
-            <RouteGuard>
-              <UnitApprovalsPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/unit/governance-dashboard"
-          element={
-            <RouteGuard>
-              <GovernanceDashboardPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/unit/operating-discipline"
-          element={
-            <RouteGuard>
-              <OperatingDisciplineUnitPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/unit/strategy-linked-tasks"
-          element={
-            <RouteGuard>
-              <ObjectiveLinkedTasksPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/unit/task-governance-health"
-          element={
-            <RouteGuard>
-              <TaskStructureReviewPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/operations/hra-workflow"
-          element={
-            <RouteGuard>
-              <HraWorkflowPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/hra/requests"
-          element={
-            <RouteGuard>
-              <HraRequestsPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/hra/new-joiner"
-          element={
-            <RouteGuard>
-              <NewJoinerOnboardingPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/hra/role-transition"
-          element={
-            <RouteGuard>
-              <RoleTransitionPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/hra/workforce-readiness"
-          element={
-            <RouteGuard>
-              <WorkforceReadinessPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/hra/policy-checks"
-          element={
-            <RouteGuard>
-              <PolicyChecksPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/hra/readiness-requests"
-          element={
-            <RouteGuard>
-              <EmployeeReadinessRequestsPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/hra/approvals"
-          element={
-            <RouteGuard>
-              <HraApprovalsPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/hra/fulfilment-queue"
-          element={
-            <RouteGuard>
-              <HraFulfilmentQueuePage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/hra/guides"
-          element={
-            <RouteGuard>
-              <HraGuidesPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/hra/playbooks"
-          element={
-            <RouteGuard>
-              <OnboardingPlaybooksPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/hra/policy-references"
-          element={
-            <RouteGuard>
-              <PolicyReferencesPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/support/operations"
-          element={
-            <RouteGuard>
-              <SupportOperationsPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/admin/console"
-          element={
-            <RouteGuard>
-              <AdminConsolePage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/execution/workflow"
-          element={
-            <RouteGuard>
-              <WorkflowCentrePage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/intelligence/sla"
-          element={
-            <RouteGuard>
-              <SlaDashboardPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/executive/enterprise-execution"
-          element={
-            <RouteGuard>
-              <ExecutiveEnterprisePage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/admin/audit-log"
-          element={
-            <RouteGuard>
-              <AuditLogPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/admin/users-roles"
-          element={
-            <RouteGuard>
-              <UsersRolesPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/admin/org-setup"
-          element={
-            <RouteGuard>
-              <OrgSetupPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/admin/task-model"
-          element={
-            <RouteGuard>
-              <TaskModelConfigPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/admin/task-attributes"
-          element={
-            <RouteGuard>
-              <TaskAttributeLibraryPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/admin/task-sections"
-          element={
-            <RouteGuard>
-              <TaskSectionBuilderPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/admin/task-permissions"
-          element={
-            <RouteGuard>
-              <TaskPermissionRulesPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/admin/task-templates"
-          element={
-            <RouteGuard>
-              <TaskTemplateGovernancePage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/admin/request-categories"
-          element={
-            <RouteGuard>
-              <RequestCategoriesPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/admin/workflow-rules"
-          element={
-            <RouteGuard>
-              <WorkflowRulesPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/admin/sla-notifications"
-          element={
-            <RouteGuard>
-              <SlaNotificationsPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/admin/knowledge-taxonomy"
-          element={
-            <RouteGuard>
-              <KnowledgeTaxonomyPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/admin/integrations"
-          element={
-            <RouteGuard>
-              <IntegrationsPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/admin/ai-automation"
-          element={
-            <RouteGuard>
-              <AiAutomationPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/admin/change-governance"
-          element={
-            <RouteGuard>
-              <ChangeGovernancePage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/admin/config-review"
-          element={
-            <RouteGuard>
-              <ConfigReviewPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/admin/permission-exceptions"
-          element={
-            <RouteGuard>
-              <PermissionExceptionsPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/support/central-queue"
-          element={
-            <RouteGuard>
-              <CentralSupportQueuePage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/support/triage"
-          element={
-            <RouteGuard>
-              <TriageNeededPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/support/missing-input"
-          element={
-            <RouteGuard>
-              <MissingInputRequestsPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/support/routed"
-          element={
-            <RouteGuard>
-              <RoutedRequestsPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/support/sla-risk"
-          element={
-            <RouteGuard>
-              <SlaRiskQueuePage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/support/closure-queue"
-          element={
-            <RouteGuard>
-              <ClosureQueuePage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/support/knowledge-assistance"
-          element={
-            <RouteGuard>
-              <KnowledgeAssistancePage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/support/fulfilment-queues"
-          element={
-            <RouteGuard>
-              <FulfilmentOwnerQueuesPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/support/request-status"
-          element={
-            <RouteGuard>
-              <SupportRequestStatusPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/support/dashboard"
-          element={
-            <RouteGuard>
-              <SupportDashboardPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/executive/strategic-initiatives"
-          element={
-            <RouteGuard>
-              <StrategicInitiativesPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/executive/governance-health"
-          element={
-            <RouteGuard>
-              <GovernanceHealthPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/executive/sla-exposure"
-          element={
-            <RouteGuard>
-              <SlaExposurePage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/executive/enterprise-performance"
-          element={
-            <RouteGuard>
-              <EnterprisePerformancePage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/executive/team-unit-performance"
-          element={
-            <RouteGuard>
-              <TeamUnitPerformancePage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/executive/outcome-tracking"
-          element={
-            <RouteGuard>
-              <OutcomeTrackingPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/executive/value-delivery"
-          element={
-            <RouteGuard>
-              <ValueDeliveryPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/executive/critical-escalations"
-          element={
-            <RouteGuard>
-              <CriticalEscalationsPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/executive/operating-discipline"
-          element={
-            <RouteGuard>
-              <ExecutiveOperatingDisciplinePage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/executive/decision-log"
-          element={
-            <RouteGuard>
-              <ExecutiveDecisionLogPage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/executive/strategy-linked-tasks"
-          element={
-            <RouteGuard>
-              <StrategyLinkedTasksPage />
-            </RouteGuard>
-          }
-        />
-
-        {/* Service Lifecycle downstream routes (Prompt 5 & 6) */}
-        <Route
-          path="/service-owner/requests"
-          element={
-            <RouteGuard>
-              <ServiceOwnerQueuePage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/workflow/approvals"
-          element={
-            <RouteGuard>
-              <ApproverQueuePage />
-            </RouteGuard>
-          }
-        />
-
-        <Route
-          path="/intelligence/service-signals"
-          element={
-            <RouteGuard>
-              <ExecutiveSignalPage />
-            </RouteGuard>
-          }
-        />
-
-        {/* Catch-all for unbuilt routes */}
-        <Route
-          path="*"
-          element={
-            <RouteGuard>
-              <PlaceholderPage
-                title="Route Not Found"
-                description="This route is either a placeholder or does not exist."
+          <Route
+            path="/onboarding"
+            element={
+              <RouteGuard>
+                <OnboardingPage />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/stage-0/action/:actionId"
+            element={
+              <RouteGuard>
+                <Stage0ActionPage />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/stage-0/platform-updates"
+            element={
+              <RouteGuard>
+                <Stage0PlatformUpdatesPage />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/stage-0/platform-updates/:updateId"
+            element={
+              <RouteGuard>
+                <Stage0PlatformUpdatesPage />
+              </RouteGuard>
+            }
+          />
+        </Route>
+
+        {/* Marketplace Layout Routes */}
+        <Route element={<MarketplaceLayout />}>
+          <Route
+            path="/requests/start/:serviceId"
+            element={
+              <RouteGuard>
+                <RequestWorkflowPage />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/marketplace"
+            element={<Navigate to={DEFAULT_MARKETPLACE_ROUTE} replace />}
+          />
+          <Route
+            path="/marketplaces"
+            element={<Navigate to="/marketplace" replace />}
+          />
+          <Route
+            path="/marketplaces/discern"
+            element={<Navigate to="/marketplace/discern" replace />}
+          />
+          <Route
+            path="/marketplaces/design"
+            element={<Navigate to="/marketplace/design" replace />}
+          />
+          <Route
+            path="/marketplaces/deploy"
+            element={<Navigate to="/marketplace/deploy" replace />}
+          />
+          <Route
+            path="/marketplaces/drive"
+            element={<Navigate to="/marketplace/drive" replace />}
+          />
+          <Route
+            path="/marketplace/deliver"
+            element={<Navigate to="/marketplace/deploy" replace />}
+          />
+          <Route
+            path="/marketplaces/deliver"
+            element={<Navigate to="/marketplace/deploy" replace />}
+          />
+          <Route
+            path="/marketplaces/feedback"
+            element={<Navigate to="/marketplace/feedback" replace />}
+          />
+          <Route
+            path="/marketplaces/services"
+            element={<Navigate to="/marketplace/services" replace />}
+          />
+          <Route
+            path="/marketplaces/services/:serviceId"
+            element={
+              <RouteGuard>
+                <ServiceDetailPage />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/marketplace/knowledge"
+            element={<Navigate to="/marketplace/knowledge-discovery" replace />}
+          />
+          <Route
+            path="/marketplaces/knowledge"
+            element={<Navigate to="/marketplace/knowledge-discovery" replace />}
+          />
+          <Route
+            path="/marketplaces/knowledge/:knowledgeId"
+            element={
+              <RouteGuard>
+                <KnowledgeDetailPage />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/marketplace/task-templates"
+            element={<Navigate to="/marketplace/task-library" replace />}
+          />
+          <Route
+            path="/marketplaces/task-templates"
+            element={<Navigate to="/marketplace/task-library" replace />}
+          />
+          <Route
+            path="/marketplaces/task-templates/:templateId"
+            element={
+              <RouteGuard>
+                <TaskTemplateDetailPage />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/marketplaces/work-directory"
+            element={<Navigate to="/marketplace/work-directory" replace />}
+          />
+          <Route
+            path="/marketplace/analytics"
+            element={<Navigate to="/marketplace/analytics-discovery" replace />}
+          />
+          <Route
+            path="/marketplaces/analytics"
+            element={<Navigate to="/marketplace/analytics-discovery" replace />}
+          />
+
+          <Route
+            path="/marketplace/discern"
+            element={
+              <Navigate to={MARKETPLACE_4D_DESTINATIONS.discern} replace />
+            }
+          />
+          <Route
+            path="/marketplace/design"
+            element={
+              <Navigate to={MARKETPLACE_4D_DESTINATIONS.design} replace />
+            }
+          />
+          <Route
+            path="/marketplace/deploy"
+            element={
+              <Navigate to={MARKETPLACE_4D_DESTINATIONS.deploy} replace />
+            }
+          />
+          <Route
+            path="/marketplace/drive"
+            element={
+              <Navigate to={MARKETPLACE_4D_DESTINATIONS.drive} replace />
+            }
+          />
+
+          <Route
+            path="/marketplace/services"
+            element={
+              <RouteGuard>
+                <ServicesMarketplacePage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/marketplace/services/:serviceId"
+            element={
+              <RouteGuard>
+                <ServiceDetailPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/marketplace/task-library"
+            element={
+              <RouteGuard>
+                <TaskTemplatesMarketplacePage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/marketplace/task-library/:templateId"
+            element={
+              <RouteGuard>
+                <TaskTemplateDetailPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/marketplaces/task-review"
+            element={
+              <RouteGuard>
+                <TaskReviewQueuePage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/marketplaces/task-closure-quality"
+            element={
+              <RouteGuard>
+                <TaskClosureQualityPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/marketplaces/task-signals"
+            element={
+              <RouteGuard>
+                <ExecutiveTaskSignalPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/marketplace/knowledge-discovery"
+            element={
+              <RouteGuard>
+                <KnowledgeMarketplacePage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/marketplace/knowledge-discovery/:knowledgeId"
+            element={
+              <RouteGuard>
+                <KnowledgeDetailPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/knowledge/review"
+            element={
+              <RouteGuard>
+                <KnowledgeReviewQueuePage />
+              </RouteGuard>
+            }
+          />
+
+          {/* Legacy redirect */}
+          <Route
+            path="/marketplaces/knowledge-review"
+            element={<Navigate to="/knowledge/review" replace />}
+          />
+
+          <Route
+            path="/intelligence/knowledge-signals"
+            element={
+              <RouteGuard>
+                <ExecutiveKnowledgeSignalPage />
+              </RouteGuard>
+            }
+          />
+
+          {/* Legacy redirect */}
+          <Route
+            path="/marketplaces/knowledge-signals"
+            element={<Navigate to="/intelligence/knowledge-signals" replace />}
+          />
+
+          <Route
+            path="/marketplace/work-directory"
+            element={
+              <RouteGuard>
+                <WorkDirectoryMarketplacePage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/marketplace/analytics-discovery"
+            element={<AnalyticsMarketplacePage />}
+          />
+
+          <Route
+            path="/marketplace/drive/tracker-marketplace"
+            element={<TrackerMarketplacePage />}
+          />
+
+          <Route
+            path="/marketplace/drive/tracker-marketplace/:trackerSlug"
+            element={<TrackerDetailsPage />}
+          />
+
+          <Route
+            path="/marketplace/feedback"
+            element={
+              <RouteGuard>
+                <MarketplaceFeedbackPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/requests/:requestId/status"
+            element={
+              <RouteGuard>
+                <RequestStatusPage />
+              </RouteGuard>
+            }
+          />
+        </Route>
+        <Route
+          path="/services/submit-request"
+          element={<Navigate to="/marketplace/services" replace />}
+        />
+
+        <Route element={<Stage02Layout />}>
+          <Route path="/home" element={<HomeLandingPage />} />
+          <Route
+            path="/orientation"
+            element={<Navigate to="/home" replace />}
+          />
+          <Route
+            path="/orientation/dashboard"
+            element={<Stage0OrientationPage />}
+          />
+          <Route
+            path="/orientation/:groupId"
+            element={<OrientationFeatureGroupPage />}
+          />
+          <Route
+            path="/marketplace/catalogue"
+            element={<MarketplaceFeatureGroupPage />}
+          />
+          <Route
+            path="/marketplace/transaction"
+            element={<MarketplaceFeatureGroupPage />}
+          />
+          <Route
+            path="/marketplace/collaboration"
+            element={<MarketplaceFeatureGroupPage />}
+          />
+          <Route
+            path="/marketplace/catalogues"
+            element={<Navigate to="/marketplace/catalogue" replace />}
+          />
+          <Route
+            path="/marketplace/transactions"
+            element={<Navigate to="/marketplace/transaction" replace />}
+          />
+          <Route path="/dashboard" element={<Stage02WorkspacePage />} />
+          <Route path="/ai-cockpit" element={<AiCockpitPage />} />
+          <Route path="/help-support" element={<OperatingGuidePage />} />
+          <Route path="/workspace" element={<WorkspaceMyWorkPage />} />
+          <Route
+            path="/stage02/workspace"
+            element={<Navigate to="/workspace" replace />}
+          />
+          <Route
+            path="/stage02/tasks"
+            element={<Stage02SectionPage section="tasks" />}
+          />
+          <Route
+            path="/stage02/workflows"
+            element={<Stage02SectionPage section="workflows" />}
+          />
+          <Route
+            path="/stage02/trackers"
+            element={<Stage02SectionPage section="trackers" />}
+          />
+          <Route
+            path="/tasks/my-work"
+            element={
+              <RouteGuard>
+                <MyWorkPage />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/tasks/my-work/assigned-tasks"
+            element={
+              <RouteGuard>
+                <AssignedWorkPage />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/tasks/my-work/assigned-tasks/:taskId"
+            element={
+              <RouteGuard>
+                <TaskDetailsPage />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/tasks/task-board/kanban-view"
+            element={
+              <RouteGuard>
+                <KanbanBoardPage />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/tracker/tracker-hub"
+            element={
+              <RouteGuard>
+                <TrackerHubPage />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/tracker/active-tracker/:trackerSlug/records/:recordId"
+            element={
+              <RouteGuard>
+                <ActiveTrackerPage />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/tracker/active-tracker/:trackerSlug"
+            element={
+              <RouteGuard>
+                <ActiveTrackerPage />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/analytics/execution-analytics/execution-overview"
+            element={
+              <RouteGuard>
+                <ExecutionDashboardPage />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/reports/execution-dashboard"
+            element={
+              <Navigate
+                to="/analytics/execution-analytics/execution-overview"
+                replace
               />
-            </RouteGuard>
-          }
-        />
-      </Route>
+            }
+          />
+          {featureAreas.map((area) => (
+            <React.Fragment key={area.id}>
+              <Route
+                path={area.route}
+                element={
+                  <RouteGuard>
+                    <FeatureAreaRoute areaId={area.id} />
+                  </RouteGuard>
+                }
+              />
+              {area.featureGroups.map((group) => (
+                <React.Fragment key={group.id}>
+                  <Route
+                    path={group.route}
+                    element={
+                      <RouteGuard>
+                        <FeatureGroupRoute
+                          areaId={area.id}
+                          groupId={group.id}
+                        />
+                      </RouteGuard>
+                    }
+                  />
+                  {group.features.map((feature) => {
+                    const taskPage =
+                      area.id === "tasks"
+                        ? renderTaskFeaturePage(feature.route)
+                        : null;
+                    const trackerPage =
+                      area.id === "tracker"
+                        ? renderTrackerFeaturePage(feature.route)
+                        : null;
+                    return (
+                      <Route
+                        key={feature.id}
+                        path={feature.route}
+                        element={
+                          <RouteGuard>
+                            {taskPage || trackerPage || (
+                              <FeatureWorkspaceRoute
+                                areaId={area.id}
+                                groupId={group.id}
+                                featureId={feature.id}
+                              />
+                            )}
+                          </RouteGuard>
+                        }
+                      />
+                    );
+                  })}
+                </React.Fragment>
+              ))}
+            </React.Fragment>
+          ))}
+          <Route
+            path="/stage02/performance"
+            element={<Navigate to="/performance/overview" replace />}
+          />
+          <Route
+            path="/stage02/performance/overview"
+            element={<Navigate to="/performance/overview" replace />}
+          />
+          <Route
+            path="/stage02/performance/goals"
+            element={<Navigate to="/performance/goals" replace />}
+          />
+          <Route
+            path="/stage02/performance/evaluation"
+            element={<Navigate to="/performance/evaluation" replace />}
+          />
+          <Route
+            path="/stage02/performance/feedback"
+            element={<Navigate to="/performance/feedback" replace />}
+          />
+          <Route
+            path="/stage02/performance/learning"
+            element={<Navigate to="/performance/learning-progress" replace />}
+          />
+          <Route
+            path="/stage02/performance/contribution-history"
+            element={
+              <Navigate to="/performance/contribution-history" replace />
+            }
+          />
+          <Route
+            path="/stage02/performance/role-performance"
+            element={<Navigate to="/performance/role" replace />}
+          />
+          <Route
+            path="/stage02/governance"
+            element={<Stage02SectionPage section="governance" />}
+          />
+          <Route
+            path="/stage02/knowledge"
+            element={<Stage02SectionPage section="knowledge" />}
+          />
+          <Route
+            path="/stage02/people"
+            element={<Stage02SectionPage section="people" />}
+          />
+          <Route
+            path="/stage02/reports"
+            element={<Stage02SectionPage section="reports" />}
+          />
+          <Route
+            path="/workspace/my-work"
+            element={<Navigate to="/workspace" replace />}
+          />
+          <Route
+            path="/workspace/notifications"
+            element={<Navigate to="/workspace/activity" replace />}
+          />
+          <Route
+            path="/knowledge"
+            element={<Navigate to="/marketplace/knowledge-discovery" replace />}
+          />
+          <Route
+            path="/knowledge/ghc"
+            element={<Navigate to="/marketplace/knowledge-discovery" replace />}
+          />
+          <Route
+            path="/knowledge/6xd"
+            element={<Navigate to="/marketplace/knowledge-discovery" replace />}
+          />
+          <Route
+            path="/knowledge/references"
+            element={<Navigate to="/marketplace/knowledge-discovery" replace />}
+          />
+          <Route
+            path="/knowledge/playbooks-templates"
+            element={<Navigate to="/marketplace/knowledge-discovery" replace />}
+          />
+          <Route
+            path="/knowledge/learning-references"
+            element={<Navigate to="/marketplace/knowledge-discovery" replace />}
+          />
+          <Route
+            path="/knowledge/recommendations"
+            element={<Navigate to="/marketplace/knowledge-discovery" replace />}
+          />
+          <Route
+            path="/people/directory"
+            element={<Navigate to="/marketplace/work-directory" replace />}
+          />
+          <Route
+            path="/people/teams"
+            element={<Navigate to="/marketplace/work-directory" replace />}
+          />
+          <Route
+            path="/people/units"
+            element={<Navigate to="/marketplace/work-directory" replace />}
+          />
+          <Route
+            path="/people/owners-experts"
+            element={<Navigate to="/marketplace/work-directory" replace />}
+          />
+          <Route
+            path="/people/service-owners"
+            element={<Navigate to="/marketplace/work-directory" replace />}
+          />
+          <Route
+            path="/people/contact-points"
+            element={<Navigate to="/marketplace/work-directory" replace />}
+          />
+          <Route
+            path="/people/roles"
+            element={<Navigate to="/marketplace/work-directory" replace />}
+          />
+          <Route
+            path="/performance/team"
+            element={<Navigate to="/reports/team-unit-performance" replace />}
+          />
+          <Route
+            path="/performance/unit"
+            element={<Navigate to="/reports/team-unit-performance" replace />}
+          />
+          <Route
+            path="/trackers"
+            element={<Navigate to="/tracker" replace />}
+          />
+          <Route
+            path="/trackers/my-items"
+            element={
+              <Navigate to="/tracker/tracker-hub/my-tracker-overview" replace />
+            }
+          />
+          <Route
+            path="/trackers/governance-actions"
+            element={
+              <Navigate
+                to="/tracker/decision-outcome-tracker/decision-log"
+                replace
+              />
+            }
+          />
+          <Route
+            path="/trackers/strategic-initiatives"
+            element={
+              <Navigate
+                to="/tracker/decision-outcome-tracker/outcome-progress"
+                replace
+              />
+            }
+          />
+          <Route
+            path="/trackers/workload-distribution"
+            element={
+              <Navigate
+                to="/tracker/tracker-hub/team-tracker-overview"
+                replace
+              />
+            }
+          />
+          <Route
+            path="/workflows/centre"
+            element={<Navigate to="/workflows/workflow-centre" replace />}
+          />
+          <Route
+            path="/workflows/my-workflows"
+            element={
+              <Navigate
+                to="/workflows/workflow-centre/active-workflows"
+                replace
+              />
+            }
+          />
+          <Route
+            path="/workflows/pending-approvals"
+            element={
+              <Navigate
+                to="/workflows/workflow-inbox/my-pending-actions"
+                replace
+              />
+            }
+          />
+          <Route
+            path="/workflows/sla-risks"
+            element={
+              <Navigate
+                to="/workflows/workflow-routing-state-control/sla-timer-trigger"
+                replace
+              />
+            }
+          />
+          <Route
+            path="/workflow/approvals"
+            element={
+              <Navigate
+                to="/workflows/workflow-inbox/my-pending-actions"
+                replace
+              />
+            }
+          />
+          <Route
+            path="/tasks/my-tasks"
+            element={<Navigate to="/workspace/my-tasks" replace />}
+          />
+          <Route
+            path="/tasks/all"
+            element={
+              <RouteGuard>
+                <TasksAllPage />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/tasks/create"
+            element={
+              <RouteGuard>
+                <TasksCreatePage />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/tasks/templates"
+            element={
+              <RouteGuard>
+                <TasksTemplatesPage />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/tasks/review"
+            element={
+              <RouteGuard>
+                <TasksReviewPage />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/tasks/blocked"
+            element={
+              <RouteGuard>
+                <TasksBlockedPage />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/tasks/closure-quality"
+            element={
+              <RouteGuard>
+                <TasksClosureQualityPage />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/tasks/evidence"
+            element={
+              <RouteGuard>
+                <TasksEvidencePage />
+              </RouteGuard>
+            }
+          />
+          {navigationItems.map((item) => (
+            <Route
+              key={item.id}
+              path={item.route}
+              element={
+                <DwsRouteGuard route={item.route}>
+                  {renderDwsRoute(item.route)}
+                </DwsRouteGuard>
+              }
+            />
+          ))}
+        </Route>
+
+        {/* App Layout Routes */}
+        <Route element={<AppLayout />}>
+          <Route
+            path="/workspace/my-work"
+            element={<Navigate to="/workspace" replace />}
+          />
+
+          <Route
+            path="/workspace/my-tasks"
+            element={
+              <RouteGuard>
+                <MyTasksPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/workspace/my-requests"
+            element={
+              <RouteGuard>
+                <MyRequestsPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/workspace/my-updates"
+            element={
+              <RouteGuard>
+                <MyUpdatesPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/workspace/my-blockers"
+            element={
+              <RouteGuard>
+                <MyBlockersPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/workspace/notifications"
+            element={<Navigate to="/workspace/activity" replace />}
+          />
+
+          <Route
+            path="/workspace/knowledge-context"
+            element={
+              <RouteGuard>
+                <KnowledgeContextPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/workspace/assigned-work"
+            element={
+              <RouteGuard>
+                <AssignedWorkPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/tasks/my-work/assigned-tasks"
+            element={
+              <RouteGuard>
+                <AssignedWorkPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/tasks/my-work/assigned-tasks/:taskId"
+            element={
+              <RouteGuard>
+                <TaskDetailsPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/workspace/evidence-queue"
+            element={
+              <RouteGuard>
+                <EvidenceQueuePage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/workspace/closure-requests"
+            element={
+              <RouteGuard>
+                <ClosureRequestsPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/workspace/objective-linked-tasks"
+            element={
+              <RouteGuard>
+                <ObjectiveLinkedTasksPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/tasks/:taskId"
+            element={
+              <RouteGuard>
+                <TaskDetailStatusPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/agile/agile-execution"
+            element={
+              <RouteGuard>
+                <AgileExecutionPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/agile/missing-updates"
+            element={
+              <RouteGuard>
+                <MissingUpdatesPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/agile/blocker-review"
+            element={
+              <RouteGuard>
+                <BlockerReviewPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/agile/task-hygiene"
+            element={
+              <RouteGuard>
+                <TaskHygieneReviewPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/agile/closure-risks"
+            element={
+              <RouteGuard>
+                <ClosureQualityRisksPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/agile/working-sessions"
+            element={
+              <RouteGuard>
+                <WorkingSessionsPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/agile/reminders"
+            element={
+              <RouteGuard>
+                <ReminderPromptsPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/agile/objective-task-review"
+            element={
+              <RouteGuard>
+                <ObjectiveLinkedTasksPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/agile/task-structure-gaps"
+            element={
+              <RouteGuard>
+                <TaskStructureReviewPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/workflow/escalations"
+            element={
+              <RouteGuard>
+                <EscalationsPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/execution/decision-log"
+            element={
+              <RouteGuard>
+                <DecisionLogPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/operations/team-execution"
+            element={
+              <RouteGuard>
+                <TeamExecutionPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/team/tasks"
+            element={
+              <RouteGuard>
+                <TeamTasksPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/team/workload"
+            element={
+              <RouteGuard>
+                <WorkloadBoardPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/team/assign-task"
+            element={
+              <RouteGuard>
+                <AssignTaskPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/team/blocked-overdue"
+            element={
+              <RouteGuard>
+                <BlockedOverduePage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/team/approvals"
+            element={
+              <RouteGuard>
+                <PendingApprovalsPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/team/closure-quality"
+            element={
+              <RouteGuard>
+                <ClosureQualityPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/team/performance"
+            element={
+              <RouteGuard>
+                <TeamPerformancePage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/team/sessions"
+            element={
+              <RouteGuard>
+                <SessionBoardPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/team/session-actions"
+            element={
+              <RouteGuard>
+                <SessionActionsPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/team/session-decisions"
+            element={
+              <RouteGuard>
+                <SessionDecisionsPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/team/objective-linked-tasks"
+            element={
+              <RouteGuard>
+                <ObjectiveLinkedTasksPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/team/task-structure-review"
+            element={
+              <RouteGuard>
+                <TaskStructureReviewPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/team/task-templates"
+            element={
+              <RouteGuard>
+                <TaskTemplateGovernancePage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/operations/unit-visibility"
+            element={
+              <RouteGuard>
+                <UnitVisibilityPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/unit/workload"
+            element={
+              <RouteGuard>
+                <UnitWorkloadPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/unit/delivery-health"
+            element={
+              <RouteGuard>
+                <DeliveryHealthPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/unit/sla-trends"
+            element={
+              <RouteGuard>
+                <SlaTrendsPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/unit/governance-risks"
+            element={
+              <RouteGuard>
+                <GovernanceRisksPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/unit/outcome-progress"
+            element={
+              <RouteGuard>
+                <OutcomeProgressPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/unit/performance"
+            element={
+              <RouteGuard>
+                <UnitPerformancePage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/unit/approvals"
+            element={
+              <RouteGuard>
+                <UnitApprovalsPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/unit/governance-dashboard"
+            element={
+              <RouteGuard>
+                <GovernanceDashboardPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/unit/operating-discipline"
+            element={
+              <RouteGuard>
+                <OperatingDisciplineUnitPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/unit/strategy-linked-tasks"
+            element={
+              <RouteGuard>
+                <ObjectiveLinkedTasksPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/unit/task-governance-health"
+            element={
+              <RouteGuard>
+                <TaskStructureReviewPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/operations/hra-workflow"
+            element={
+              <RouteGuard>
+                <HraWorkflowPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/hra/requests"
+            element={
+              <RouteGuard>
+                <HraRequestsPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/hra/new-joiner"
+            element={
+              <RouteGuard>
+                <NewJoinerOnboardingPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/hra/role-transition"
+            element={
+              <RouteGuard>
+                <RoleTransitionPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/hra/workforce-readiness"
+            element={
+              <RouteGuard>
+                <WorkforceReadinessPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/hra/policy-checks"
+            element={
+              <RouteGuard>
+                <PolicyChecksPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/hra/readiness-requests"
+            element={
+              <RouteGuard>
+                <EmployeeReadinessRequestsPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/hra/approvals"
+            element={
+              <RouteGuard>
+                <HraApprovalsPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/hra/fulfilment-queue"
+            element={
+              <RouteGuard>
+                <HraFulfilmentQueuePage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/hra/guides"
+            element={
+              <RouteGuard>
+                <HraGuidesPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/hra/playbooks"
+            element={
+              <RouteGuard>
+                <OnboardingPlaybooksPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/hra/policy-references"
+            element={
+              <RouteGuard>
+                <PolicyReferencesPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/support/operations"
+            element={
+              <RouteGuard>
+                <SupportOperationsPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/admin/console"
+            element={
+              <RouteGuard>
+                <AdminConsolePage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/execution/workflow"
+            element={
+              <RouteGuard>
+                <WorkflowCentrePage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/intelligence/sla"
+            element={
+              <RouteGuard>
+                <SlaDashboardPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/executive/enterprise-execution"
+            element={
+              <RouteGuard>
+                <ExecutiveEnterprisePage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/admin/audit-log"
+            element={
+              <RouteGuard>
+                <AuditLogPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/admin/users-roles"
+            element={
+              <RouteGuard>
+                <UsersRolesPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/admin/org-setup"
+            element={
+              <RouteGuard>
+                <OrgSetupPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/admin/task-model"
+            element={
+              <RouteGuard>
+                <TaskModelConfigPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/admin/task-attributes"
+            element={
+              <RouteGuard>
+                <TaskAttributeLibraryPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/admin/task-sections"
+            element={
+              <RouteGuard>
+                <TaskSectionBuilderPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/admin/task-permissions"
+            element={
+              <RouteGuard>
+                <TaskPermissionRulesPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/admin/task-templates"
+            element={
+              <RouteGuard>
+                <TaskTemplateGovernancePage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/admin/request-categories"
+            element={
+              <RouteGuard>
+                <RequestCategoriesPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/admin/workflow-rules"
+            element={
+              <RouteGuard>
+                <WorkflowRulesPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/admin/sla-notifications"
+            element={
+              <RouteGuard>
+                <SlaNotificationsPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/admin/knowledge-taxonomy"
+            element={
+              <RouteGuard>
+                <KnowledgeTaxonomyPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/admin/integrations"
+            element={
+              <RouteGuard>
+                <IntegrationsPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/admin/ai-automation"
+            element={
+              <RouteGuard>
+                <AiAutomationPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/admin/change-governance"
+            element={
+              <RouteGuard>
+                <ChangeGovernancePage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/admin/config-review"
+            element={
+              <RouteGuard>
+                <ConfigReviewPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/admin/permission-exceptions"
+            element={
+              <RouteGuard>
+                <PermissionExceptionsPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/support/central-queue"
+            element={
+              <RouteGuard>
+                <CentralSupportQueuePage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/support/triage"
+            element={
+              <RouteGuard>
+                <TriageNeededPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/support/missing-input"
+            element={
+              <RouteGuard>
+                <MissingInputRequestsPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/support/routed"
+            element={
+              <RouteGuard>
+                <RoutedRequestsPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/support/sla-risk"
+            element={
+              <RouteGuard>
+                <SlaRiskQueuePage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/support/closure-queue"
+            element={
+              <RouteGuard>
+                <ClosureQueuePage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/support/knowledge-assistance"
+            element={
+              <RouteGuard>
+                <KnowledgeAssistancePage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/support/fulfilment-queues"
+            element={
+              <RouteGuard>
+                <FulfilmentOwnerQueuesPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/support/request-status"
+            element={
+              <RouteGuard>
+                <SupportRequestStatusPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/support/dashboard"
+            element={
+              <RouteGuard>
+                <SupportDashboardPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/executive/strategic-initiatives"
+            element={
+              <RouteGuard>
+                <StrategicInitiativesPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/executive/governance-health"
+            element={
+              <RouteGuard>
+                <GovernanceHealthPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/executive/sla-exposure"
+            element={
+              <RouteGuard>
+                <SlaExposurePage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/executive/enterprise-performance"
+            element={
+              <RouteGuard>
+                <EnterprisePerformancePage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/executive/team-unit-performance"
+            element={
+              <RouteGuard>
+                <TeamUnitPerformancePage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/executive/outcome-tracking"
+            element={
+              <RouteGuard>
+                <OutcomeTrackingPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/executive/value-delivery"
+            element={
+              <RouteGuard>
+                <ValueDeliveryPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/executive/critical-escalations"
+            element={
+              <RouteGuard>
+                <CriticalEscalationsPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/executive/operating-discipline"
+            element={
+              <RouteGuard>
+                <ExecutiveOperatingDisciplinePage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/executive/decision-log"
+            element={
+              <RouteGuard>
+                <ExecutiveDecisionLogPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/executive/strategy-linked-tasks"
+            element={
+              <RouteGuard>
+                <StrategyLinkedTasksPage />
+              </RouteGuard>
+            }
+          />
+
+          {/* Service Lifecycle downstream routes (Prompt 5 & 6) */}
+          <Route
+            path="/service-owner/requests"
+            element={
+              <RouteGuard>
+                <ServiceOwnerQueuePage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/workflow/approvals"
+            element={
+              <RouteGuard>
+                <ApproverQueuePage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/intelligence/service-signals"
+            element={
+              <RouteGuard>
+                <ExecutiveSignalPage />
+              </RouteGuard>
+            }
+          />
+
+          {/* Catch-all for unbuilt routes */}
+          <Route
+            path="*"
+            element={
+              <RouteGuard>
+                <PlaceholderPage
+                  title="Route Not Found"
+                  description="This route is either a placeholder or does not exist."
+                />
+              </RouteGuard>
+            }
+          />
+        </Route>
       </Route>
     </Routes>
   );
@@ -2159,20 +2270,20 @@ export function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-      <PersonaProvider>
-        <WorkspaceRoleProvider>
-          <ViewingModeProvider>
-            <ServiceLifecycleProvider>
-              <TaskLifecycleProvider>
-                <KnowledgeLifecycleProvider>
-                  <AppRoutes />
-                  <Toaster position="top-right" richColors />
-                </KnowledgeLifecycleProvider>
-              </TaskLifecycleProvider>
-            </ServiceLifecycleProvider>
-          </ViewingModeProvider>
-        </WorkspaceRoleProvider>
-      </PersonaProvider>
+        <PersonaProvider>
+          <WorkspaceRoleProvider>
+            <ViewingModeProvider>
+              <ServiceLifecycleProvider>
+                <TaskLifecycleProvider>
+                  <KnowledgeLifecycleProvider>
+                    <AppRoutes />
+                    <Toaster position="top-right" richColors />
+                  </KnowledgeLifecycleProvider>
+                </TaskLifecycleProvider>
+              </ServiceLifecycleProvider>
+            </ViewingModeProvider>
+          </WorkspaceRoleProvider>
+        </PersonaProvider>
       </AuthProvider>
     </BrowserRouter>
   );
