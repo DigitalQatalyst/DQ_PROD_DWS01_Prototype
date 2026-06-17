@@ -235,11 +235,6 @@ import {
 
 // Tracker Feature Area Pages (purpose-built with distinct layouts per page)
 import {
-  MyTrackerOverviewPage,
-  TeamTrackerOverviewPage,
-  OpenItemsPage,
-  AtRiskItemsPage,
-  RecentlyClosedItemsPage,
   SubmittedRequestsPage,
   RequestDraftsPage,
   RequestStatusPage as TrackerRequestStatusPage,
@@ -343,11 +338,7 @@ function renderTaskFeaturePage(route: string): React.ReactNode | null {
 function renderTrackerFeaturePage(route: string): React.ReactNode | null {
   const trackerFeatureMap: Record<string, React.ReactNode> = {
     // Tracker Hub
-    "/tracker/tracker-hub/my-tracker-overview": <TrackerHubPage />,
-    "/tracker/tracker-hub/team-tracker-overview": <TeamTrackerOverviewPage />,
-    "/tracker/tracker-hub/open-items": <OpenItemsPage />,
-    "/tracker/tracker-hub/at-risk-items": <AtRiskItemsPage />,
-    "/tracker/tracker-hub/recently-closed-items": <RecentlyClosedItemsPage />,
+    "/tracker/tracker-hub": <TrackerHubPage />,
     // Request Status Tracker
     "/tracker/request-status-tracker/submitted-requests": (
       <SubmittedRequestsPage />

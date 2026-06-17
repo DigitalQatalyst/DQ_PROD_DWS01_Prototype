@@ -1043,9 +1043,9 @@ export const featureAreas: FeatureArea[] = [
     groups: [
       {
         label: 'Tracker Hub',
-        description: 'Review personal, team, open, at-risk, and recently closed tracker items in one operating hub.',
+        description: 'Browse available trackers, review health, and open a tracker to manage its records.',
         healthStatus: 'Needs Attention',
-        features: ['My Tracker Overview', 'Team Tracker Overview', 'Open Items', 'At-Risk Items', 'Recently Closed Items'],
+        features: ['Tracker Hub'],
       },
       {
         label: 'Request Status Tracker',

@@ -339,11 +339,7 @@ export const trackerFeatureArea: NavItem = {
       route: '/tracker/tracker-hub',
       icon: Gauge,
       children: [
-        { id: 'my-tracker-overview', label: 'My Tracker Overview', route: '/tracker/tracker-hub/my-tracker-overview', visibleTo: ["Associate", "Lead", "ServiceOwner", "GovernanceLead", "PlatformAdmin"] },
-        { id: 'team-tracker-overview', label: 'Team Tracker Overview', route: '/tracker/tracker-hub/team-tracker-overview', visibleTo: ["Lead", "ServiceOwner", "GovernanceLead", "Leadership", "PlatformAdmin"] },
-        { id: 'open-items', label: 'Open Items', route: '/tracker/tracker-hub/open-items', visibleTo: ALL_ROLES },
-        { id: 'at-risk-items', label: 'At-Risk Items', route: '/tracker/tracker-hub/at-risk-items', visibleTo: ALL_ROLES },
-        { id: 'recently-closed-items', label: 'Recently Closed Items', route: '/tracker/tracker-hub/recently-closed-items', visibleTo: ALL_ROLES },
+        { id: 'tracker-overview', label: 'Tracker Overview', route: '/tracker/tracker-hub' },
       ],
     },
     {
