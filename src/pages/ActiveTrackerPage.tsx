@@ -17,7 +17,6 @@ import {
   Download,
   Filter,
   FileSearch,
-  HelpCircle,
   Link as LinkIcon,
   MessageSquare,
   MoreHorizontal,
@@ -175,9 +174,7 @@ export function ActiveTrackerPage() {
   const [page, setPage] = useState(1);
   const [addOpen, setAddOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [healthOpen, setHealthOpen] = useState(false);
-  const [disciplineOpen, setDisciplineOpen] = useState(false);
-  const [aboutOpen, setAboutOpen] = useState(false);
+
 
   useEffect(() => {
     if (!tracker) return;
@@ -350,7 +347,7 @@ export function ActiveTrackerPage() {
 
       <div
         className="min-h-0 flex-1 grid gap-5 overflow-hidden"
-        style={{ gridTemplateColumns: settings.showRightRail ? 'minmax(0,1fr) 300px' : 'minmax(0,1fr)' }}>
+        style={{ gridTemplateColumns: 'minmax(0,1fr)' }}>
         <main className="flex min-w-0 flex-col overflow-hidden h-full">
           <section className="flex min-h-0 flex-col overflow-hidden rounded-card border border-border-default bg-white shadow-sm h-full">
             <div className="sticky top-0 z-10 bg-white">
@@ -389,28 +386,11 @@ export function ActiveTrackerPage() {
           </section>
         </main>
 
-        {settings.showRightRail && (
-          <aside className="h-full overflow-y-auto pb-4">
-            <RightRail
-              tracker={tracker}
-              records={records}
-              metrics={metrics}
-              activeExtraFilter={extraFilter}
-              onHealthDetails={() => setHealthOpen(true)}
-              onRagFilter={(value) => { setActiveTab('Records'); setMetricFilter(null); setExtraFilter({ type: 'rag', value }); }}
-              onDisciplineFilter={(value) => { setActiveTab('Records'); setMetricFilter(null); setExtraFilter({ type: 'discipline', value }); }}
-              onDisciplineInfo={() => setDisciplineOpen(true)}
-              onAbout={() => setAboutOpen(true)}
-            />
-          </aside>
-        )}
+
       </div>
 
       <AddRecordModal tracker={tracker} open={addOpen} onClose={() => setAddOpen(false)} onAdd={addRecord} />
       <SettingsModal open={settingsOpen} settings={settings} onClose={() => setSettingsOpen(false)} onApply={applySettings} onReset={resetSettings} />
-      <HealthDetailsModal open={healthOpen} metrics={metrics} onClose={() => setHealthOpen(false)} />
-      <UpdateDisciplineModal open={disciplineOpen} onClose={() => setDisciplineOpen(false)} />
-      <AboutTrackerModal open={aboutOpen} tracker={tracker} onClose={() => setAboutOpen(false)} />
     </div>
   );
 }
@@ -561,17 +541,10 @@ function RecordDetailRoute({
         </nav>
         <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-[32px] font-bold leading-tight text-primary">{draft.title}</h1>
-                <span className="text-sm font-semibold text-text-muted">{draft.status}</span>
-                <span className={`text-sm font-bold ${draft.rag === 'Red' ? 'text-danger' : draft.rag === 'Amber' ? 'text-warning' : 'text-success'}`}>{draft.rag}</span>
-              </div>
-            <p className="mt-2 max-w-4xl text-sm leading-6 text-primary">{tracker.name} · {draft.description}</p>
+            <p className="max-w-4xl text-sm leading-6 text-primary">{tracker.name}</p>
           </div>
           <div className="relative flex shrink-0 flex-wrap items-center justify-start gap-2 xl:justify-end">
             <DqButton variant="outline" onClick={() => guardedNavigate(onBack)} className="h-11 px-4"><ArrowLeft size={16} strokeWidth={1.5} /> Back to Tracker</DqButton>
-            <DqButton variant="orange" onClick={saveDraft} className="h-11 px-4"><Check size={16} strokeWidth={1.5} /> Save Changes</DqButton>
-            <DqButton variant="navy" onClick={markComplete} className="h-11 px-4">Mark Complete</DqButton>
             <DqButton variant="outline" onClick={openNote} className="h-11 px-4"><MessageSquare size={16} strokeWidth={1.5} /> Add Note</DqButton>
             <DqButton variant="outline" onClick={openEvidence} className="h-11 px-4"><Paperclip size={16} strokeWidth={1.5} /> Add Evidence</DqButton>
             <DqIconButton label="More record actions" onClick={() => setMoreOpen((open) => !open)} className="h-11 w-11"><MoreHorizontal size={18} strokeWidth={1.5} /></DqIconButton>
@@ -586,8 +559,9 @@ function RecordDetailRoute({
         </div>
       </header>
 
-      <div className="min-h-0 flex-1 grid gap-5 overflow-hidden xl:grid-cols-[300px_minmax(0,1fr)_280px]">
-        <div className="rounded-card border border-border-default bg-white shadow-sm h-full flex flex-col">
+      <div className="min-h-0 flex-1 grid gap-5 overflow-hidden" style={{ gridTemplateColumns: '1fr 3fr' }}>
+        {/* Tracker Records Card */}
+        <section className="rounded-card border border-border-default bg-white shadow-sm">
           <RecordListPanel
             records={records}
             selectedRecordId={draft.id}
@@ -595,30 +569,54 @@ function RecordDetailRoute({
             onSearch={onSearch}
             onSelect={(id) => guardedNavigate(() => onSelect(id))}
           />
-        </div>
-        <main className="flex min-w-0 flex-col overflow-hidden rounded-card border border-border-default bg-white shadow-sm h-full">
-          <div className="sticky top-0 z-10 bg-white">
-            <RecordDetailTabs activeTab={activeTab} onTab={setActiveTab} />
-          </div>
-          <div className="flex-1 min-h-0 overflow-y-auto space-y-4 bg-surface p-5">
-            {activeTab === 'Overview' && (
-              <>
-                <RecordDetailsForm tracker={tracker} draft={draft} latestUpdate={latestUpdate} onUpdate={updateDraft} onLatestUpdate={updateLatest} />
-                <CommentsPanel comments={draft.comments} comment={comment} onComment={setComment} onPost={postComment} />
-                <EvidencePanel evidence={draft.evidence} showLinkFields={showLinkFields} linkTitle={linkTitle} linkUrl={linkUrl} onShowLinkFields={() => setShowLinkFields(true)} onLinkTitle={setLinkTitle} onLinkUrl={setLinkUrl} onAddLink={addLink} onUpload={uploadEvidence} />
-                <ActivityTimeline activity={draft.activity} />
-              </>
-            )}
-            {activeTab === 'Activity' && <ActivityTimeline activity={draft.activity} />}
-            {activeTab === 'Comments' && <CommentsPanel comments={draft.comments} comment={comment} onComment={setComment} onPost={postComment} />}
-            {activeTab === 'Evidence' && <EvidencePanel evidence={draft.evidence} showLinkFields={showLinkFields} linkTitle={linkTitle} linkUrl={linkUrl} onShowLinkFields={() => setShowLinkFields(true)} onLinkTitle={setLinkTitle} onLinkUrl={setLinkUrl} onAddLink={addLink} onUpload={uploadEvidence} />}
-            {activeTab === 'History' && <ActivityTimeline title="Change History" activity={draft.activity} />}
-          </div>
-        </main>
-        <div className="h-full">
-          <RecordMetadataRail tracker={tracker} record={draft} dirty={dirty} />
+        </section>
+
+        {/* Tabs + Content + Metadata Card */}
+        <div className="flex flex-col gap-5">
+          <section className="flex min-w-0 flex-col overflow-hidden rounded-card border border-border-default bg-white shadow-sm h-full">
+            <div className="sticky top-0 z-10 border-b border-border-subtle bg-white">
+              <div className="flex flex-wrap items-start justify-between gap-3 px-5 pb-3 pt-4">
+                <div className="min-w-0 flex-1">
+                  <input
+                    value={draft.title}
+                    onChange={(event) => updateDraft({ title: event.target.value })}
+                    aria-label="Record title"
+                    className="w-full border-0 bg-transparent p-0 text-xl font-bold leading-tight text-primary outline-none placeholder:text-text-muted focus:ring-0"
+                  />
+                  <div className="mt-1 flex flex-wrap items-center gap-3">
+                    <span className="text-sm font-semibold text-text-muted">{draft.status}</span>
+                    <span className={`text-sm font-bold ${draft.rag === 'Red' ? 'text-danger' : draft.rag === 'Amber' ? 'text-warning' : 'text-success'}`}>{draft.rag}</span>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <DqButton variant="orange" onClick={saveDraft} className="h-10 px-4"><Check size={16} strokeWidth={1.5} /> Save Changes</DqButton>
+                  <DqButton variant="navy" onClick={markComplete} className="h-10 px-4">Mark Complete</DqButton>
+                </div>
+              </div>
+              <RecordDetailTabs activeTab={activeTab} onTab={setActiveTab} />
+            </div>
+            <div className="flex-1 min-h-0 overflow-y-auto space-y-4 bg-surface p-5">
+              {activeTab === 'Overview' && (
+                <>
+                  <RecordDetailsForm tracker={tracker} draft={draft} latestUpdate={latestUpdate} onUpdate={updateDraft} onLatestUpdate={updateLatest} />
+                  <CommentsPanel comments={draft.comments} comment={comment} onComment={setComment} onPost={postComment} />
+                  <EvidencePanel evidence={draft.evidence} showLinkFields={showLinkFields} linkTitle={linkTitle} linkUrl={linkUrl} onShowLinkFields={() => setShowLinkFields(true)} onLinkTitle={setLinkTitle} onLinkUrl={setLinkUrl} onAddLink={addLink} onUpload={uploadEvidence} />
+                  <ActivityTimeline activity={draft.activity} />
+                </>
+              )}
+              {activeTab === 'Activity' && <ActivityTimeline activity={draft.activity} />}
+              {activeTab === 'Comments' && <CommentsPanel comments={draft.comments} comment={comment} onComment={setComment} onPost={postComment} />}
+              {activeTab === 'Evidence' && <EvidencePanel evidence={draft.evidence} showLinkFields={showLinkFields} linkTitle={linkTitle} linkUrl={linkUrl} onShowLinkFields={() => setShowLinkFields(true)} onLinkTitle={setLinkTitle} onLinkUrl={setLinkUrl} onAddLink={addLink} onUpload={uploadEvidence} />}
+              {activeTab === 'History' && <ActivityTimeline title="Change History" activity={draft.activity} />}
+            </div>
+          </section>
+
+          <section className="h-full">
+            <RecordMetadataRail tracker={tracker} record={draft} dirty={dirty} />
+          </section>
         </div>
       </div>
+
     </div>
   );
 }
@@ -682,7 +680,6 @@ function RecordDetailsForm({ tracker, draft, latestUpdate, onUpdate, onLatestUpd
         <h2 className="dq-card-title">Details</h2>
         <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           <DetailField label="Record ID" value={draft.id} readOnly monospace onChange={() => undefined} />
-          <DetailField label="Title" value={draft.title} onChange={(title) => onUpdate({ title })} />
           <DetailField label="Owner" value={draft.owner} onChange={(owner) => onUpdate({ owner })} />
           <DetailField label="Team / Squad" value={draft.teamOrSquad} onChange={(teamOrSquad) => onUpdate({ teamOrSquad })} />
           <DetailSelect label="Priority" value={draft.priority} options={['Low', 'Medium', 'High', 'Critical']} onChange={(priority) => onUpdate({ priority: priority as TrackerPriority })} />
@@ -887,9 +884,8 @@ function TrackerListPanel({ trackers, selectedSlug, search, onSearch, onSelect }
             <button
               key={tracker.slug}
               onClick={() => onSelect(tracker.slug)}
-              className={`flex w-full items-center gap-3 rounded-r-lg border-l-2 px-3 py-2.5 text-left text-sm font-semibold transition ${
-                selected ? 'border-secondary bg-orange-50 text-primary' : 'border-transparent text-info-text hover:bg-navy-50 hover:text-primary'
-              }`}>
+              className={`flex w-full items-center gap-3 rounded-r-lg border-l-2 px-3 py-2.5 text-left text-sm font-semibold transition ${selected ? 'border-secondary bg-orange-50 text-primary' : 'border-transparent text-info-text hover:bg-navy-50 hover:text-primary'
+                }`}>
               <Database size={16} strokeWidth={1.5} className="shrink-0" />
               <span className="min-w-0 flex-1">{tracker.name}</span>
               <span className={`h-2 w-2 shrink-0 rounded-full ${healthColor(tracker.healthStatus)}`} />
@@ -1254,58 +1250,8 @@ function PagerButton({ children, disabled, active, onClick }: { children: ReactN
   return <button disabled={disabled} onClick={onClick} className={`grid h-8 min-w-8 place-items-center rounded-button border px-2 text-xs font-bold ${active ? 'border-primary bg-primary text-white' : 'border-border-default bg-white text-primary hover:bg-navy-50'} disabled:cursor-not-allowed disabled:opacity-40`}>{children}</button>;
 }
 
-function RightRail({ tracker, records, metrics, activeExtraFilter, onHealthDetails, onRagFilter, onDisciplineFilter, onDisciplineInfo, onAbout }: { tracker: TrackerDefinition; records: TrackerRecord[]; metrics: TrackerMetrics; activeExtraFilter: ExtraFilter; onHealthDetails: () => void; onRagFilter: (value: TrackerHealth | 'No RAG') => void; onDisciplineFilter: (value: 'lt3' | '3to7' | 'gt7' | 'none') => void; onDisciplineInfo: () => void; onAbout: () => void }) {
-  const rag = getRagSplit(records);
-  const discipline = getDiscipline(records);
-  return (
-    <aside className="space-y-4">
-      <RailCard title="Tracker Health">
-        <span className={`text-sm font-bold ${tracker.healthStatus === 'Red' ? 'text-danger' : tracker.healthStatus === 'Amber' ? 'text-warning' : 'text-success'}`}>{tracker.healthStatus}</span>
-        <p className="mt-3 text-sm leading-6 text-primary">Based on recent updates and RAG status.</p>
-        <button onClick={onHealthDetails} className="mt-4 text-sm font-bold text-info-text hover:text-primary">View health details →</button>
-      </RailCard>
-
-      <RailCard title="RAG Split">
-        <div className="h-3 overflow-hidden rounded-full bg-border-subtle">
-          <div className="flex h-full">
-            <span className="bg-success" style={{ width: `${percent(rag.Green, rag.total)}%` }} />
-            <span className="bg-warning" style={{ width: `${percent(rag.Amber, rag.total)}%` }} />
-            <span className="bg-danger" style={{ width: `${percent(rag.Red, rag.total)}%` }} />
-            <span className="bg-border-strong" style={{ width: `${percent(rag.none, rag.total)}%` }} />
-          </div>
-        </div>
-        <div className="mt-4 space-y-2">
-          <RailFilterRow active={activeExtraFilter?.type === 'rag' && activeExtraFilter.value === 'Green'} label="Green" value={rag.Green} color="bg-success" onClick={() => onRagFilter('Green')} />
-          <RailFilterRow active={activeExtraFilter?.type === 'rag' && activeExtraFilter.value === 'Amber'} label="Amber" value={rag.Amber} color="bg-warning" onClick={() => onRagFilter('Amber')} />
-          <RailFilterRow active={activeExtraFilter?.type === 'rag' && activeExtraFilter.value === 'Red'} label="Red" value={rag.Red} color="bg-danger" onClick={() => onRagFilter('Red')} />
-          <RailFilterRow active={activeExtraFilter?.type === 'rag' && activeExtraFilter.value === 'No RAG'} label="No RAG" value={rag.none} color="bg-border-strong" onClick={() => onRagFilter('No RAG')} />
-          <div className="pt-2 text-xs font-bold text-text-muted">Total: {rag.total}</div>
-        </div>
-      </RailCard>
-
-      <RailCard title="Update Discipline" action={<button onClick={onDisciplineInfo} className="text-primary hover:text-secondary"><RefreshCw size={17} strokeWidth={1.5} /></button>}>
-        <div className="mb-4 h-2 overflow-hidden rounded-full bg-border-subtle">
-          <div className="flex h-full">
-            <span className="bg-success" style={{ width: `${percent(discipline.lt3, records.length)}%` }} />
-            <span className="bg-warning" style={{ width: `${percent(discipline.threeToSeven, records.length)}%` }} />
-            <span className="bg-danger" style={{ width: `${percent(discipline.gt7, records.length)}%` }} />
-            <span className="bg-border-strong" style={{ width: `${percent(discipline.none, records.length)}%` }} />
-          </div>
-        </div>
-        <div className="space-y-2">
-          <RailFilterRow active={activeExtraFilter?.type === 'discipline' && activeExtraFilter.value === 'lt3'} label="Updated < 3 days" value={discipline.lt3} color="bg-success" onClick={() => onDisciplineFilter('lt3')} />
-          <RailFilterRow active={activeExtraFilter?.type === 'discipline' && activeExtraFilter.value === '3to7'} label="3-7 days" value={discipline.threeToSeven} color="bg-warning" onClick={() => onDisciplineFilter('3to7')} />
-          <RailFilterRow active={activeExtraFilter?.type === 'discipline' && activeExtraFilter.value === 'gt7'} label="> 7 days" value={discipline.gt7} color="bg-danger" onClick={() => onDisciplineFilter('gt7')} />
-          <RailFilterRow active={activeExtraFilter?.type === 'discipline' && activeExtraFilter.value === 'none'} label="No updates" value={discipline.none} color="bg-border-strong" onClick={() => onDisciplineFilter('none')} />
-        </div>
-      </RailCard>
-
-      <RailCard title="About this Tracker" action={<HelpCircle size={17} strokeWidth={1.5} />}>
-        <p className="text-sm leading-6 text-primary">{tracker.slug === 'project-health-tracker' ? 'Tracks project-level health signals across DQ workstreams including status, risks, blockers, and evidence.' : tracker.purpose}</p>
-        <button onClick={onAbout} className="mt-4 text-sm font-bold text-info-text hover:text-primary">Learn more →</button>
-      </RailCard>
-    </aside>
-  );
+function RightRail(_props: { tracker: TrackerDefinition; records: TrackerRecord[]; metrics: TrackerMetrics; activeExtraFilter: ExtraFilter; onRagFilter: (value: TrackerHealth | 'No RAG') => void; onDisciplineFilter: (value: 'lt3' | '3to7' | 'gt7' | 'none') => void }) {
+  return null;
 }
 
 function RailCard({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
@@ -1583,46 +1529,6 @@ function SettingsModal({ open, settings, onClose, onApply, onReset }: { open: bo
         <DqButton variant="outline" onClick={onReset}>Reset Defaults</DqButton>
         <DqButton variant="orange" onClick={() => onApply(draft)}>Apply Settings</DqButton>
       </div>
-    </ModalFrame>
-  );
-}
-
-function HealthDetailsModal({ open, metrics, onClose }: { open: boolean; metrics: TrackerMetrics; onClose: () => void }) {
-  if (!open) return null;
-  return (
-    <ModalFrame title="Tracker Health Details" onClose={onClose} width="max-w-lg">
-      <div className="grid gap-3 sm:grid-cols-2">
-        <MetricTile label="Open records" value={metrics.open} />
-        <MetricTile label="Closed records" value={metrics.closed} />
-        <MetricTile label="Overdue records" value={metrics.overdue} />
-        <MetricTile label="Blocked records" value={metrics.blocked} />
-        <MetricTile label="Missing owner" value={metrics.missingOwner} />
-      </div>
-      <p className="mt-4 text-sm leading-6 text-primary">Health reflects open work, overdue records, blockers, ownership completeness, and recent update discipline.</p>
-    </ModalFrame>
-  );
-}
-
-function UpdateDisciplineModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  if (!open) return null;
-  return (
-    <ModalFrame title="Update Discipline" onClose={onClose} width="max-w-lg">
-      <p className="text-sm leading-6 text-primary">Update health groups records by how recently they were updated. Items older than seven days or explicitly marked not updated recently need owner follow-up.</p>
-      <div className="mt-4 space-y-2 text-sm font-semibold text-primary">
-        <p>Updated &lt; 3 days: healthy update rhythm.</p>
-        <p>3-7 days: monitor before governance review.</p>
-        <p>&gt; 7 days: stale update requiring action.</p>
-        <p>No updates: no current update signal available.</p>
-      </div>
-    </ModalFrame>
-  );
-}
-
-function AboutTrackerModal({ open, tracker, onClose }: { open: boolean; tracker: TrackerDefinition; onClose: () => void }) {
-  if (!open) return null;
-  return (
-    <ModalFrame title="About this Tracker" onClose={onClose} width="max-w-3xl">
-      <TrackerMetadata tracker={tracker} />
     </ModalFrame>
   );
 }
