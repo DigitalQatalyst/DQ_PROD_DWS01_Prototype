@@ -15,7 +15,6 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DqButton, DqIconButton } from '../components/DqButton';
-import { DqBadge } from '../components/DqBadge';
 import type { TrackerDefinition, TrackerHealth } from '../types/tracker';
 
 type HubTab = 'All Trackers' | 'Recently Opened' | 'Owned by My Team' | 'Favorites';
@@ -417,8 +416,7 @@ function SortableTh({ label, sortKey, sort, onSort, className = '' }: { label: s
 }
 
 function HealthBadge({ health }: { health: TrackerHealth }) {
-  const tone = health === 'Green' ? 'success' : health === 'Amber' ? 'warning' : 'danger';
-  return <DqBadge label={health} tone={tone} />;
+  return <span className={`text-sm font-bold ${health === 'Red' ? 'text-danger' : health === 'Amber' ? 'text-warning' : 'text-success'}`}>{health}</span>;
 }
 
 function RightRail({ summary, recentRows, onHealthFilter, onOpen, onViewAll }: { summary: { total: number; healthy: number; attention: number; critical: number }; recentRows: Array<{ slug: string; name: string; owner: string; lastOpened: string; healthStatus: TrackerHealth; available: boolean }>; onHealthFilter: (health: string) => void; onOpen: (tracker: { slug: string; available?: boolean }) => void; onViewAll: () => void }) {
@@ -508,27 +506,41 @@ function CreateTrackerModal({ open, onClose, onCreate }: { open: boolean; onClos
   };
 
   return (
-    <ModalFrame title="Create Tracker" onClose={onClose} width="max-w-3xl">
-      <div className="grid gap-4 md:grid-cols-2">
-        <ModalField label="Tracker Name" value={draft.name} error={errors.name} onChange={(value) => update('name', value)} />
-        <ModalSelect label="Owner" value={draft.owner} options={ownerOptions.filter((item) => item !== 'All')} error={errors.owner} onChange={(value) => update('owner', value)} />
-        <ModalField label="Purpose" value={draft.purpose} error={errors.purpose} onChange={(value) => update('purpose', value)} className="md:col-span-2" />
-        <ModalSelect label="Tracker Type" value={draft.trackerType} options={trackerTypeOptions.filter((item) => item !== 'All')} error={errors.trackerType} onChange={(value) => update('trackerType', value)} />
-        <ModalSelect label="Update Frequency" value={draft.updateFrequency} options={updateFrequencyOptions.filter((item) => item !== 'All')} error={errors.updateFrequency} onChange={(value) => update('updateFrequency', value)} />
-        <ModalSelect label="Health" value={draft.healthStatus} options={['Green', 'Amber', 'Red']} onChange={(value) => update('healthStatus', value as TrackerHealth)} />
-        <ModalField label="Required Fields" value={draft.requiredFields} onChange={(value) => update('requiredFields', value)} />
-        <ModalField label="Optional Fields" value={draft.optionalFields} onChange={(value) => update('optionalFields', value)} />
-        <ModalField label="Default Statuses" value={draft.defaultStatuses} onChange={(value) => update('defaultStatuses', value)} />
-        <label className="block md:col-span-2">
-          <span className="dq-field-label">Governance Rules</span>
-          <textarea value={draft.governanceRules} onChange={(event) => update('governanceRules', event.target.value)} rows={3} className="dq-textarea" />
-        </label>
-      </div>
-      <div className="mt-6 flex justify-end gap-2">
-        <DqButton variant="outline" onClick={onClose}>Cancel</DqButton>
-        <DqButton variant="orange" onClick={submit}>Create Tracker</DqButton>
-      </div>
-    </ModalFrame>
+    <>
+      <div className="fixed inset-0 z-[210] bg-primary/25" onClick={onClose} />
+      <aside className="fixed bottom-0 right-0 top-0 z-[220] w-full max-w-[560px] overflow-y-auto border-l border-border-default bg-white shadow-xl">
+        <div className="sticky top-0 z-10 border-b border-border-subtle bg-white px-6 py-5">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-bold text-primary">Create Tracker</h2>
+              <p className="mt-1 text-sm text-text-secondary">Define a new tracker for your workspace</p>
+            </div>
+            <DqIconButton label="Close create tracker drawer" onClick={onClose}><X size={18} strokeWidth={1.5} /></DqIconButton>
+          </div>
+        </div>
+        <div className="space-y-4 bg-surface p-5">
+          <div className="grid gap-4 md:grid-cols-2">
+            <ModalField label="Tracker Name" value={draft.name} error={errors.name} onChange={(value) => update('name', value)} />
+            <ModalSelect label="Owner" value={draft.owner} options={ownerOptions.filter((item) => item !== 'All')} error={errors.owner} onChange={(value) => update('owner', value)} />
+            <ModalField label="Purpose" value={draft.purpose} error={errors.purpose} onChange={(value) => update('purpose', value)} className="md:col-span-2" />
+            <ModalSelect label="Tracker Type" value={draft.trackerType} options={trackerTypeOptions.filter((item) => item !== 'All')} error={errors.trackerType} onChange={(value) => update('trackerType', value)} />
+            <ModalSelect label="Update Frequency" value={draft.updateFrequency} options={updateFrequencyOptions.filter((item) => item !== 'All')} error={errors.updateFrequency} onChange={(value) => update('updateFrequency', value)} />
+            <ModalSelect label="Health" value={draft.healthStatus} options={['Green', 'Amber', 'Red']} onChange={(value) => update('healthStatus', value as TrackerHealth)} />
+            <ModalField label="Required Fields" value={draft.requiredFields} onChange={(value) => update('requiredFields', value)} />
+            <ModalField label="Optional Fields" value={draft.optionalFields} onChange={(value) => update('optionalFields', value)} />
+            <ModalField label="Default Statuses" value={draft.defaultStatuses} onChange={(value) => update('defaultStatuses', value)} />
+            <label className="block md:col-span-2">
+              <span className="dq-field-label">Governance Rules</span>
+              <textarea value={draft.governanceRules} onChange={(event) => update('governanceRules', event.target.value)} rows={3} className="dq-textarea" />
+            </label>
+          </div>
+          <div className="flex justify-end gap-2">
+            <DqButton variant="outline" onClick={onClose}>Cancel</DqButton>
+            <DqButton variant="orange" onClick={submit}>Create Tracker</DqButton>
+          </div>
+        </div>
+      </aside>
+    </>
   );
 }
 

@@ -31,7 +31,7 @@ import {
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { DqBadge, PriorityBadge, StatusBadge } from '../components/DqBadge';
+
 import { DqButton, DqIconButton } from '../components/DqButton';
 import {
   getAllTrackers,
@@ -331,8 +331,8 @@ export function ActiveTrackerPage() {
   }
 
   return (
-    <div className="w-full px-6 py-6 pb-12 lg:px-8">
-      <header className="mb-5">
+    <div className="flex h-[calc(100vh-64px)] flex-col overflow-hidden px-6 lg:px-8">
+      <header className="shrink-0 pt-6">
         <Breadcrumb trackerName={tracker.name} onHub={() => navigate('/tracker/tracker-hub')} />
         <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div className="min-w-0">
@@ -349,14 +349,15 @@ export function ActiveTrackerPage() {
       </header>
 
       <div
-        className="grid gap-5"
+        className="min-h-0 flex-1 grid gap-5 overflow-hidden"
         style={{ gridTemplateColumns: settings.showRightRail ? 'minmax(0,1fr) 300px' : 'minmax(0,1fr)' }}>
-        <main className="min-w-0 space-y-4">
-          {/* <KpiStrip metrics={metrics} activeFilter={metricFilter} onFilter={applyMetric} /> */}
-          <section className="overflow-hidden rounded-card border border-border-default bg-white shadow-sm">
-            <Tabs activeTab={activeTab} onTab={(tab) => { setActiveTab(tab); setMetricFilter(null); setExtraFilter(null); }} />
+        <main className="flex min-w-0 flex-col overflow-hidden h-full">
+          <section className="flex min-h-0 flex-col overflow-hidden rounded-card border border-border-default bg-white shadow-sm h-full">
+            <div className="sticky top-0 z-10 bg-white">
+              <Tabs activeTab={activeTab} onTab={(tab) => { setActiveTab(tab); setMetricFilter(null); setExtraFilter(null); }} />
+            </div>
             {showTable ? (
-              <>
+              <div className="flex-1 min-h-0 overflow-y-auto pb-4">
                 <RecordsTable
                   tracker={tracker}
                   records={pagedRecords}
@@ -379,25 +380,29 @@ export function ActiveTrackerPage() {
                   onOpen={openRecord}
                   onUpdate={updateRecordField}
                 />
-              </>
+              </div>
             ) : (
-              <AboutTrackerPanel tracker={tracker} onBack={() => setActiveTab('Records')} />
+              <div className="flex-1 min-h-0 overflow-y-auto pb-4">
+                <AboutTrackerPanel tracker={tracker} onBack={() => setActiveTab('Records')} />
+              </div>
             )}
           </section>
         </main>
 
         {settings.showRightRail && (
-          <RightRail
-            tracker={tracker}
-            records={records}
-            metrics={metrics}
-            activeExtraFilter={extraFilter}
-            onHealthDetails={() => setHealthOpen(true)}
-            onRagFilter={(value) => { setActiveTab('Records'); setMetricFilter(null); setExtraFilter({ type: 'rag', value }); }}
-            onDisciplineFilter={(value) => { setActiveTab('Records'); setMetricFilter(null); setExtraFilter({ type: 'discipline', value }); }}
-            onDisciplineInfo={() => setDisciplineOpen(true)}
-            onAbout={() => setAboutOpen(true)}
-          />
+          <aside className="h-full overflow-y-auto pb-4">
+            <RightRail
+              tracker={tracker}
+              records={records}
+              metrics={metrics}
+              activeExtraFilter={extraFilter}
+              onHealthDetails={() => setHealthOpen(true)}
+              onRagFilter={(value) => { setActiveTab('Records'); setMetricFilter(null); setExtraFilter({ type: 'rag', value }); }}
+              onDisciplineFilter={(value) => { setActiveTab('Records'); setMetricFilter(null); setExtraFilter({ type: 'discipline', value }); }}
+              onDisciplineInfo={() => setDisciplineOpen(true)}
+              onAbout={() => setAboutOpen(true)}
+            />
+          </aside>
         )}
       </div>
 
@@ -543,7 +548,7 @@ function RecordDetailRoute({
   };
 
   return (
-    <div className="flex h-full flex-col overflow-hidden px-6 lg:px-8">
+    <div className="flex h-[calc(100vh-64px)] flex-col overflow-hidden px-6 lg:px-8">
       <header className="shrink-0 pt-6">
         <nav className="mb-3 flex flex-wrap items-center gap-2 text-sm font-semibold text-secondary" aria-label="Breadcrumb">
           <span>Tracker</span>
@@ -556,11 +561,11 @@ function RecordDetailRoute({
         </nav>
         <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-[32px] font-bold leading-tight text-primary">{draft.title}</h1>
-              <StatusBadge status={draft.status} />
-              <DqBadge label={draft.rag} tone={ragTone(draft.rag)} />
-            </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-[32px] font-bold leading-tight text-primary">{draft.title}</h1>
+                <span className="text-sm font-semibold text-text-muted">{draft.status}</span>
+                <span className={`text-sm font-bold ${draft.rag === 'Red' ? 'text-danger' : draft.rag === 'Amber' ? 'text-warning' : 'text-success'}`}>{draft.rag}</span>
+              </div>
             <p className="mt-2 max-w-4xl text-sm leading-6 text-primary">{tracker.name} · {draft.description}</p>
           </div>
           <div className="relative flex shrink-0 flex-wrap items-center justify-start gap-2 xl:justify-end">
@@ -581,8 +586,8 @@ function RecordDetailRoute({
         </div>
       </header>
 
-      <div className="min-h-0 flex-1 grid gap-5 overflow-hidden pb-6 pt-5 xl:grid-cols-[300px_minmax(0,1fr)_280px]">
-        <div className="overflow-y-auto rounded-card border border-border-default bg-white shadow-sm">
+      <div className="min-h-0 flex-1 grid gap-5 overflow-hidden xl:grid-cols-[300px_minmax(0,1fr)_280px]">
+        <div className="rounded-card border border-border-default bg-white shadow-sm h-full flex flex-col">
           <RecordListPanel
             records={records}
             selectedRecordId={draft.id}
@@ -591,9 +596,11 @@ function RecordDetailRoute({
             onSelect={(id) => guardedNavigate(() => onSelect(id))}
           />
         </div>
-        <main className="min-w-0 overflow-y-auto rounded-card border border-border-default bg-white shadow-sm">
-          <RecordDetailTabs activeTab={activeTab} onTab={setActiveTab} />
-          <div className="space-y-4 bg-surface p-5">
+        <main className="flex min-w-0 flex-col overflow-hidden rounded-card border border-border-default bg-white shadow-sm h-full">
+          <div className="sticky top-0 z-10 bg-white">
+            <RecordDetailTabs activeTab={activeTab} onTab={setActiveTab} />
+          </div>
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-4 bg-surface p-5">
             {activeTab === 'Overview' && (
               <>
                 <RecordDetailsForm tracker={tracker} draft={draft} latestUpdate={latestUpdate} onUpdate={updateDraft} onLatestUpdate={updateLatest} />
@@ -608,7 +615,7 @@ function RecordDetailRoute({
             {activeTab === 'History' && <ActivityTimeline title="Change History" activity={draft.activity} />}
           </div>
         </main>
-        <div className="overflow-y-auto">
+        <div className="h-full">
           <RecordMetadataRail tracker={tracker} record={draft} dirty={dirty} />
         </div>
       </div>
@@ -620,13 +627,13 @@ function RecordListPanel({ records, selectedRecordId, search, onSearch, onSelect
   const query = search.trim().toLowerCase();
   const visibleRecords = records.filter((record) => !query || `${record.id} ${record.title} ${record.owner} ${record.status} ${record.rag}`.toLowerCase().includes(query));
   return (
-    <aside className="rounded-card border border-border-default bg-white p-4 shadow-sm">
+    <aside className="rounded-card border border-border-default bg-white p-4 shadow-sm h-full flex flex-col">
       <h2 className="dq-card-title">Tracker Records</h2>
-      <div className="relative mt-3">
+      <div className="relative mt-3 shrink-0">
         <Search size={16} strokeWidth={1.5} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
         <input value={search} onChange={(event) => onSearch(event.target.value)} placeholder="Search records..." className="dq-input pl-9" />
       </div>
-      <div className="mt-4 max-h-[calc(100vh-250px)] space-y-2 overflow-y-auto pr-1">
+      <div className="mt-4 flex-1 min-h-0 space-y-2 overflow-y-auto pr-1 pb-4">
         {visibleRecords.map((record) => {
           const active = record.id === selectedRecordId;
           return (
@@ -641,9 +648,9 @@ function RecordListPanel({ records, selectedRecordId, search, onSearch, onSelect
                 </div>
                 <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${healthColor(record.rag)}`} />
               </div>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                <StatusBadge status={record.status} />
-                <DqBadge label={record.rag} tone={ragTone(record.rag)} />
+              <div className="mt-2 flex flex-wrap gap-3 text-xs font-semibold">
+                <span className="text-text-muted">{record.status}</span>
+                <span className={record.rag === 'Red' ? 'text-danger' : record.rag === 'Amber' ? 'text-warning' : 'text-success'}>{record.rag}</span>
               </div>
               <div className={`mt-2 text-xs font-semibold ${record.isOverdue ? 'text-danger' : 'text-text-muted'}`}>{record.isOverdue ? `Overdue · ${record.dueDate}` : `Updated ${record.lastUpdated}`}</div>
             </button>
@@ -734,7 +741,7 @@ function CommentsPanel({ comments, comment, onComment, onPost }: { comments: Tra
     <section className="dq-card">
       <div className="flex items-center justify-between gap-3">
         <h2 className="dq-card-title">Comments / Notes</h2>
-        <DqBadge label={`${comments.length} notes`} tone="gray" dot={false} />
+        <span className="text-xs font-semibold text-text-muted">{comments.length} notes</span>
       </div>
       <div className="mt-4 space-y-3">
         {comments.map((entry) => (
@@ -801,7 +808,7 @@ function ActivityTimeline({ activity, title = 'Activity History' }: { activity: 
 
 function RecordMetadataRail({ tracker, record, dirty }: { tracker: TrackerDefinition; record: TrackerRecord; dirty: boolean }) {
   return (
-    <aside className="space-y-4">
+    <aside className="space-y-4 h-full overflow-y-auto pr-1 pb-4">
       <RailCard title="Record Metadata">
         <div className="space-y-3 text-sm font-semibold text-primary">
           <MetaRow label="Tracker" value={tracker.name} />
@@ -1253,7 +1260,7 @@ function RightRail({ tracker, records, metrics, activeExtraFilter, onHealthDetai
   return (
     <aside className="space-y-4">
       <RailCard title="Tracker Health">
-        <DqBadge label={tracker.slug === 'project-health-tracker' ? 'Healthy' : tracker.healthStatus} tone={tracker.healthStatus === 'Red' ? 'danger' : tracker.healthStatus === 'Amber' ? 'warning' : 'success'} />
+        <span className={`text-sm font-bold ${tracker.healthStatus === 'Red' ? 'text-danger' : tracker.healthStatus === 'Amber' ? 'text-warning' : 'text-success'}`}>{tracker.healthStatus}</span>
         <p className="mt-3 text-sm leading-6 text-primary">Based on recent updates and RAG status.</p>
         <button onClick={onHealthDetails} className="mt-4 text-sm font-bold text-info-text hover:text-primary">View health details →</button>
       </RailCard>
@@ -1709,7 +1716,7 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
 }
 
 function OwnerBadge({ owner }: { owner: string }) {
-  if (!owner) return <DqBadge label="Missing Owner" tone="danger" dot={false} />;
+  if (!owner) return <span className="text-sm font-bold text-danger">Missing Owner</span>;
   const initials = owner.split(' ').map((part) => part[0]).join('').slice(0, 2);
   return (
     <span className="inline-flex items-center gap-2">
@@ -1720,7 +1727,7 @@ function OwnerBadge({ owner }: { owner: string }) {
 }
 
 function RagBadge({ rag }: { rag: TrackerHealth }) {
-  return <DqBadge label={rag || 'No RAG'} tone={rag === 'Red' ? 'danger' : rag === 'Amber' ? 'warning' : rag === 'Green' ? 'success' : 'gray'} />;
+  return <span className={`text-sm font-bold ${rag === 'Red' ? 'text-danger' : rag === 'Amber' ? 'text-warning' : 'text-success'}`}>{rag || 'No RAG'}</span>;
 }
 
 function TrackerNotFound({ onBack }: { onBack: () => void }) {

@@ -338,6 +338,9 @@ export const trackerFeatureArea: NavItem = {
       label: 'Tracker Hub',
       route: '/tracker/tracker-hub',
       icon: Gauge,
+      children: [
+        { id: 'tracker-overview', label: 'Tracker Overview', route: '/tracker/tracker-hub' },
+      ],
     },
     {
       id: 'request-status-tracker',
