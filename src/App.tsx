@@ -59,6 +59,10 @@ import { TaskTemplatesMarketplacePage } from "./pages/TaskTemplatesMarketplacePa
 import { KnowledgeMarketplacePage } from "./pages/KnowledgeMarketplacePage";
 import { WorkDirectoryMarketplacePage } from "./pages/WorkDirectoryMarketplacePage";
 import { AnalyticsMarketplacePage } from "./pages/AnalyticsMarketplacePage";
+import { AnalyticsMarketplaceLandingPage } from "./pages/AnalyticsMarketplaceLandingPage";
+import { AnalyticsDetailsPage } from "./pages/AnalyticsDetailsPage";
+import { AnalyticsDestinationPage } from "./pages/AnalyticsDestinationPage";
+import { DriveMarketplacePage } from "./pages/DriveMarketplacePage";
 import { MarketplaceFeedbackPage } from "./pages/MarketplaceFeedbackPage";
 import {
   DEFAULT_MARKETPLACE_ROUTE,
@@ -640,7 +644,11 @@ function AppRoutes() {
         />
         <Route
           path="/marketplace/drive"
-          element={<Navigate to={MARKETPLACE_4D_DESTINATIONS.drive} replace />}
+          element={
+            <RouteGuard>
+              <DriveMarketplacePage />
+            </RouteGuard>
+          }
         />
 
         <Route
@@ -769,6 +777,24 @@ function AppRoutes() {
         />
 
         <Route
+          path="/marketplace/drive/analytics-marketplace"
+          element={
+            <RouteGuard>
+              <AnalyticsMarketplaceLandingPage />
+            </RouteGuard>
+          }
+        />
+
+        <Route
+          path="/marketplace/drive/analytics-marketplace/:assetSlug"
+          element={
+            <RouteGuard>
+              <AnalyticsDetailsPage />
+            </RouteGuard>
+          }
+        />
+
+        <Route
           path="/marketplace/feedback"
           element={
             <RouteGuard>
@@ -832,6 +858,14 @@ function AppRoutes() {
           element={
             <RouteGuard>
               <ExecutionDashboardPage />
+            </RouteGuard>
+          }
+        />
+        <Route
+          path="/analytics/:assetSlug"
+          element={
+            <RouteGuard>
+              <AnalyticsDestinationPage />
             </RouteGuard>
           }
         />
