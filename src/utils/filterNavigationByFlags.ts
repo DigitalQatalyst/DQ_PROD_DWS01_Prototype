@@ -14,20 +14,25 @@ export function getFlagValue(flagPath?: string): boolean {
 export function filterNavigationByFlags<
   T extends { flag?: string; route?: string; path?: string; children?: T[] },
 >(items: T[]): T[] {
-  return items
-    .filter((item) => getFlagValue(item.flag))
-    .map((item) => {
-      const children = item.children
-        ? filterNavigationByFlags(item.children)
-        : undefined;
+  const visibleItems: T[] = [];
 
-      return {
-        ...item,
-        children,
-      };
-    })
-    .filter((item) => {
-      if (item.route || item.path) return true;
-      return Boolean(item.children && item.children.length > 0);
+  for (const item of items) {
+    if (!getFlagValue(item.flag)) continue;
+
+    const hadChildren = Boolean(item.children);
+    const children = item.children
+      ? filterNavigationByFlags(item.children)
+      : undefined;
+    const hasVisibleChildren = Boolean(children && children.length > 0);
+
+    if (hadChildren && !hasVisibleChildren && !item.path && !item.route) continue;
+    if (!hadChildren && !item.path && !item.route) continue;
+
+    visibleItems.push({
+      ...item,
+      children,
     });
+  }
+
+  return visibleItems;
 }
