@@ -11,6 +11,7 @@ const categoryLabels: Record<MarketplaceCategoryKey, string> = {
   design: 'Design',
   deploy: 'Deploy',
   drive: 'Drive',
+  trackerMarketplace: 'Tracker Marketplace',
 };
 
 export const MARKETPLACE_ROOT: MarketplaceBreadcrumbItem = {

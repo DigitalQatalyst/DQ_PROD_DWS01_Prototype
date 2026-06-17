@@ -1,138 +1,160 @@
-import React, { useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { usePersona } from '../context/PersonaContext';
-import { AnalyticsDashboardCard } from '../components/AnalyticsDashboardCard';
-import { MarketplaceCatalogLayout } from '../components/marketplace/MarketplaceCatalogLayout';
-import type { FilterGroup } from '../components/MarketplaceFilterPanel';
-import { MarketplaceActionRouter } from '../components/MarketplaceActionRouter';
-import { RequestIntakeWizard } from '../components/RequestIntakeWizard';
-import { buildCatalogTrail, resolveMarketplaceStage } from '../utils/marketplaceBreadcrumbs';
+import React, { useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { usePersona } from "../context/PersonaContext";
+import { AnalyticsDashboardCard } from "../components/AnalyticsDashboardCard";
+import { MarketplaceCatalogLayout } from "../components/marketplace/MarketplaceCatalogLayout";
+import type { FilterGroup } from "../components/MarketplaceFilterPanel";
+import { MarketplaceActionRouter } from "../components/MarketplaceActionRouter";
+import { RequestIntakeWizard } from "../components/RequestIntakeWizard";
 import {
-  ALL_TAB_ID,
-  buildCatalogTabs,
-} from '../utils/marketplaceCatalogTabs';
+  buildCatalogTrail,
+  resolveMarketplaceStage,
+} from "../utils/marketplaceBreadcrumbs";
+import { ALL_TAB_ID, buildCatalogTabs } from "../utils/marketplaceCatalogTabs";
 
 const DASHBOARD_CATEGORIES = [
-  { id: 'Personal', label: 'Personal' },
-  { id: 'Team', label: 'Team' },
-  { id: 'Unit', label: 'Unit' },
-  { id: 'SLA', label: 'SLA' },
-  { id: 'Governance', label: 'Governance' },
-  { id: 'Executive', label: 'Executive' },
+  { id: "Marketplace", label: "Marketplace" },
+  { id: "Personal", label: "Personal" },
+  { id: "Team", label: "Team" },
+  { id: "Unit", label: "Unit" },
+  { id: "SLA", label: "SLA" },
+  { id: "Governance", label: "Governance" },
+  { id: "Executive", label: "Executive" },
 ];
 
 const CATEGORY_DESCRIPTIONS: Record<string, string> = {
-  Personal: 'Individual performance, closure quality, and SLA adherence views.',
-  Team: 'Squad workload, flow health, blockers, and missing updates.',
-  Unit: 'Unit health, outcome tracking, and governance risk signals.',
-  SLA: 'Cross-platform SLA exposure, aging distribution, and breaches.',
-  Governance: 'Audit exceptions, policy compliance, and closure quality risks.',
-  Executive: 'Enterprise execution health, initiatives, and value delivery.',
+  Marketplace:
+    "Discovery and navigation for tracker and monitoring marketplaces.",
+  Personal: "Individual performance, closure quality, and SLA adherence views.",
+  Team: "Squad workload, flow health, blockers, and missing updates.",
+  Unit: "Unit health, outcome tracking, and governance risk signals.",
+  SLA: "Cross-platform SLA exposure, aging distribution, and breaches.",
+  Governance: "Audit exceptions, policy compliance, and closure quality risks.",
+  Executive: "Enterprise execution health, initiatives, and value delivery.",
 };
 
 const dashboards = [
   {
-    id: 'DB-1',
-    category: 'Personal',
-    title: 'My Performance Snapshot',
-    desc: 'Personal execution metrics, closure quality, and SLA adherence.',
-    route: '/workspace/my-work',
-    personas: ['Associate'],
-  },
-  {
-    id: 'DB-2',
-    category: 'Team',
-    title: 'Team Execution Dashboard',
-    desc: 'Team workload, flow health, blockers, and missing updates.',
-    route: '/operations/team-execution',
-    personas: ['Team / Squad Lead', 'Scrum Master'],
-  },
-  {
-    id: 'DB-3',
-    category: 'Unit',
-    title: 'Unit Visibility Dashboard',
-    desc: 'Unit health, outcome tracking, and governance risks.',
-    route: '/operations/unit-visibility',
-    personas: ['Unit Lead'],
-  },
-  {
-    id: 'DB-4',
-    category: 'SLA',
-    title: 'SLA Dashboard',
-    desc: 'Cross-platform SLA exposure, aging distribution, and breaches.',
-    route: '/intelligence/sla',
+    id: "MKT-DRV-TRK",
+    category: "Marketplace",
+    title: "Tracker Marketplace",
+    desc: "Discover available trackers, monitoring views, and governed tracking templates used across DWS.",
+    route: "/marketplace/drive/tracker-marketplace",
     personas: [
-      'Scrum Master',
-      'Team / Squad Lead',
-      'Unit Lead',
-      'HRA',
-      'Admins',
-      'Support',
-      'CEO',
+      "Associate",
+      "Scrum Master",
+      "Team / Squad Lead",
+      "Unit Lead",
+      "HRA",
+      "Admins",
+      "Support",
+      "CEO",
     ],
   },
   {
-    id: 'DB-5',
-    category: 'Governance',
-    title: 'Governance Dashboard',
-    desc: 'Audit exceptions, policy compliance, and closure quality risks.',
-    route: '/executive/enterprise-execution',
-    personas: ['CEO', 'Admins'],
+    id: "DB-1",
+    category: "Personal",
+    title: "My Performance Snapshot",
+    desc: "Personal execution metrics, closure quality, and SLA adherence.",
+    route: "/workspace/my-work",
+    personas: ["Associate"],
   },
   {
-    id: 'DB-6',
-    category: 'Executive',
-    title: 'CEO Enterprise Dashboard',
-    desc: 'Enterprise execution health, strategic initiatives, and value delivery.',
-    route: '/executive/enterprise-execution',
-    personas: ['CEO'],
+    id: "DB-2",
+    category: "Team",
+    title: "Team Execution Dashboard",
+    desc: "Team workload, flow health, blockers, and missing updates.",
+    route: "/operations/team-execution",
+    personas: ["Team / Squad Lead", "Scrum Master"],
+  },
+  {
+    id: "DB-3",
+    category: "Unit",
+    title: "Unit Visibility Dashboard",
+    desc: "Unit health, outcome tracking, and governance risks.",
+    route: "/operations/unit-visibility",
+    personas: ["Unit Lead"],
+  },
+  {
+    id: "DB-4",
+    category: "SLA",
+    title: "SLA Dashboard",
+    desc: "Cross-platform SLA exposure, aging distribution, and breaches.",
+    route: "/intelligence/sla",
+    personas: [
+      "Scrum Master",
+      "Team / Squad Lead",
+      "Unit Lead",
+      "HRA",
+      "Admins",
+      "Support",
+      "CEO",
+    ],
+  },
+  {
+    id: "DB-5",
+    category: "Governance",
+    title: "Governance Dashboard",
+    desc: "Audit exceptions, policy compliance, and closure quality risks.",
+    route: "/executive/enterprise-execution",
+    personas: ["CEO", "Admins"],
+  },
+  {
+    id: "DB-6",
+    category: "Executive",
+    title: "CEO Enterprise Dashboard",
+    desc: "Enterprise execution health, strategic initiatives, and value delivery.",
+    route: "/executive/enterprise-execution",
+    personas: ["CEO"],
   },
 ];
 
 export function AnalyticsMarketplacePage() {
   const [searchParams] = useSearchParams();
   const { activePersona, hasRouteAccess } = usePersona();
-  const stage = resolveMarketplaceStage(searchParams.get('from'), 'drive');
+  const stage = resolveMarketplaceStage(searchParams.get("from"), "drive");
 
   const [activeTab, setActiveTab] = useState(ALL_TAB_ID);
-  const [search, setSearch] = useState('');
-  const [filterValues, setFilterValues] = useState<Record<string, string[]>>({});
+  const [search, setSearch] = useState("");
+  const [filterValues, setFilterValues] = useState<Record<string, string[]>>(
+    {},
+  );
   const [recommendedActive, setRecommendedActive] = useState(false);
   const [actionItem, setActionItem] = useState<{
     dashboard: (typeof dashboards)[number];
     isPermitted: boolean;
   } | null>(null);
   const [nestedAction, setNestedAction] = useState<{
-    type: 'request';
+    type: "request";
     dashboard: (typeof dashboards)[number];
   } | null>(null);
 
   const filterGroups: FilterGroup[] = [
     {
-      id: 'type',
-      label: 'Dashboard Type',
+      id: "type",
+      label: "Dashboard Type",
       options: DASHBOARD_CATEGORIES.map((category) => ({
         value: category.id,
         label: category.label,
       })),
     },
     {
-      id: 'permission',
-      label: 'Permission',
+      id: "permission",
+      label: "Permission",
       options: [
-        { value: 'Available to my role', label: 'Available to my role' },
-        { value: 'Restricted', label: 'Restricted' },
-        { value: 'Requires approval', label: 'Requires approval' },
+        { value: "Available to my role", label: "Available to my role" },
+        { value: "Restricted", label: "Restricted" },
+        { value: "Requires approval", label: "Requires approval" },
       ],
     },
     {
-      id: 'scope',
-      label: 'Data Scope',
+      id: "scope",
+      label: "Data Scope",
       options: [
-        { value: 'Personal', label: 'Personal' },
-        { value: 'Team', label: 'Team' },
-        { value: 'Unit', label: 'Unit' },
-        { value: 'Enterprise', label: 'Enterprise' },
+        { value: "Personal", label: "Personal" },
+        { value: "Team", label: "Team" },
+        { value: "Unit", label: "Unit" },
+        { value: "Enterprise", label: "Enterprise" },
       ],
     },
   ];
@@ -153,7 +175,7 @@ export function AnalyticsMarketplacePage() {
 
   const handleClearAll = () => {
     setFilterValues({});
-    setSearch('');
+    setSearch("");
     setRecommendedActive(false);
     setActiveTab(ALL_TAB_ID);
   };
@@ -176,12 +198,12 @@ export function AnalyticsMarketplacePage() {
       if (filterValues.permission?.length) {
         const isPermitted = hasRouteAccess(dashboard.route, activePersona);
         if (
-          filterValues.permission.includes('Available to my role') &&
+          filterValues.permission.includes("Available to my role") &&
           !isPermitted
         ) {
           matchesPermission = false;
         }
-        if (filterValues.permission.includes('Restricted') && isPermitted) {
+        if (filterValues.permission.includes("Restricted") && isPermitted) {
           matchesPermission = false;
         }
       }
@@ -208,7 +230,7 @@ export function AnalyticsMarketplacePage() {
 
   return (
     <MarketplaceCatalogLayout
-      breadcrumbItems={buildCatalogTrail(stage, 'Analytics Discovery')}
+      breadcrumbItems={buildCatalogTrail(stage, "Analytics Discovery")}
       title="Governed discovery for dashboards, SLA views, and performance surfaces."
       lede="Organised through the DWS analytics taxonomy — personal, team, unit, SLA, governance, and executive views. Discovery layer only; access is governed by your active role and permission scope."
       searchPlaceholder="Search dashboards, metrics, reports, or visibility areas…"
@@ -238,22 +260,22 @@ export function AnalyticsMarketplacePage() {
       belowContent={
         <>
           <MarketplaceActionRouter
-            marketplaceType={actionItem ? 'analytics' : null}
+            marketplaceType={actionItem ? "analytics" : null}
             item={actionItem?.dashboard}
             activePersona={activePersona}
             isPermitted={actionItem?.isPermitted}
             onClose={() => setActionItem(null)}
             onRequestAccess={(dashboard) => {
               setActionItem(null);
-              setNestedAction({ type: 'request', dashboard });
+              setNestedAction({ type: "request", dashboard });
             }}
           />
-          {nestedAction?.type === 'request' && (
+          {nestedAction?.type === "request" && (
             <RequestIntakeWizard
               service={{
-                title: 'Dashboard Access Request',
-                category: 'IT & Access Requests',
-                ownerType: 'Platform Admin',
+                title: "Dashboard Access Request",
+                category: "IT & Access Requests",
+                ownerType: "Platform Admin",
               }}
               activePersona={activePersona}
               onClose={() => setNestedAction(null)}
@@ -276,9 +298,7 @@ export function AnalyticsMarketplacePage() {
               title={dashboard.title}
               description={dashboard.desc}
               isPermitted={isPermitted}
-              onClick={() =>
-                setActionItem({ dashboard, isPermitted })
-              }
+              onClick={() => setActionItem({ dashboard, isPermitted })}
             />
           );
         })}
