@@ -59,6 +59,10 @@ import { TaskTemplatesMarketplacePage } from "./pages/TaskTemplatesMarketplacePa
 import { KnowledgeMarketplacePage } from "./pages/KnowledgeMarketplacePage";
 import { WorkDirectoryMarketplacePage } from "./pages/WorkDirectoryMarketplacePage";
 import { AnalyticsMarketplacePage } from "./pages/AnalyticsMarketplacePage";
+import { AnalyticsMarketplaceLandingPage } from "./pages/AnalyticsMarketplaceLandingPage";
+import { AnalyticsDetailsPage } from "./pages/AnalyticsDetailsPage";
+import { AnalyticsDestinationPage } from "./pages/AnalyticsDestinationPage";
+import { DriveMarketplacePage } from "./pages/DriveMarketplacePage";
 import { MarketplaceFeedbackPage } from "./pages/MarketplaceFeedbackPage";
 import {
   DEFAULT_MARKETPLACE_ROUTE,
@@ -634,30 +638,26 @@ function AppRoutes() {
             element={<Navigate to="/marketplace/analytics-discovery" replace />}
           />
 
-          <Route
-            path="/marketplace/discern"
-            element={
-              <Navigate to={MARKETPLACE_4D_DESTINATIONS.discern} replace />
-            }
-          />
-          <Route
-            path="/marketplace/design"
-            element={
-              <Navigate to={MARKETPLACE_4D_DESTINATIONS.design} replace />
-            }
-          />
-          <Route
-            path="/marketplace/deploy"
-            element={
-              <Navigate to={MARKETPLACE_4D_DESTINATIONS.deploy} replace />
-            }
-          />
-          <Route
-            path="/marketplace/drive"
-            element={
-              <Navigate to={MARKETPLACE_4D_DESTINATIONS.drive} replace />
-            }
-          />
+        <Route
+          path="/marketplace/discern"
+          element={<Navigate to={MARKETPLACE_4D_DESTINATIONS.discern} replace />}
+        />
+        <Route
+          path="/marketplace/design"
+          element={<Navigate to={MARKETPLACE_4D_DESTINATIONS.design} replace />}
+        />
+        <Route
+          path="/marketplace/deploy"
+          element={<Navigate to={MARKETPLACE_4D_DESTINATIONS.deploy} replace />}
+        />
+        <Route
+          path="/marketplace/drive"
+          element={
+            <RouteGuard>
+              <DriveMarketplacePage />
+            </RouteGuard>
+          }
+        />
 
           <Route
             path="/marketplace/services"
@@ -783,6 +783,24 @@ function AppRoutes() {
             path="/marketplace/analytics-discovery"
             element={<AnalyticsMarketplacePage />}
           />
+
+        <Route
+          path="/marketplace/drive/analytics-marketplace"
+          element={
+            <RouteGuard>
+              <AnalyticsMarketplaceLandingPage />
+            </RouteGuard>
+          }
+        />
+
+        <Route
+          path="/marketplace/drive/analytics-marketplace/:assetSlug"
+          element={
+            <RouteGuard>
+              <AnalyticsDetailsPage />
+            </RouteGuard>
+          }
+        />
 
           <Route
             path="/marketplace/drive/tracker-marketplace"
