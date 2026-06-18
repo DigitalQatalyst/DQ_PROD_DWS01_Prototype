@@ -77,6 +77,24 @@ function servicesCatalogSegment(stage: MarketplaceCategoryKey): MarketplaceBread
   };
 }
 
+export const ANALYTICS_MARKETPLACE_LABEL = 'Analytics Marketplace';
+
+export function getAnalyticsMarketplaceHref(stage: MarketplaceCategoryKey = 'drive'): string {
+  return `/marketplace/drive/analytics-marketplace?from=${stage}`;
+}
+
+export function buildAnalyticsMarketplaceTrail(
+  stage: MarketplaceCategoryKey,
+  ...segments: MarketplaceBreadcrumbItem[]
+): MarketplaceBreadcrumbItem[] {
+  return [
+    MARKETPLACE_ROOT,
+    stageSegment(stage),
+    { label: ANALYTICS_MARKETPLACE_LABEL, href: getAnalyticsMarketplaceHref(stage) },
+    ...segments,
+  ];
+}
+
 export function buildCatalogTrail(
   stage: MarketplaceCategoryKey,
   pageLabel: string,

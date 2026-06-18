@@ -135,7 +135,7 @@ export function AnalyticsMarketplaceLandingPage() {
               key={asset.id}
               asset={asset}
               isPermitted={isPermitted}
-              onPreview={() => navigate(`/marketplace/drive/analytics-marketplace/${asset.slug}`)}
+              onPreview={() => navigate(`/marketplace/drive/analytics-marketplace/${asset.slug}?from=${stage}`)}
             />
           );
         })}
