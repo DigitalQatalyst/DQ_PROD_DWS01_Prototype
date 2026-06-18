@@ -66,14 +66,6 @@ export function TrackerDetailsPage() {
 
   return (
     <div className="mx-auto max-w-[1280px] px-6 py-8">
-      <button
-        onClick={() => navigate("/marketplace/drive/tracker-marketplace")}
-        className="mb-4 flex items-center gap-2 text-sm font-medium text-text-muted transition hover:text-primary"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to Tracker Marketplace
-      </button>
-
       <MarketplaceEyebrowTrail
         items={[
           { label: "Marketplace", href: "/marketplace/catalogue" },
@@ -89,14 +81,7 @@ export function TrackerDetailsPage() {
       <header className="mt-6 mb-8">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
-            <div className="mb-3 flex items-center gap-2">
-              <span
-                className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${healthColors[tracker.health]}`}
-              >
-                {healthLabels[tracker.health]}
-              </span>
-              <DqBadge label={tracker.category} tone="navy" dot={false} />
-            </div>
+            <div className="mb-3 flex items-center gap-2"></div>
             <h1 className="dq-page-title">{tracker.name}</h1>
             <p className="mt-2 max-w-3xl text-base leading-7 text-text-secondary">
               {tracker.fullPurpose}
