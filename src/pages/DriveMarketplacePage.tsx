@@ -31,17 +31,15 @@ export function DriveMarketplacePage() {
 
   return (
     <div className="mx-auto max-w-[1440px] px-6 py-8 lg:px-8">
-      <MarketplaceEyebrowTrail
-        items={[MARKETPLACE_ROOT, { label: 'Drive' }]}
-        className="mb-4"
-      />
+      <header className="mb-8">
+        <MarketplaceEyebrowTrail items={[MARKETPLACE_ROOT, { label: 'Drive' }]} />
+        <h1 className="dq-page-title">Drive Marketplace</h1>
+        <p className="mt-3 max-w-3xl text-[14px] leading-relaxed text-text-secondary">
+          Monitor and improve execution through governed analytics assets, dashboards, and performance tools.
+        </p>
+      </header>
 
-      <h1 className="dq-page-title">Drive Marketplace</h1>
-      <p className="mt-2 max-w-3xl text-[14px] leading-relaxed text-text-secondary">
-        Monitor and improve execution through governed analytics assets, dashboards, and performance tools.
-      </p>
-
-      <div className="mt-8 grid gap-5 sm:grid-cols-2">
+      <div className="grid gap-5 sm:grid-cols-2">
         {driveCards.map((card) => {
           const Icon = card.icon;
           return (

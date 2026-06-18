@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { Link } from "react-router-dom";
 
 export interface MarketplaceBreadcrumbItem {
   label: string;
@@ -9,15 +9,15 @@ export interface MarketplaceBreadcrumbItem {
 interface MarketplaceEyebrowTrailProps {
   items: MarketplaceBreadcrumbItem[];
   className?: string;
-  variant?: 'default' | 'compact';
+  variant?: "default" | "compact";
 }
 
 export function MarketplaceEyebrowTrail({
   items,
-  className = 'mb-3',
-  variant = 'default',
+  className = "mb-3",
+  variant = "default",
 }: MarketplaceEyebrowTrailProps) {
-  const isCompact = variant === 'compact';
+  const isCompact = variant === "compact";
 
   return (
     <nav
@@ -30,21 +30,28 @@ export function MarketplaceEyebrowTrail({
     >
       {items.map((item, index) => {
         const isLast = index === items.length - 1;
-        const separator = isCompact ? ' › ' : ' / ';
+        const separator = isCompact ? " › " : " / ";
 
         return (
           <React.Fragment key={`${item.label}-${index}`}>
-            {index > 0 && <span aria-hidden className={isCompact ? 'text-gray-400' : undefined}>{separator}</span>}
+            {index > 0 && (
+              <span
+                aria-hidden
+                className={isCompact ? "text-gray-400" : undefined}
+              >
+                {separator}
+              </span>
+            )}
             {item.href ? (
               <Link
                 to={item.href}
-                aria-current={isLast ? 'page' : undefined}
+                aria-current={isLast ? "page" : undefined}
                 className={
                   isCompact
                     ? isLast
-                      ? 'text-dq-navy'
-                      : 'text-gray-500 transition-colors hover:text-dq-navy'
-                    : 'transition-colors hover:text-primary'
+                      ? "text-dq-navy"
+                      : "text-gray-500 transition-colors hover:text-dq-navy"
+                    : "transition-colors hover:text-primary"
                 }
               >
                 {item.label}
@@ -52,7 +59,11 @@ export function MarketplaceEyebrowTrail({
             ) : (
               <span
                 className={
-                  isCompact ? (isLast ? 'text-dq-navy' : 'text-gray-500') : undefined
+                  isCompact
+                    ? isLast
+                      ? "text-dq-navy"
+                      : "text-gray-500"
+                    : undefined
                 }
               >
                 {item.label}

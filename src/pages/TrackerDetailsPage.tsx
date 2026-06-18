@@ -1,8 +1,9 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, ExternalLink, CheckCircle2 } from "lucide-react";
+import { ExternalLink, CheckCircle2 } from "lucide-react";
 import { TRACKER_TEMPLATES } from "../mocks/trackerMarketplace.mock";
-import { MarketplaceEyebrowTrail } from "../components/marketplace/MarketplaceEyebrowTrail";
+import { MarketplaceDetailHeader } from "../components/marketplace/MarketplaceDetailHeader";
+import { buildCatalogTrail } from "../utils/marketplaceBreadcrumbs";
 import { DqButton } from "../components/DqButton";
 import { DqBadge, StatusBadge } from "../components/DqBadge";
 import { toast } from "sonner";
@@ -65,52 +66,40 @@ export function TrackerDetailsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-[1280px] px-6 py-8">
-      <MarketplaceEyebrowTrail
-        items={[
-          { label: "Marketplace", href: "/marketplace/catalogue" },
-          { label: "Drive", href: "/marketplace/drive" },
-          {
-            label: "Tracker Marketplace",
-            href: "/marketplace/drive/tracker-marketplace",
-          },
+    <div className="mx-auto max-w-[1440px] px-6 py-8 lg:px-8">
+      <MarketplaceDetailHeader
+        breadcrumbItems={[
+          ...buildCatalogTrail("drive", "Tracker Marketplace"),
           { label: tracker.name },
         ]}
+        title={tracker.name}
+        lede={tracker.fullPurpose}
+        meta={
+          <>
+            <span className="text-[13px] text-text-secondary">
+              <strong>Owner:</strong> {tracker.owner}
+            </span>
+            <span className="text-[13px] text-text-secondary">
+              <strong>Active Trackers:</strong> {tracker.activeCount}
+            </span>
+            <span className="text-[13px] text-text-secondary">
+              <strong>Last Updated:</strong> {tracker.lastUpdated}
+            </span>
+          </>
+        }
+        actions={
+          <>
+            <DqButton onClick={handleOpenTracker}>
+              <ExternalLink className="mr-2 h-4 w-4" />
+              Open Tracker
+            </DqButton>
+            <DqButton onClick={handleStartTracker} variant="outline">
+              <CheckCircle2 className="mr-2 h-4 w-4" />
+              Start Tracker
+            </DqButton>
+          </>
+        }
       />
-
-      <header className="mt-6 mb-8">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1">
-            <div className="mb-3 flex items-center gap-2"></div>
-            <h1 className="dq-page-title">{tracker.name}</h1>
-            <p className="mt-2 max-w-3xl text-base leading-7 text-text-secondary">
-              {tracker.fullPurpose}
-            </p>
-            <div className="mt-4 flex flex-wrap gap-4 text-sm text-text-muted">
-              <span>
-                <strong>Owner:</strong> {tracker.owner}
-              </span>
-              <span>
-                <strong>Active Trackers:</strong> {tracker.activeCount}
-              </span>
-              <span>
-                <strong>Last Updated:</strong> {tracker.lastUpdated}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <DqButton onClick={handleOpenTracker}>
-            <ExternalLink className="mr-2 h-4 w-4" />
-            Open Tracker
-          </DqButton>
-          <DqButton onClick={handleStartTracker} variant="outline">
-            <CheckCircle2 className="mr-2 h-4 w-4" />
-            Start Tracker
-          </DqButton>
-        </div>
-      </header>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
