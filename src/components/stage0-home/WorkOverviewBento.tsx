@@ -10,6 +10,8 @@ function toneClass(tone?: 'default' | 'high' | 'medium') {
   return 'bg-surface text-text-muted';
 }
 
+const delayClasses = ['animation-delay-100', 'animation-delay-200', 'animation-delay-300', 'animation-delay-500'] as const;
+
 export function WorkOverviewBento() {
   const navigate = useNavigate();
   const { activePersona } = usePersona();
@@ -23,45 +25,42 @@ export function WorkOverviewBento() {
   };
 
   return (
-    <section className="mt-10">
-      <h2 className="mb-5 text-xl font-semibold text-primary">Work Overview</h2>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        {workOverviewCards.map((card) => (
-          <article
-            key={card.id}
-            className="flex flex-col rounded-card border border-border-subtle bg-white p-6 shadow-sm"
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      {workOverviewCards.map((card, index) => (
+        <article
+          key={card.id}
+          className={`animate-fade-in-up ${delayClasses[index] ?? ''} flex flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:border-dq-orange hover:shadow-dq-hover`}
+        >
+          <div className="mb-4">
+            <h3 className="text-base font-semibold text-dq-navy">{card.title}</h3>
+            <p className="mt-1 text-sm font-medium text-text-secondary">{card.headline}</p>
+          </div>
+          <ul className="flex-1 space-y-3">
+            {card.items.map((item) => (
+              <li
+                key={`${card.id}-${item.label}`}
+                className="flex items-start justify-between gap-3 border-b border-border-subtle pb-3 last:border-0 last:pb-0"
+              >
+                <span className="text-sm text-text-secondary">{item.label}</span>
+                {item.meta && (
+                  <span
+                    className={`shrink-0 rounded-pill px-2 py-0.5 text-[11px] font-semibold ${toneClass(item.tone)}`}
+                  >
+                    {item.meta}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            onClick={() => navigate(routeForCard(card.id))}
+            className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-info-text hover:underline"
           >
-            <div className="mb-4">
-              <h3 className="text-[15px] font-semibold text-primary">{card.title}</h3>
-              <p className="mt-1 text-sm font-medium text-text-secondary">{card.headline}</p>
-            </div>
-            <ul className="flex-1 space-y-3">
-              {card.items.map((item) => (
-                <li
-                  key={`${card.id}-${item.label}`}
-                  className="flex items-start justify-between gap-3 border-b border-border-subtle pb-3 last:border-0 last:pb-0"
-                >
-                  <span className="text-sm text-text-secondary">{item.label}</span>
-                  {item.meta && (
-                    <span
-                      className={`shrink-0 rounded-pill px-2 py-0.5 text-[11px] font-semibold ${toneClass(item.tone)}`}
-                    >
-                      {item.meta}
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ul>
-            <button
-              type="button"
-              onClick={() => navigate(routeForCard(card.id))}
-              className="mt-5 text-left text-sm font-semibold text-info-text hover:underline"
-            >
-              {card.footerAction}
-            </button>
-          </article>
-        ))}
-      </div>
-    </section>
+            {card.footerAction}
+          </button>
+        </article>
+      ))}
+    </div>
   );
 }
