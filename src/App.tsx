@@ -184,6 +184,7 @@ import { DwsSectionPage } from "./pages/DwsSectionPage";
 import { AiCockpitPage } from "./pages/AiCockpitPage";
 import { MvpSidebarDetailPage } from "./pages/MvpSidebarDetailPage";
 import {
+  PendingActionsPage,
   ServiceRequestDetailPage,
   ServicesHubPage,
   ServicesQueuePage,
@@ -975,7 +976,7 @@ function AppRoutes() {
             path="/services/service-hub/pending-actions"
             element={
               <RouteGuard>
-                <ServicesHubPage view="pending-actions" />
+                <PendingActionsPage />
               </RouteGuard>
             }
           />
@@ -983,7 +984,7 @@ function AppRoutes() {
             path="/services/request-queues"
             element={
               <RouteGuard>
-                <ServicesQueuePage view="central-support-queue" />
+                <ServicesQueuePage view="assigned-requests" />
               </RouteGuard>
             }
           />

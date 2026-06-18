@@ -3,7 +3,7 @@ export const launchFlags = {
     enabled: true,
     gettingStarted: true,
     home: true,
-    quickLinks: true,
+    quickLinks: false,
     myDashboard: true,
     myWork: true,
     aiCockpit: true,
@@ -33,12 +33,12 @@ export const launchFlags = {
     pendingActions: true,
 
     requestQueues: true,
-    centralSupportQueue: true,
-    fulfilmentOwnerQueue: true,
+    centralSupportQueue: false,
+    fulfilmentOwnerQueue: false,
     assignedRequests: true,
     pendingInformation: true,
-    slaQueueView: true,
-    closureReviewQueue: true,
+    slaQueueView: false,
+    closureReviewQueue: false,
 
     // Deprecated as sidebar groups. Keep false.
     requestCaseManagementSidebar: false,
@@ -64,7 +64,7 @@ export const launchFlags = {
   },
 
   trackers: {
-    enabled: true,
+    enabled: false,
 
     trackerHub: true,
     myTrackerOverview: true,
@@ -78,7 +78,7 @@ export const launchFlags = {
   },
 
   platformAdmin: {
-    enabled: true,
+    enabled: false,
 
     contentManagement: true,
     marketplaceContent: true,
