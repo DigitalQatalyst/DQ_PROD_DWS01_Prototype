@@ -1,6 +1,10 @@
 import React from 'react';
 import { AIDiscoverySearch } from './AIDiscoverySearch';
-import { HOME_USER_NAME } from '../../mocks/stage0Home.mock';
+import { useWorkspaceRole } from '../../context/WorkspaceRoleContext';
+
+function getFirstName(displayName: string) {
+  return displayName.trim().split(/\s+/)[0] || 'there';
+}
 
 function getTimeGreeting() {
   const hour = new Date().getHours();
@@ -14,11 +18,13 @@ interface HomeHeroProps {
 }
 
 export function HomeHero({ isNewJoiner }: HomeHeroProps) {
+  const { activeSegment } = useWorkspaceRole();
+  const firstName = getFirstName(activeSegment.profileName);
   const greeting = getTimeGreeting();
 
   const headline = isNewJoiner
-    ? `${greeting}, ${HOME_USER_NAME}. Start your DWS.01 journey with clarity.`
-    : `${greeting}, ${HOME_USER_NAME}. Keep today's priorities moving.`;
+    ? `${greeting}, ${firstName}. Start your DWS.01 journey with clarity.`
+    : `${greeting}, ${firstName}. Keep today's priorities moving.`;
 
   const subtext = isNewJoiner
     ? 'Set up your workspace, understand how work runs, and complete the first actions needed to begin execution.'

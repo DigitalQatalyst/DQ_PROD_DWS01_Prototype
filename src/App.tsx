@@ -506,14 +506,6 @@ function AppRoutes() {
           />
 
           <Route
-            path="/onboarding"
-            element={
-              <RouteGuard>
-                <OnboardingPage />
-              </RouteGuard>
-            }
-          />
-          <Route
             path="/stage-0/action/:actionId"
             element={
               <RouteGuard>
@@ -847,6 +839,14 @@ function AppRoutes() {
 
         <Route element={<Stage02Layout />}>
           <Route path="/home" element={<HomeLandingPage />} />
+          <Route
+            path="/onboarding"
+            element={
+              <RouteGuard>
+                <OnboardingPage />
+              </RouteGuard>
+            }
+          />
           <Route
             path="/orientation"
             element={<Navigate to="/home" replace />}
