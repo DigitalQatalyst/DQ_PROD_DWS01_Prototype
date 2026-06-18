@@ -16,10 +16,7 @@ export interface NavItem {
   route?: string;
   icon?: LucideIcon;
   children?: NavItem[];
-<<<<<<< HEAD
   flag?: string;
-=======
->>>>>>> origin/Feat/TrackerHub-Rose
   visibleTo?: DwsRole[];
   badge?: string;
   helper?: string;

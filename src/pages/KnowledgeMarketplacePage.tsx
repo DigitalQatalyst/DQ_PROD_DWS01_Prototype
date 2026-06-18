@@ -1,30 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import React, { useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { useKnowledgeLifecycle } from '../context/KnowledgeLifecycleContext';
 import { KnowledgeCard } from '../components/KnowledgeCard';
-import { MarketplaceCatalogLayout } from '../components/marketplace/MarketplaceCatalogLayout';
-import { MarketplaceCatalogLayout } from '../components/marketplace/MarketplaceCatalogLayout';
 import type { FilterGroup } from '../components/MarketplaceFilterPanel';
-import { KnowledgeAssetType } from '../types/knowledgeDiscovery';
-import { buildCatalogTrail, resolveMarketplaceStage } from '../utils/marketplaceBreadcrumbs';
+import { MarketplaceCatalogLayout } from '../components/marketplace/MarketplaceCatalogLayout';
+import { useKnowledgeLifecycle } from '../context/KnowledgeLifecycleContext';
+import type { KnowledgeAssetType } from '../types/knowledgeDiscovery';
 import { ALL_TAB_ID } from '../utils/marketplaceCatalogTabs';
-
-const KNOWLEDGE_TABS: { id: KnowledgeAssetType | typeof ALL_TAB_ID; label: string }[] = [
-  { id: ALL_TAB_ID, label: 'All' },
-  { id: 'Guideline', label: 'Guidelines' },
-  { id: 'Operating Standard', label: 'Operating Standards' },
-  { id: 'Process Reference', label: 'Process References' },
-  { id: 'Evidence Standard', label: 'Evidence Standards' },
-  { id: 'Playbook', label: 'Playbooks' },
-  { id: 'Template', label: 'Templates' },
-  { id: 'GHC Reference', label: 'GHC References' },
-  { id: '6xD Reference', label: '6xD References' },
-  { id: 'Workspace Guide', label: 'Workspace Guides' },
-  { id: 'Learning Reference', label: 'Learning References' },
 import { buildCatalogTrail, resolveMarketplaceStage } from '../utils/marketplaceBreadcrumbs';
-import { ALL_TAB_ID } from '../utils/marketplaceCatalogTabs';
 
 const KNOWLEDGE_TABS: { id: KnowledgeAssetType | typeof ALL_TAB_ID; label: string }[] = [
   { id: ALL_TAB_ID, label: 'All' },
@@ -46,22 +28,14 @@ const TAB_DESCRIPTIONS: Partial<Record<string, string>> = {
   'GHC Reference': 'Global Handbook of Compliance references and standards.',
   '6xD Reference': '6xD lifecycle references aligned to DWS execution stages.',
 };
-const TAB_DESCRIPTIONS: Partial<Record<string, string>> = {
-  Playbook: 'Step-by-step operating playbooks for repeatable work patterns.',
-  Template: 'Reusable content and document templates for governed delivery.',
-  'GHC Reference': 'Global Handbook of Compliance references and standards.',
-  '6xD Reference': '6xD lifecycle references aligned to DWS execution stages.',
-};
 
 export function KnowledgeMarketplacePage() {
   const [searchParams] = useSearchParams();
-  const [searchParams] = useSearchParams();
   const { assets, isLoading } = useKnowledgeLifecycle();
   const stage = resolveMarketplaceStage(searchParams.get('from'), 'discern');
-  const initialTab = 'Guideline';
+  const initialTab: KnowledgeAssetType = 'Guideline';
 
-  const [activeTab, setActiveTab] = useState(initialTab);
-  const [activeTab, setActiveTab] = useState(initialTab);
+  const [activeTab, setActiveTab] = useState<KnowledgeAssetType | typeof ALL_TAB_ID>(initialTab);
   const [search, setSearch] = useState('');
   const [filterValues, setFilterValues] = useState<Record<string, string[]>>({});
   const [recommendedActive, setRecommendedActive] = useState(false);
@@ -70,29 +44,15 @@ export function KnowledgeMarketplacePage() {
     {
       id: 'type',
       label: 'Knowledge Type',
-      options: KNOWLEDGE_TABS.filter((tab) => tab.id !== ALL_TAB_ID).map(
-        (tab) => ({
-          value: tab.id,
-          label: tab.label,
-        }),
-      ),
-      options: KNOWLEDGE_TABS.filter((tab) => tab.id !== ALL_TAB_ID).map(
-        (tab) => ({
-          value: tab.id,
-          label: tab.label,
-        }),
-      ),
+      options: KNOWLEDGE_TABS.filter((tab) => tab.id !== ALL_TAB_ID).map((tab) => ({
+        value: tab.id,
+        label: tab.label,
+      })),
     },
     {
       id: 'status',
       label: 'Status',
       options: [
-        { value: 'Effective', label: 'Effective' },
-        { value: 'Under Review', label: 'Under Review' },
-        { value: 'Draft', label: 'Draft' },
-        { value: 'Needs Update', label: 'Needs Update' },
-        { value: 'Deprecated', label: 'Deprecated' },
-      ],
         { value: 'Effective', label: 'Effective' },
         { value: 'Under Review', label: 'Under Review' },
         { value: 'Draft', label: 'Draft' },
@@ -105,10 +65,7 @@ export function KnowledgeMarketplacePage() {
       label: 'Acknowledgement',
       options: [
         { value: 'required', label: 'Required' },
-        { value: 'required', label: 'Required' },
         { value: 'not-required', label: 'Not Required' },
-      ],
-    },
       ],
     },
   ];
@@ -129,7 +86,6 @@ export function KnowledgeMarketplacePage() {
 
   const handleFilterChange = (groupId: string, values: string[]) => {
     setFilterValues((prev) => ({ ...prev, [groupId]: values }));
-    setFilterValues((prev) => ({ ...prev, [groupId]: values }));
   };
 
   const handleClearAll = () => {
@@ -137,6 +93,11 @@ export function KnowledgeMarketplacePage() {
     setSearch('');
     setRecommendedActive(false);
     setActiveTab(ALL_TAB_ID);
+  };
+
+  const handleTabChange = (tabId: string) => {
+    const nextTab = KNOWLEDGE_TABS.find((tab) => tab.id === tabId);
+    if (nextTab) setActiveTab(nextTab.id);
   };
 
   const filteredAssets = assets.filter((asset) => {
@@ -159,6 +120,7 @@ export function KnowledgeMarketplacePage() {
       (filterValues.ack.includes('not-required') &&
         !asset.acknowledgementRequired);
     const matchesRecommended = !recommendedActive || asset.linkedWorkCount > 5;
+
     return (
       matchesTab &&
       matchesSearch &&
@@ -170,14 +132,15 @@ export function KnowledgeMarketplacePage() {
   });
 
   const activeTabMeta = KNOWLEDGE_TABS.find((tab) => tab.id === activeTab);
-  const activeTabDescription = activeTab !== ALL_TAB_ID ? TAB_DESCRIPTIONS[activeTab] : undefined;
+  const activeTabDescription =
+    activeTab !== ALL_TAB_ID ? TAB_DESCRIPTIONS[activeTab] : undefined;
 
   return (
     <MarketplaceCatalogLayout
       breadcrumbItems={buildCatalogTrail(stage, 'Knowledge Discovery')}
       title="Governed discovery for playbooks, standards, and workspace knowledge."
-      lede="Organised through the DWS knowledge taxonomy — guidelines, operating standards, playbooks, templates, and references. Discovery layer only; opening an asset shows applicability, status, and linked work context."
-      searchPlaceholder="Search by title, tag, keyword, or asset ID…"
+      lede="Organised through the DWS knowledge taxonomy - guidelines, operating standards, playbooks, templates, and references. Discovery layer only; opening an asset shows applicability, status, and linked work context."
+      searchPlaceholder="Search by title, tag, keyword, or asset ID..."
       search={search}
       onSearchChange={setSearch}
       itemLabel="assets"
@@ -185,7 +148,7 @@ export function KnowledgeMarketplacePage() {
       visibleCount={filteredAssets.length}
       tabs={categoryTabs}
       activeTabId={activeTab}
-      onTabChange={setActiveTab}
+      onTabChange={handleTabChange}
       toneStrip={
         activeTabMeta && activeTabDescription
           ? { code: activeTab, description: activeTabDescription }
@@ -199,7 +162,7 @@ export function KnowledgeMarketplacePage() {
       recommendedActive={recommendedActive}
       onRecommendedChange={setRecommendedActive}
       isLoading={isLoading}
-      loadingMessage="Loading knowledge assets…"
+      loadingMessage="Loading knowledge assets..."
       showEmpty={!isLoading && filteredAssets.length === 0}
       emptyTitle="No knowledge assets match your filters"
       emptyMessage="Try adjusting your search or filters, or clear all filters to see all available assets."
@@ -212,4 +175,3 @@ export function KnowledgeMarketplacePage() {
     </MarketplaceCatalogLayout>
   );
 }
-

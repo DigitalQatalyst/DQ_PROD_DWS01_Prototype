@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-import type { TrackerDefinition, TrackerHealth, TrackerPriority, TrackerRecord } from '../types/tracker';
-=======
 import type {
   TrackerDefinition,
   TrackerHealth,
@@ -9,7 +6,6 @@ import type {
   TrackerHealthExtended,
   TrackerHistoryEvent,
 } from '../types/tracker';
->>>>>>> origin/Feat/TrackerHub-Rose
 
 export const trackerDefinitions: TrackerDefinition[] = [
   {
@@ -195,10 +191,6 @@ type RecordSeed = {
   description?: string;
 };
 
-<<<<<<< HEAD
-function record(seed: RecordSeed): TrackerRecord {
-  const owner = seed.owner || 'Unassigned';
-=======
 function slugify(value: string) {
   return value
     .trim()
@@ -296,7 +288,6 @@ function record(seed: RecordSeed): TrackerRecord {
   const unit = unitDefaultsForTracker(seed.trackerId);
   const itemType = typeDefaultsForTracker(seed.trackerId);
   const health = healthFromStatusAndRag(seed.status, seed.rag);
->>>>>>> origin/Feat/TrackerHub-Rose
   return {
     ...seed,
     description: seed.description || `${seed.title} requires governed tracking, owner confirmation, current status, and supporting evidence before the next review cycle.`,
@@ -306,8 +297,6 @@ function record(seed: RecordSeed): TrackerRecord {
     isBlocked: Boolean(seed.isBlocked || seed.status === 'Blocked'),
     missingOwner: Boolean(seed.missingOwner || !seed.owner),
     notUpdatedRecently: Boolean(seed.notUpdatedRecently || seed.lastUpdated.includes('days')),
-<<<<<<< HEAD
-=======
     unit,
     type: itemType,
     health,
@@ -322,7 +311,6 @@ function record(seed: RecordSeed): TrackerRecord {
     teamSlug: slugify(seed.teamOrSquad),
     workflowSlug: workflowDefaultsForTracker(seed.trackerId),
     history: buildInitialHistory(seed, health),
->>>>>>> origin/Feat/TrackerHub-Rose
     comments: [
       { id: `${seed.id}-comment-1`, author: owner, body: `${seed.nextAction} is the next action for this tracker record.`, timestamp: seed.lastUpdated },
       { id: `${seed.id}-comment-2`, author: 'DQ Operations', body: 'Status review logged in the tracker workspace.', timestamp: 'Yesterday' },
@@ -337,14 +325,6 @@ function record(seed: RecordSeed): TrackerRecord {
   };
 }
 
-<<<<<<< HEAD
-export const trackerRecords: TrackerRecord[] = [
-  record({ id: 'WLD-1001', trackerId: 'workload-distribution', title: 'Squad Alpha capacity rebalance', owner: 'Maya Khan', teamOrSquad: 'Squad Alpha', priority: 'High', status: 'Overloaded', dueDate: 'Today', rag: 'Amber', lastUpdated: 'Today', nextAction: 'Confirm capacity move', isOverdue: true }),
-  record({ id: 'WLD-1002', trackerId: 'workload-distribution', title: 'Platform team workload review', owner: 'Rohan Patel', teamOrSquad: 'Platform Team', priority: 'Medium', status: 'In Progress', dueDate: '20 May', rag: 'Green', lastUpdated: 'Today', nextAction: 'Update allocation notes' }),
-  record({ id: 'WLD-1003', trackerId: 'workload-distribution', title: 'Governance pod overload check', owner: 'Hina Adam', teamOrSquad: 'Governance', priority: 'High', status: 'Overloaded', dueDate: '18 May', rag: 'Amber', lastUpdated: 'Yesterday', nextAction: 'Escalate resourcing' }),
-  record({ id: 'WLD-1004', trackerId: 'workload-distribution', title: 'Delivery Ops assignment cleanup', owner: 'Sara Khan', teamOrSquad: 'Delivery Ops', priority: 'Low', status: 'Balanced', dueDate: '24 May', rag: 'Green', lastUpdated: 'Today', nextAction: 'Close review' }),
-  record({ id: 'WLD-1005', trackerId: 'workload-distribution', title: 'Unassigned workload intake', owner: '', teamOrSquad: 'PMO', priority: 'Medium', status: 'Open', dueDate: '22 May', rag: 'Amber', lastUpdated: '3 days ago', nextAction: 'Assign owner', missingOwner: true, notUpdatedRecently: true }),
-=======
 function buildInitialHistory(seed: RecordSeed, health: TrackerHealthExtended): TrackerHistoryEvent[] {
   const created: TrackerHistoryEvent = {
     id: `history-${seed.id}-created`,
@@ -395,7 +375,6 @@ export const trackerRecords: TrackerRecord[] = [
   record({ id: 'WLD-1022', trackerId: 'workload-distribution', title: 'Governance resource re-balance', owner: 'Hina Adam', teamOrSquad: 'Governance', priority: 'Critical', status: 'In Progress', dueDate: 'Today', rag: 'Amber', lastUpdated: 'Yesterday', nextAction: 'Track escalation approval' }),
   record({ id: 'WLD-1023', trackerId: 'workload-distribution', title: 'Delivery ops workload stabilization', owner: 'Sara Khan', teamOrSquad: 'Delivery Ops', priority: 'Medium', status: 'Balanced', dueDate: 'Today', rag: 'Green', lastUpdated: 'Today', nextAction: 'Maintain current balance' }),
   record({ id: 'WLD-1024', trackerId: 'workload-distribution', title: 'Squad beta workload closure', owner: 'Ali Raza', teamOrSquad: 'Squad Beta', priority: 'Low', status: 'Closed', dueDate: 'Today', rag: 'Green', lastUpdated: 'Today', nextAction: 'Archive final evidence' }),
->>>>>>> origin/Feat/TrackerHub-Rose
 
   record({ id: 'SQB-1001', trackerId: 'squad-backlog', title: 'Ageing API backlog triage', owner: 'James Tan', teamOrSquad: 'Squad Beta', priority: 'High', status: 'Blocked', dueDate: '17 May', rag: 'Red', lastUpdated: '2 days ago', nextAction: 'Resolve dependency', isBlocked: true, isOverdue: true }),
   record({ id: 'SQB-1002', trackerId: 'squad-backlog', title: 'Ready queue grooming', owner: 'Maya Khan', teamOrSquad: 'Squad Alpha', priority: 'Medium', status: 'Ready', dueDate: '21 May', rag: 'Green', lastUpdated: 'Today', nextAction: 'Confirm sprint slot' }),
