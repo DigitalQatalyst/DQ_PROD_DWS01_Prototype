@@ -1,11 +1,12 @@
-import React, { useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { usePersona } from "../context/PersonaContext";
-import { AnalyticsDashboardCard } from "../components/AnalyticsDashboardCard";
-import { MarketplaceCatalogLayout } from "../components/marketplace/MarketplaceCatalogLayout";
-import type { FilterGroup } from "../components/MarketplaceFilterPanel";
-import { MarketplaceActionRouter } from "../components/MarketplaceActionRouter";
-import { RequestIntakeWizard } from "../components/RequestIntakeWizard";
+import React, { useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { usePersona } from '../context/PersonaContext';
+import { AnalyticsDashboardCard } from '../components/AnalyticsDashboardCard';
+import { MarketplaceCatalogLayout } from '../components/marketplace/MarketplaceCatalogLayout';
+import type { FilterGroup } from '../components/MarketplaceFilterPanel';
+import { MarketplaceActionRouter } from '../components/MarketplaceActionRouter';
+import { RequestIntakeWizard } from '../components/RequestIntakeWizard';
+import { buildCatalogTrail, resolveMarketplaceStage } from '../utils/marketplaceBreadcrumbs';
 import {
   buildCatalogTrail,
   resolveMarketplaceStage,
@@ -303,7 +304,7 @@ export function AnalyticsMarketplacePage() {
         </div>
         <button
           type="button"
-          onClick={() => navigate("/marketplace/drive/analytics-marketplace")}
+          onClick={() => navigate('/marketplace/drive/analytics-marketplace')}
           className="shrink-0 rounded-lg bg-orange-600 px-4 py-1.5 text-[12px] font-semibold text-white transition hover:bg-orange-700"
         >
           Explore

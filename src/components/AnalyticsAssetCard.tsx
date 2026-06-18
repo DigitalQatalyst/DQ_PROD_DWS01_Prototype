@@ -1,5 +1,9 @@
 import React from 'react';
+<<<<<<< HEAD
 import { Eye, Lock } from 'lucide-react';
+=======
+import { Lock } from 'lucide-react';
+>>>>>>> origin/Feat/AnalyticsMarketplace-Rose
 import type { AnalyticsAsset } from '../types/analyticsMarketplace';
 
 interface AnalyticsAssetCardProps {
@@ -17,7 +21,15 @@ export function AnalyticsAssetCard({ asset, isPermitted, onPreview }: AnalyticsA
         : 'bg-teal-50 text-teal-700';
 
   return (
+<<<<<<< HEAD
     <div className="flex flex-col rounded-xl border border-border-default bg-white p-5 transition hover:border-secondary/30 hover:shadow-sm">
+=======
+    <button
+      type="button"
+      onClick={onPreview}
+      className="group flex h-full w-full flex-col rounded-xl border border-border-default bg-white p-5 text-left transition hover:border-secondary/30 hover:shadow-sm"
+    >
+>>>>>>> origin/Feat/AnalyticsMarketplace-Rose
       <div className="mb-3 flex items-center justify-between gap-2">
         <span className={`rounded px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-wider ${typeColor}`}>
           {asset.type}
@@ -47,6 +59,7 @@ export function AnalyticsAssetCard({ asset, isPermitted, onPreview }: AnalyticsA
         <span>{asset.refreshRhythm}</span>
       </div>
 
+<<<<<<< HEAD
       <div className="mt-auto border-t border-border-subtle pt-3">
         <div className="mb-2.5 flex items-center justify-between">
           <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-text-disabled">
@@ -63,5 +76,14 @@ export function AnalyticsAssetCard({ asset, isPermitted, onPreview }: AnalyticsA
         </button>
       </div>
     </div>
+=======
+      <div className="mt-auto flex items-center justify-between gap-3 border-t border-border-subtle pt-3 font-mono text-[10px] uppercase tracking-[0.16em] text-text-disabled">
+        <span className="truncate pr-3">Last updated: {asset.lastUpdated}</span>
+        <span className="shrink-0 text-secondary opacity-0 transition-opacity group-hover:opacity-100">
+          View
+        </span>
+      </div>
+    </button>
+>>>>>>> origin/Feat/AnalyticsMarketplace-Rose
   );
 }

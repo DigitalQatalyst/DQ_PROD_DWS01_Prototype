@@ -39,7 +39,7 @@ export function resolveMarketplaceStage(
 }
 
 export function getStageHref(stage: MarketplaceCategoryKey): string {
-  return MARKETPLACE_4D_DESTINATIONS[stage];
+  return `/marketplace/${stage}`;
 }
 
 export function getServicesCatalogHref(
@@ -76,6 +76,24 @@ function servicesCatalogSegment(stage: MarketplaceCategoryKey): MarketplaceBread
     label: SERVICES_CATALOG_LABEL,
     href: getServicesCatalogHref(stage),
   };
+}
+
+export const ANALYTICS_MARKETPLACE_LABEL = 'Analytics Marketplace';
+
+export function getAnalyticsMarketplaceHref(stage: MarketplaceCategoryKey = 'drive'): string {
+  return `/marketplace/drive/analytics-marketplace?from=${stage}`;
+}
+
+export function buildAnalyticsMarketplaceTrail(
+  stage: MarketplaceCategoryKey,
+  ...segments: MarketplaceBreadcrumbItem[]
+): MarketplaceBreadcrumbItem[] {
+  return [
+    MARKETPLACE_ROOT,
+    stageSegment(stage),
+    { label: ANALYTICS_MARKETPLACE_LABEL, href: getAnalyticsMarketplaceHref(stage) },
+    ...segments,
+  ];
 }
 
 export function buildCatalogTrail(

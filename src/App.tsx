@@ -789,38 +789,28 @@ function AppRoutes() {
             }
           />
 
-          <Route
-            path="/marketplace/analytics-discovery"
-            element={<AnalyticsMarketplacePage />}
-          />
+        <Route
+          path="/marketplace/analytics-discovery"
+          element={<AnalyticsMarketplacePage />}
+        />
 
-          <Route
-            path="/marketplace/drive/analytics-marketplace"
-            element={
-              <RouteGuard>
-                <AnalyticsMarketplaceLandingPage />
-              </RouteGuard>
-            }
-          />
+        <Route
+          path="/marketplace/drive/analytics-marketplace"
+          element={
+            <RouteGuard>
+              <AnalyticsMarketplaceLandingPage />
+            </RouteGuard>
+          }
+        />
 
-          <Route
-            path="/marketplace/drive/analytics-marketplace/:assetSlug"
-            element={
-              <RouteGuard>
-                <AnalyticsDetailsPage />
-              </RouteGuard>
-            }
-          />
-
-          <Route
-            path="/marketplace/drive/tracker-marketplace"
-            element={<TrackerMarketplacePage />}
-          />
-
-          <Route
-            path="/marketplace/drive/tracker-marketplace/:trackerSlug"
-            element={<TrackerDetailsPage />}
-          />
+        <Route
+          path="/marketplace/drive/analytics-marketplace/:assetSlug"
+          element={
+            <RouteGuard>
+              <AnalyticsDetailsPage />
+            </RouteGuard>
+          }
+        />
 
           <Route
             path="/marketplace/feedback"
