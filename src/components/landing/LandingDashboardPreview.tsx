@@ -146,8 +146,8 @@ export function LandingDashboardPreview() {
 
   const quickAccess = isNewJoiner ? newJoinerQuickAccess : returningQuickAccess;
   const subtext = isNewJoiner
-    ? "Start your DWS.01 journey — complete setup and your first actions."
-    : "Here's what's happening in your workspace today.";
+    ? "We’ll guide you through your first steps."
+    : "We'll help you pick up where you left off";
   const searchPlaceholder = isNewJoiner
     ? "Search onboarding guidance, access, services, or support..."
     : "Ask anything or search across your workspace...";
