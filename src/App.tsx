@@ -59,6 +59,10 @@ import { TaskTemplatesMarketplacePage } from "./pages/TaskTemplatesMarketplacePa
 import { KnowledgeMarketplacePage } from "./pages/KnowledgeMarketplacePage";
 import { WorkDirectoryMarketplacePage } from "./pages/WorkDirectoryMarketplacePage";
 import { AnalyticsMarketplacePage } from "./pages/AnalyticsMarketplacePage";
+import { AnalyticsMarketplaceLandingPage } from "./pages/AnalyticsMarketplaceLandingPage";
+import { AnalyticsDetailsPage } from "./pages/AnalyticsDetailsPage";
+import { AnalyticsDestinationPage } from "./pages/AnalyticsDestinationPage";
+import { DriveMarketplacePage } from "./pages/DriveMarketplacePage";
 import { MarketplaceFeedbackPage } from "./pages/MarketplaceFeedbackPage";
 import {
   DEFAULT_MARKETPLACE_ROUTE,
@@ -655,7 +659,9 @@ function AppRoutes() {
           <Route
             path="/marketplace/drive"
             element={
-              <Navigate to={MARKETPLACE_4D_DESTINATIONS.drive} replace />
+              <RouteGuard>
+                <DriveMarketplacePage />
+              </RouteGuard>
             }
           />
 
@@ -782,6 +788,24 @@ function AppRoutes() {
           <Route
             path="/marketplace/analytics-discovery"
             element={<AnalyticsMarketplacePage />}
+          />
+
+          <Route
+            path="/marketplace/drive/analytics-marketplace"
+            element={
+              <RouteGuard>
+                <AnalyticsMarketplaceLandingPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/marketplace/drive/analytics-marketplace/:assetSlug"
+            element={
+              <RouteGuard>
+                <AnalyticsDetailsPage />
+              </RouteGuard>
+            }
           />
 
           <Route
@@ -1009,15 +1033,27 @@ function AppRoutes() {
           />
           <Route
             path="/services/request-case-management/*"
-            element={<Navigate to="/services/request-queues/assigned-requests" replace />}
+            element={
+              <Navigate
+                to="/services/request-queues/assigned-requests"
+                replace
+              />
+            }
           />
           <Route
             path="/services/sla-escalations/*"
-            element={<Navigate to="/services/request-queues/sla-queue-view" replace />}
+            element={
+              <Navigate to="/services/request-queues/sla-queue-view" replace />
+            }
           />
           <Route
             path="/services/service-closure-feedback/*"
-            element={<Navigate to="/services/request-queues/closure-review-queue" replace />}
+            element={
+              <Navigate
+                to="/services/request-queues/closure-review-queue"
+                replace
+              />
+            }
           />
           <Route
             path="/tracker"
@@ -1103,7 +1139,10 @@ function AppRoutes() {
                 <MvpSidebarDetailPage
                   breadcrumbs={[
                     { label: "Platform Admin", route: "/platform-admin" },
-                    { label: "Content Management", route: "/admin/content-management" },
+                    {
+                      label: "Content Management",
+                      route: "/admin/content-management",
+                    },
                     { label: "Marketplace Content" },
                   ]}
                   title="Marketplace Content"
@@ -1121,7 +1160,10 @@ function AppRoutes() {
                 <MvpSidebarDetailPage
                   breadcrumbs={[
                     { label: "Platform Admin", route: "/platform-admin" },
-                    { label: "Content Management", route: "/admin/content-management" },
+                    {
+                      label: "Content Management",
+                      route: "/admin/content-management",
+                    },
                     { label: "Service Content" },
                   ]}
                   title="Service Content"
@@ -1139,7 +1181,10 @@ function AppRoutes() {
                 <MvpSidebarDetailPage
                   breadcrumbs={[
                     { label: "Platform Admin", route: "/platform-admin" },
-                    { label: "Content Management", route: "/admin/content-management" },
+                    {
+                      label: "Content Management",
+                      route: "/admin/content-management",
+                    },
                     { label: "Tracker Content" },
                   ]}
                   title="Tracker Content"
@@ -1157,7 +1202,10 @@ function AppRoutes() {
                 <MvpSidebarDetailPage
                   breadcrumbs={[
                     { label: "Platform Admin", route: "/platform-admin" },
-                    { label: "Content Management", route: "/admin/content-management" },
+                    {
+                      label: "Content Management",
+                      route: "/admin/content-management",
+                    },
                     { label: "Analytics Content" },
                   ]}
                   title="Analytics Content"
