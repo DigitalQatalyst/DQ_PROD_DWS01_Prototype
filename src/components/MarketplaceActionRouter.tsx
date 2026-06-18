@@ -5,6 +5,7 @@ import { KnowledgeActionPanel } from './KnowledgeActionPanel';
 import { DirectoryRoutePanel } from './DirectoryRoutePanel';
 import { DashboardAccessPanel } from './DashboardAccessPanel';
 import { MarketplaceFeedbackFlow } from './MarketplaceFeedbackFlow';
+import { noop } from '../utils/noop';
 export type MarketplaceType =
 'service' |
 'task-template' |
@@ -61,8 +62,8 @@ export function MarketplaceActionRouter({
           guide={item}
           activePersona={activePersona}
           onClose={onClose}
-          onStartTaskFromGuide={onStartTaskFromGuide || (() => {})}
-          onRequestUpdate={onRequestUpdate || (() => {})} />);
+          onStartTaskFromGuide={onStartTaskFromGuide || noop}
+          onRequestUpdate={onRequestUpdate || noop} />);
 
 
     case 'work-directory':
@@ -71,8 +72,8 @@ export function MarketplaceActionRouter({
           entity={item}
           activePersona={activePersona}
           onClose={onClose}
-          onRouteRequest={onRouteRequest || (() => {})}
-          onAssignTask={onAssignTask || (() => {})} />);
+          onRouteRequest={onRouteRequest || noop}
+          onAssignTask={onAssignTask || noop} />);
 
 
     case 'analytics':
@@ -82,7 +83,7 @@ export function MarketplaceActionRouter({
           activePersona={activePersona}
           isPermitted={isPermitted}
           onClose={onClose}
-          onRequestAccess={onRequestAccess || (() => {})} />);
+          onRequestAccess={onRequestAccess || noop} />);
 
 
     case 'feedback':

@@ -1,18 +1,18 @@
-import React from 'react';
-import { useViewingMode } from '../context/ViewingModeContext';
-import { HomeHero } from '../components/stage0-home/HomeHero';
-import { SetupJourneyPanel } from '../components/stage0-home/SetupJourneyPanel';
-import { DWSOperatingRhythm } from '../components/stage0-home/DWSOperatingRhythm';
-import { MarketplaceIntroCards } from '../components/stage0-home/MarketplaceIntroCards';
-import { TodaysBriefPanel } from '../components/stage0-home/TodaysBriefPanel';
-import { TodaysPrioritiesPanel } from '../components/stage0-home/TodaysPrioritiesPanel';
-import { WorkOverviewBento } from '../components/stage0-home/WorkOverviewBento';
-import { PlatformUpdatesPanel } from '../components/stage0-home/PlatformUpdatesPanel';
-import { SupportRequestsPanel } from '../components/stage0-home/SupportRequestsPanel';
+import React from "react";
+import { useViewingMode } from "../context/ViewingModeContext";
+import { HomeHero } from "../components/stage0-home/HomeHero";
+import { SetupJourneyPanel } from "../components/stage0-home/SetupJourneyPanel";
+import { DWSOperatingRhythm } from "../components/stage0-home/DWSOperatingRhythm";
+import { MarketplaceIntroCards } from "../components/stage0-home/MarketplaceIntroCards";
+import { TodaysBriefPanel } from "../components/stage0-home/TodaysBriefPanel";
+import { TodaysPrioritiesPanel } from "../components/stage0-home/TodaysPrioritiesPanel";
+import { WorkOverviewBento } from "../components/stage0-home/WorkOverviewBento";
+import { PlatformUpdatesPanel } from "../components/stage0-home/PlatformUpdatesPanel";
+import { SupportRequestsPanel } from "../components/stage0-home/SupportRequestsPanel";
 
 export function Stage0OrientationPage() {
   const { mode } = useViewingMode();
-  const isNewJoiner = mode === 'first-time';
+  const isNewJoiner = mode === "first-time";
 
   return (
     <div className="w-full bg-white">

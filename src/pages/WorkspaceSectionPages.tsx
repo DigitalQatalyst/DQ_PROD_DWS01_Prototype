@@ -27,7 +27,7 @@ import { useViewingMode } from '../context/ViewingModeContext';
 import { useWorkspaceRole } from '../context/WorkspaceRoleContext';
 import type { WorkspaceRole } from '../config/segments';
 
-type WorkspaceRoute = 'my-work' | 'my-requests' | 'working-sessions' | 'notifications';
+type WorkspaceRoute = 'my-work' | 'my-requests' | 'working-sessions' | 'activity';
 type ViewMode = 'Table' | 'Card' | 'List' | 'Calendar';
 
 interface WorkspaceRecord {
@@ -72,7 +72,7 @@ interface Kpi {
 const routeMeta: Record<WorkspaceRoute, { title: string; purpose: string; primary: string; configure: string; tabs: string[]; columns: string[] }> = {
   'my-work': {
     title: 'My Work',
-    purpose: 'Personal execution cockpit across work that you own, are assigned to, or need to act on.',
+    purpose: 'Act on your assigned tasks, requests, approvals, blockers, and due items.',
     primary: 'New Work Item',
     configure: 'Configure View',
     tabs: ['All', 'Tasks', 'Requests', 'Approvals', 'Blockers', 'Updates'],
@@ -94,12 +94,12 @@ const routeMeta: Record<WorkspaceRoute, { title: string; purpose: string; primar
     tabs: ['Upcoming', 'Today', 'My Follow-ups', 'Decisions', 'Completed'],
     columns: ['Session title', 'Session type', 'Date/time', 'Owner', 'Linked work', 'Follow-ups', 'Status', 'Action']
   },
-  notifications: {
-    title: 'Notifications',
-    purpose: 'Actionable alerts, reminders, mentions, and updates across your DWS workspace.',
+  activity: {
+    title: 'Activity',
+    purpose: 'Platform activity, notifications, announcements, mentions, approvals, recent work updates, and relevant user events.',
     primary: 'Mark All Read',
     configure: 'Notification Preferences',
-    tabs: ['All', 'Unread', 'Actions Required', 'Mentions', 'SLA / Overdue', 'System Updates', 'Announcements'],
+    tabs: ['All Activity', 'Notifications', 'Announcements', 'Mentions', 'Action Required'],
     columns: ['Title', 'Source', 'Priority', 'Status', 'Last update', 'Related item', 'Action']
   }
 };
@@ -109,49 +109,49 @@ const roleCopy: Record<WorkspaceRole, Record<WorkspaceRoute, string[]>> = {
     'my-work': ['Complete assigned task', 'Submit access update', 'Review manager feedback', 'Resolve blocker', 'Update tracker item'],
     'my-requests': ['IT access request', 'Platform support request', 'HRA request', 'Knowledge/content request', 'Task support request'],
     'working-sessions': ['Project stand-up', 'Onboarding sync', 'Task clarification session', 'DQ Ways of Working check-in', 'Learning progress review'],
-    notifications: ['New task assigned', 'Request update', 'Learning reminder', 'Mention in comment', 'Profile completion reminder']
+    activity: ['New task assigned', 'Request update', 'Learning reminder', 'Mention in comment', 'Profile completion reminder']
   },
   'Scrum Master': {
     'my-work': ['Review blocked task', 'Check missing update', 'Validate closure quality', 'Prepare squad stand-up actions', 'Review flow health update'],
     'my-requests': ['Squad support request', 'Task workflow support request', 'Closure evidence request', 'Platform support request', 'Knowledge update request'],
     'working-sessions': ['Daily stand-up', 'Blocker review', 'Closure quality session', 'Squad flow review', 'SLA risk huddle'],
-    notifications: ['Blocker raised', 'Missing task update', 'Closure review due', 'Squad update missing', 'Flow-health alert']
+    activity: ['Blocker raised', 'Missing task update', 'Closure review due', 'Squad update missing', 'Flow-health alert']
   },
   'Team / Squad Lead': {
     'my-work': ['Review team blocker', 'Approve task closure', 'Check team workload', 'Follow up overdue action', 'Review team performance action'],
     'my-requests': ['Team access support request', 'Escalation support request', 'Workflow support request', 'Capacity support request', 'Knowledge owner request'],
     'working-sessions': ['Team planning session', 'Delivery review', 'Escalation review', 'Workload balancing session', 'Governance follow-up'],
-    notifications: ['Approval required', 'Team workload risk', 'Escalation update', 'Closure review due', 'Team blocker update']
+    activity: ['Approval required', 'Team workload risk', 'Escalation update', 'Closure review due', 'Team blocker update']
   },
   'Unit Lead': {
     'my-work': ['Review unit execution risk', 'Check SLA exposure', 'Review governance update', 'Track strategic initiative action', 'Review outcome progress'],
     'my-requests': ['Unit report request', 'Strategic tracker support request', 'Governance support request', 'SLA review request', 'Executive update request'],
     'working-sessions': ['Unit performance review', 'Governance checkpoint', 'Strategic initiative review', 'SLA exposure review', 'Outcome tracking session'],
-    notifications: ['SLA exposure alert', 'Governance review update', 'Unit performance summary', 'Strategic initiative risk', 'Outcome review due']
+    activity: ['SLA exposure alert', 'Governance review update', 'Unit performance summary', 'Strategic initiative risk', 'Outcome review due']
   },
   HRA: {
     'my-work': ['Review onboarding request', 'Confirm role transition update', 'Validate HRA request evidence', 'Check workforce readiness item', 'Follow up access readiness'],
     'my-requests': ['HRA request requiring review', 'Role transition request', 'Onboarding request', 'Policy clarification request', 'Workforce readiness request'],
     'working-sessions': ['Onboarding sync', 'Role transition review', 'Workforce request triage', 'Policy clarification session', 'Access readiness review'],
-    notifications: ['Onboarding request submitted', 'Role transition approval due', 'HRA request update', 'New joiner access reminder', 'Policy clarification mention']
+    activity: ['Onboarding request submitted', 'Role transition approval due', 'HRA request update', 'New joiner access reminder', 'Policy clarification mention']
   },
   Admin: {
     'my-work': ['Review role configuration item', 'Update feature configuration', 'Check audit event', 'Resolve platform configuration task', 'Review workflow rule change'],
     'my-requests': ['Role permission change request', 'Feature configuration request', 'Workflow rule change request', 'Marketplace configuration request', 'AI guardrail update request'],
     'working-sessions': ['Configuration review', 'Platform governance session', 'Audit review', 'Workflow rule review', 'Marketplace configuration sync'],
-    notifications: ['Configuration change submitted', 'Audit log anomaly', 'Role permission request', 'Workflow rule update due', 'Platform configuration alert']
+    activity: ['Configuration change submitted', 'Audit log anomaly', 'Role permission request', 'Workflow rule update due', 'Platform configuration alert']
   },
   Support: {
     'my-work': ['Triage support request', 'Resolve fulfilment item', 'Escalate SLA risk', 'Update request status', 'Review support queue blocker'],
     'my-requests': ['Platform support request', 'Access issue', 'Request fulfilment update', 'SLA exception request', 'Support routing request'],
     'working-sessions': ['Support triage', 'Fulfilment review', 'SLA breach review', 'Platform issue review', 'Queue handoff session'],
-    notifications: ['New support ticket assigned', 'SLA breach risk', 'Escalation queue update', 'Fulfilment owner mention', 'Platform support update']
+    activity: ['New support ticket assigned', 'SLA breach risk', 'Escalation queue update', 'Fulfilment owner mention', 'Platform support update']
   },
   CEO: {
     'my-work': ['Review strategic update', 'Check governance alert', 'Review SLA exposure', 'View executive summary action', 'Review outcome tracking action'],
     'my-requests': ['Executive support request', 'Strategic report request', 'Governance summary request', 'Outcome tracking request', 'Leadership update request'],
     'working-sessions': ['Leadership execution review', 'Governance review', 'Outcome tracking session', 'Strategic portfolio review', 'SLA exposure briefing'],
-    notifications: ['Strategic initiative update', 'Governance health alert', 'Executive report ready', 'SLA exposure briefing', 'Outcome tracking alert']
+    activity: ['Strategic initiative update', 'Governance health alert', 'Executive report ready', 'SLA exposure briefing', 'Outcome tracking alert']
   }
 };
 
@@ -173,7 +173,7 @@ export function buildWorkspaceRecords(route: WorkspaceRoute, role: WorkspaceRole
       ? ['Laptop and DQ collaboration tools', 'Workspace profile help', 'Role-based learning access', 'HRA onboarding clarification', 'Knowledge Center access']
       : mode === 'first-time' && route === 'working-sessions'
         ? ['Onboarding kick-off', 'DQ Ways of Working session', 'Access readiness review', 'First team introduction', 'Learning path check-in']
-        : mode === 'first-time' && route === 'notifications'
+        : mode === 'first-time' && route === 'activity'
           ? ['Welcome to DWS.01', 'Manager assigned your first task', 'Learning path available', 'Access request submitted', 'Profile preferences incomplete']
           : roleCopy[role][route];
 
@@ -183,28 +183,28 @@ export function buildWorkspaceRecords(route: WorkspaceRoute, role: WorkspaceRole
     const sessionStatus = ['Upcoming', 'Today', 'Action Required', 'Decision Captured', 'Completed'][index % 5];
     const notificationStatus = index % 3 === 0 ? 'Action Required' : index % 2 === 0 ? 'Unread' : 'Read';
     const workType = index === 1 ? 'Request' : index === 2 ? 'Approval' : index === 3 ? 'Blocker' : index === 4 ? 'Update' : 'Task';
-    const type = route === 'my-requests' ? 'Request' : route === 'working-sessions' ? 'Working Session' : route === 'notifications' ? 'Notification' : workType;
-    const status = route === 'my-requests' ? requestStatus : route === 'working-sessions' ? sessionStatus : route === 'notifications' ? notificationStatus : ['In Progress', 'Awaiting Input', 'Due Soon', 'Blocked', 'Needs Update', 'On Track'][index % 6];
-    const priority = route === 'notifications' ? ['High', 'Medium', 'High', 'Low', 'Medium'][index % 5] : ['High', 'Medium', 'High', 'High', 'Medium', 'Low'][index % 6];
-    const category = route === 'notifications' ? ['Actions Required', 'Mentions', 'SLA / Overdue', 'System Updates', 'Announcements'][index % 5] : route === 'my-requests' ? ['IT & Access', 'HRA', 'Platform Support', 'Knowledge / Content', 'Admin'][index % 5] : type;
+    const type = route === 'my-requests' ? 'Request' : route === 'working-sessions' ? 'Working Session' : route === 'activity' ? ['Notification', 'Announcement', 'Mention', 'Approval', 'Work Update'][index % 5] : workType;
+    const status = route === 'my-requests' ? requestStatus : route === 'working-sessions' ? sessionStatus : route === 'activity' ? notificationStatus : ['In Progress', 'Awaiting Input', 'Due Soon', 'Blocked', 'Needs Update', 'On Track'][index % 6];
+    const priority = route === 'activity' ? ['High', 'Medium', 'High', 'Low', 'Medium'][index % 5] : ['High', 'Medium', 'High', 'High', 'Medium', 'Low'][index % 6];
+    const category = route === 'activity' ? ['Action Required', 'Mentions', 'Notifications', 'Announcements', 'Work Updates'][index % 5] : route === 'my-requests' ? ['IT & Access', 'HRA', 'Platform Support', 'Knowledge / Content', 'Admin'][index % 5] : type;
     return {
       id: `${route.slice(0, 3).toUpperCase()}-${String(260 + index).padStart(3, '0')}`,
       title,
       type,
       status,
       priority,
-      dueDate: route === 'notifications' ? `${index + 1} hour${index === 0 ? '' : 's'} ago` : `${20 + index} May 2026`,
+      dueDate: route === 'activity' ? `${index + 1} hour${index === 0 ? '' : 's'} ago` : `${20 + index} May 2026`,
       owner: owners[index % owners.length],
       source: route === 'working-sessions' ? ['DWS Calendar', 'Governance Review', 'Support Queue', 'Squad Board', 'Leadership Office'][index % 5] : category,
       category,
       sla: route === 'my-requests' ? ['On Track', 'At Risk', 'Due Soon', 'Met', 'N/A'][index % 5] : undefined,
       lastUpdate: index === 0 ? 'Today, 09:40' : `${index + 1} days ago`,
-      read: route === 'notifications' ? notificationStatus === 'Read' : undefined,
+      read: route === 'activity' ? notificationStatus === 'Read' : undefined,
       participants: ['Amina Hassan', 'Bilal Waqar', owners[index % owners.length]],
       decisions: [`Decision note captured for ${title}`],
       followUps: [`Confirm next action owner for ${title}`, 'Attach evidence or update linked tracker'],
       description: `${role} workspace record for ${title}. This item is scoped to the user's execution cockpit and links to the relevant DWS task, request, tracker, or working-session follow-up.`,
-      nextAction: route === 'notifications' ? 'Open the related item, take the required action, or snooze the notification.' : route === 'working-sessions' ? 'Review notes, capture decisions, and close follow-up actions.' : route === 'my-requests' ? 'Review the status timeline and provide any required input.' : 'Update the work item with current status, owner, evidence, and next action.',
+      nextAction: route === 'activity' ? 'Open the related item, take the required action, or snooze the activity item.' : route === 'working-sessions' ? 'Review notes, capture decisions, and close follow-up actions.' : route === 'my-requests' ? 'Review the status timeline and provide any required input.' : 'Update the work item with current status, owner, evidence, and next action.',
       related: ['DWS.01 Workspace', category, role]
     };
   });
@@ -227,12 +227,12 @@ function kpisFor(route: WorkspaceRoute, records: WorkspaceRecord[], mode: string
       { label: 'Overdue actions', value: String(records.filter((r) => r.priority === 'High').length - 1), helper: 'Needs escalation', status: 'danger' }
     ];
   }
-  if (route === 'notifications') {
+  if (route === 'activity') {
     return [
-      { label: 'Total notifications', value: String(records.length), helper: 'Across DWS sources', status: 'info' },
+      { label: 'Total activity', value: String(records.length), helper: 'Across DWS sources', status: 'info' },
       { label: 'Unread', value: String(records.filter((r) => r.status === 'Unread').length), helper: 'Not reviewed', status: 'warning' },
       { label: 'Action required', value: String(records.filter((r) => r.status === 'Action Required').length), helper: 'Needs response', status: 'danger' },
-      { label: 'SLA/overdue alerts', value: String(records.filter((r) => r.category === 'SLA / Overdue').length), helper: 'Time sensitive', status: 'danger' }
+      { label: 'Mentions', value: String(records.filter((r) => r.category === 'Mentions').length), helper: 'Needs awareness', status: 'info' }
     ];
   }
   if (mode === 'first-time') {
@@ -288,8 +288,8 @@ function DetailDrawer({ record, route, onClose, onUpdate }: { record: WorkspaceR
             {record.sla && <StatusPill status={record.sla} />}
           </div>
           <div className="grid grid-cols-2 gap-4 text-sm">
-            <Meta label={route === 'notifications' ? 'Source' : 'Owner'} value={record.owner} />
-            <Meta label={route === 'notifications' ? 'Timestamp' : 'Due date'} value={record.dueDate} />
+            <Meta label={route === 'activity' ? 'Source' : 'Owner'} value={record.owner} />
+            <Meta label={route === 'activity' ? 'Timestamp' : 'Due date'} value={record.dueDate} />
             <Meta label="Source" value={record.source} />
             <Meta label="Last update" value={record.lastUpdate} />
           </div>
@@ -346,7 +346,7 @@ function DetailDrawer({ record, route, onClose, onUpdate }: { record: WorkspaceR
 }
 
 function drawerActions(route: WorkspaceRoute, record: WorkspaceRecord) {
-  if (route === 'notifications') return record.read ? ['Take Action', 'Snooze', 'Dismiss', 'Open Related Item'] : ['Mark as read', 'Take Action', 'Snooze', 'Dismiss'];
+  if (route === 'activity') return record.read ? ['Take Action', 'Snooze', 'Dismiss', 'Open Related Item'] : ['Mark as read', 'Take Action', 'Snooze', 'Dismiss'];
   if (route === 'working-sessions') return ['Add Follow-up', 'Capture Decision', 'Link Work Item', 'Mark Complete'];
   if (route === 'my-requests') return ['Update Request', 'Add Comment', 'Upload Evidence', 'Cancel Request'];
   return ['Update Item', 'Add Note', 'Link Evidence', 'Mark Reviewed'];
@@ -413,8 +413,8 @@ function modalFields(title: string, route: WorkspaceRoute) {
 function ConfigureViewDrawer({ route, config, onClose, onSave }: { route: WorkspaceRoute; config: ViewConfig; onClose: () => void; onSave: (config: ViewConfig) => void }) {
   const meta = routeMeta[route];
   const [draft, setDraft] = useState(config);
-  const [tab, setTab] = useState(route === 'notifications' ? 'Notification Preferences' : 'Columns');
-  const configTabs = route === 'notifications'
+  const [tab, setTab] = useState(route === 'activity' ? 'Activity Preferences' : 'Columns');
+  const configTabs = route === 'activity'
     ? ['Categories', 'Channels', 'Reminder Rules', 'Quiet Hours']
     : ['Columns', 'Saved Filters', 'Default View', 'Notification Preferences'];
   return (
@@ -653,9 +653,13 @@ function WorkspacePageShell({ route }: { route: WorkspaceRoute }) {
   };
 
   const primaryAction = () => {
-    if (route === 'notifications') {
+    if (route === 'activity') {
       setRecords((current) => current.map((record) => ({ ...record, status: record.status === 'Unread' ? 'Read' : record.status, read: true })));
-      toast.success('All notifications marked as read.');
+      toast.success('All activity marked as read.');
+      return;
+    }
+    if (route === 'my-requests') {
+      navigate('/marketplaces/services');
       return;
     }
     setModalTitle(meta.primary);
@@ -665,7 +669,9 @@ function WorkspacePageShell({ route }: { route: WorkspaceRoute }) {
     <div className="min-h-[calc(100vh-64px)] bg-surface px-5 py-6 lg:px-8">
       <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <div className="text-xs font-bold uppercase tracking-wider text-text-muted">{activeSegment.subtitle} · {mode === 'first-time' ? 'New Joiner' : 'Returning User'}</div>
+          <div className="text-xs font-bold uppercase tracking-wider text-text-muted">
+            {route === 'my-work' ? 'Orientation · Act / execution' : `${activeSegment.subtitle} · ${mode === 'first-time' ? 'New Joiner' : 'Returning User'}`}
+          </div>
           <h1 className="mt-1 text-3xl font-bold tracking-tight text-primary">{meta.title}</h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">{meta.purpose}</p>
         </div>
@@ -693,13 +699,13 @@ function WorkspacePageShell({ route }: { route: WorkspaceRoute }) {
             {meta.tabs.map((name) => <button key={name} onClick={() => setActiveTab(name)} className={`px-3 py-3 text-sm font-bold ${activeTab === name ? 'border-b-2 border-info text-info-text' : 'text-text-secondary hover:text-primary'}`}>{name}</button>)}
           </div>
           <div className="mb-2 flex gap-2">
-            {route !== 'notifications' && <button onClick={() => setModalTitle(route === 'working-sessions' ? 'View Calendar' : 'Save Filter')} className="inline-flex items-center gap-2 rounded-button border border-border-default px-3 py-2 text-xs font-bold text-primary hover:bg-surface"><Filter size={14} />{route === 'working-sessions' ? 'View Calendar' : 'Save Filter'}</button>}
+            {route !== 'activity' && <button onClick={() => setModalTitle(route === 'working-sessions' ? 'View Calendar' : 'Save Filter')} className="inline-flex items-center gap-2 rounded-button border border-border-default px-3 py-2 text-xs font-bold text-primary hover:bg-surface"><Filter size={14} />{route === 'working-sessions' ? 'View Calendar' : 'Save Filter'}</button>}
             {route === 'working-sessions' && <button onClick={() => setConfig((current) => ({ ...current, view: current.view === 'Calendar' ? 'List' : 'Calendar' }))} className="inline-flex items-center gap-2 rounded-button border border-border-default px-3 py-2 text-xs font-bold text-primary hover:bg-surface"><CalendarDays size={14} />{config.view === 'Calendar' ? 'List View' : 'Calendar View'}</button>}
             {route === 'my-requests' && <button onClick={() => setConfig((current) => ({ ...current, view: current.view === 'Card' ? 'Table' : 'Card' }))} className="inline-flex items-center gap-2 rounded-button border border-border-default px-3 py-2 text-xs font-bold text-primary hover:bg-surface"><LayoutGrid size={14} />{config.view === 'Card' ? 'Table View' : 'Card View'}</button>}
           </div>
         </div>
 
-        {config.view === 'Card' ? <CardView records={visibleRecords} onOpen={setDrawerRecord} /> : config.view === 'Calendar' ? <CalendarView records={visibleRecords} onOpen={setDrawerRecord} /> : <RecordsTable route={route} records={visibleRecords} columns={config.columns} onOpen={setDrawerRecord} onAction={(record) => route === 'notifications' ? setConfirmRecord(record) : setModalTitle(actionTitleFor(route, record))} />}
+        {config.view === 'Card' ? <CardView records={visibleRecords} onOpen={setDrawerRecord} /> : config.view === 'Calendar' ? <CalendarView records={visibleRecords} onOpen={setDrawerRecord} /> : <RecordsTable route={route} records={visibleRecords} columns={config.columns} onOpen={setDrawerRecord} onAction={(record) => route === 'activity' ? setConfirmRecord(record) : setModalTitle(actionTitleFor(route, record))} />}
       </section>
 
       <section className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-[1fr_360px]">
@@ -721,7 +727,7 @@ function WorkspacePageShell({ route }: { route: WorkspaceRoute }) {
           </div>
           <div className="grid grid-cols-2 gap-3">
             {quickActions(route, activeRole).map(({ label, icon: Icon }) => (
-              <button key={label} onClick={() => label === 'Take Action' ? navigate('/workspace/my-work') : setModalTitle(label)} className="rounded-card border border-border-subtle bg-white p-3 text-left text-xs font-bold text-primary hover:bg-surface">
+              <button key={label} onClick={() => label === 'Take Action' ? navigate('/workspace') : label === 'Submit Request' ? navigate('/marketplaces/services') : setModalTitle(label)} className="rounded-card border border-border-subtle bg-white p-3 text-left text-xs font-bold text-primary hover:bg-surface">
                 <Icon size={18} className="mb-3 text-primary" />
                 {label}
               </button>
@@ -731,7 +737,7 @@ function WorkspacePageShell({ route }: { route: WorkspaceRoute }) {
       </section>
 
       <DetailDrawer record={drawerRecord} route={route} onClose={() => setDrawerRecord(null)} onUpdate={updateRecord} />
-      {configOpen && <ConfigureViewDrawer route={route} config={config} onClose={() => setConfigOpen(false)} onSave={(next) => { setConfig(next); setActiveTab(next.defaultTab); setConfigOpen(false); toast.success(route === 'notifications' ? 'Notification preferences updated.' : 'My Work view updated.'); }} />}
+      {configOpen && <ConfigureViewDrawer route={route} config={config} onClose={() => setConfigOpen(false)} onSave={(next) => { setConfig(next); setActiveTab(next.defaultTab); setConfigOpen(false); toast.success(route === 'activity' ? 'Activity preferences updated.' : 'My Work view updated.'); }} />}
       {modalTitle && <ActionModal title={modalTitle} route={route} onClose={() => setModalTitle(null)} onSave={(values) => {
         const title = values.Title || values['Request type'] || values['Item title'] || values.Name || values['Session type'] || modalTitle;
         setRecords((current) => [{
@@ -749,7 +755,7 @@ function WorkspacePageShell({ route }: { route: WorkspaceRoute }) {
           related: [meta.title, values['Linked work item'] || values['Linked task/request/tracker'] || 'DWS.01 Workspace'],
           lastUpdate: 'Just now',
           sla: route === 'my-requests' ? 'On Track' : undefined,
-          read: route === 'notifications' ? false : undefined
+          read: route === 'activity' ? false : undefined
         }, ...current]);
         toast.success(`${modalTitle} saved successfully.`);
         setModalTitle(null);
@@ -785,10 +791,12 @@ function tabMatch(route: WorkspaceRoute, tab: string, record: WorkspaceRecord) {
     if (tab === 'Decisions') return record.status === 'Decision Captured';
     return record.status === tab;
   }
-  if (route === 'notifications') {
-    if (tab === 'Unread') return record.status === 'Unread';
-    if (tab === 'Actions Required') return record.status === 'Action Required';
-    return record.category === tab;
+  if (route === 'activity') {
+    if (tab === 'All Activity') return true;
+    if (tab === 'Notifications') return record.type === 'Notification' || record.category === 'Notifications';
+    if (tab === 'Announcements') return record.type === 'Announcement' || record.category === 'Announcements';
+    if (tab === 'Mentions') return record.type === 'Mention' || record.category === 'Mentions';
+    if (tab === 'Action Required') return record.status === 'Action Required' || record.category === 'Action Required';
   }
   return true;
 }
@@ -800,10 +808,10 @@ function actionTitleFor(route: WorkspaceRoute, record: WorkspaceRecord) {
 }
 
 function quickActions(route: WorkspaceRoute, role: WorkspaceRole): { label: string; icon: LucideIcon }[] {
-  if (route === 'notifications') return [
+  if (route === 'activity') return [
     { label: 'Take Action', icon: CheckCircle2 },
     { label: 'Snooze Notification', icon: Clock },
-    { label: 'Notification Preferences', icon: SlidersHorizontal },
+    { label: 'Activity Preferences', icon: SlidersHorizontal },
     { label: 'Dismiss Selected', icon: Trash2 }
   ];
   if (route === 'working-sessions') return [
@@ -830,7 +838,7 @@ function insightsFor(route: WorkspaceRoute, role: WorkspaceRole, mode: string) {
   if (mode === 'first-time') return ['Your onboarding profile is 70% complete.', '2 access items need confirmation.', 'Your first working session is scheduled this week.', 'Weekly workspace summary is ready.'];
   if (route === 'my-requests') return ['2 requests are close to SLA breach.', `${role} request queue has pending input.`, 'One fulfilment owner update is overdue.', 'Weekly request summary is ready.'];
   if (route === 'working-sessions') return ['3 follow-ups need owner confirmation.', 'A decision from the last session is not linked to work.', 'One working session has overdue actions.', 'Weekly collaboration summary is ready.'];
-  if (route === 'notifications') return ['3 notifications need your update.', 'You have 1 unresolved blocker alert.', '2 SLA alerts should be reviewed today.', 'Weekly notification digest is ready.'];
+  if (route === 'activity') return ['3 activity items need your update.', 'You have 1 unresolved blocker alert.', '2 action-required alerts should be reviewed today.', 'Weekly activity digest is ready.'];
   return ['3 items need your update.', 'You have 1 unresolved blocker.', '2 requests are close to SLA breach.', 'Weekly workspace summary is ready.'];
 }
 
@@ -846,6 +854,10 @@ export function WorkspaceWorkingSessionsPage() {
   return <WorkspacePageShell route="working-sessions" />;
 }
 
+export function WorkspaceActivityPage() {
+  return <WorkspacePageShell route="activity" />;
+}
+
 export function WorkspaceNotificationsPage() {
-  return <WorkspacePageShell route="notifications" />;
+  return <WorkspaceActivityPage />;
 }

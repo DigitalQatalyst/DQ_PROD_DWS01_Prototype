@@ -1,67 +1,64 @@
-import React, { useState, useMemo } from 'react';
-import { FilterBar } from '../components/FilterBar';
-import { KpiTile } from '../components/KpiTile';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { ServiceCard } from '../components/ServiceCard';
-import { ServiceEmptyState } from '../components/ServiceEmptyState';
-import { Search } from 'lucide-react';
-import {
-  MarketplaceTopFilterBar,
-} from '../components/MarketplaceTopFilterBar';
+import { MarketplaceCatalogLayout } from '../components/marketplace/MarketplaceCatalogLayout';
 import type { FilterGroup } from '../components/MarketplaceFilterPanel';
-import { usePersona } from '../context/PersonaContext';
 import { useServiceLifecycle } from '../context/ServiceLifecycleContext';
+import {
+  buildCatalogTrail,
+  resolveMarketplaceStage,
+  SERVICES_CATALOG_LABEL,
+} from '../utils/marketplaceBreadcrumbs';
+import {
+  ALL_TAB_ID,
+  buildCatalogTabs,
+} from '../utils/marketplaceCatalogTabs';
 
 export function ServicesMarketplacePage() {
-  const { activePersona } = usePersona();
-  const { services, requests } = useServiceLifecycle();
+  const [searchParams] = useSearchParams();
+  const { services, serviceCategories } = useServiceLifecycle();
+  const stage = resolveMarketplaceStage(searchParams.get('from'), 'deploy');
+  const categoryParam = searchParams.get('category');
 
-  const [activeTab, setActiveTab] = useState('All');
+  const [activeTab, setActiveTab] = useState(ALL_TAB_ID);
   const [search, setSearch] = useState('');
   const [filterValues, setFilterValues] = useState<Record<string, string[]>>({});
   const [recommendedActive, setRecommendedActive] = useState(false);
 
-  // ── Tabs (spec §4.4) ────────────────────────────────────────────
-  const tabs = [
-    'All',
-    'HRA Requests',
-    'IT & Access',
-    'Platform Support',
-    'Knowledge / Content',
-    'Task / Workflow',
-    'Admin Requests',
-    'Approvals',
-    'Escalations',
-  ];
+  useEffect(() => {
+    if (
+      categoryParam &&
+      serviceCategories.some((category) => category.name === categoryParam)
+    ) {
+      setActiveTab(categoryParam);
+    }
+  }, [categoryParam, serviceCategories]);
 
-  // ── Filter groups (spec §7 ServiceFilterPanel) ───────────────────
+  const categoryTabs = useMemo(
+    () =>
+      buildCatalogTabs(
+        services,
+        serviceCategories.map((category) => ({
+          id: category.name,
+          label: category.name,
+        })),
+        (service) => service.category,
+      ),
+    [serviceCategories, services],
+  );
+
   const filterGroups: FilterGroup[] = [
     {
-      id: 'category',
-      label: 'Service Category',
-      options: [
-        { value: 'HRA Requests', label: 'HRA Requests' },
-        { value: 'IT & Access', label: 'IT & Access' },
-        { value: 'Platform Support', label: 'Platform Support' },
-        { value: 'Knowledge / Content', label: 'Knowledge / Content' },
-        { value: 'Task / Workflow', label: 'Task / Workflow' },
-        { value: 'Admin Requests', label: 'Admin Requests' },
-        { value: 'Approvals', label: 'Approvals' },
-        { value: 'Escalations', label: 'Escalations' },
-      ],
-    },
-    {
-      id: 'sla',
-      label: 'SLA',
-      options: [
-        { value: '4 business hours', label: 'Less than 4 hours' },
-        { value: '1 business day', label: '1 business day' },
-        { value: '2 business days', label: '2 business days' },
-        { value: '3 business days', label: '3+ business days' },
-      ],
+      id: 'domain',
+      label: 'Request Domain',
+      options: serviceCategories.map((category) => ({
+        value: category.name,
+        label: category.name,
+      })),
     },
     {
       id: 'approval',
-      label: 'Approval Required',
+      label: 'Approval',
       options: [
         { value: 'Required', label: 'Approval required' },
         { value: 'Conditional', label: 'Conditional approval' },
@@ -69,137 +66,105 @@ export function ServicesMarketplacePage() {
       ],
     },
     {
-      id: 'owner',
-      label: 'Service Owner',
+      id: 'risk',
+      label: 'Risk Profile',
       options: [
-        { value: 'People Operations Service Owner', label: 'People Operations' },
-        { value: 'IT & Access Service Owner', label: 'IT & Access' },
-        { value: 'Platform Support Service Owner', label: 'Platform Support' },
-        { value: 'Knowledge Governance Service Owner', label: 'Knowledge Governance' },
-        { value: 'Workflow Governance Service Owner', label: 'Workflow Governance' },
-        { value: 'Workspace Admin Service Owner', label: 'Workspace Admin' },
-        { value: 'Approval Governance Service Owner', label: 'Approval Governance' },
-        { value: 'Escalation Governance Owner', label: 'Escalation Governance' },
+        { value: 'Standard', label: 'Standard' },
+        { value: 'Governance-sensitive', label: 'Governance-sensitive' },
+        { value: 'Review-sensitive', label: 'Review-sensitive' },
+        { value: 'At Risk', label: 'At risk / priority' },
       ],
     },
   ];
 
-  // ── Filtering logic ─────────────────────────────────────────────
-
   const handleFilterChange = (groupId: string, values: string[]) => {
-    setFilterValues((prev) => ({
-      ...prev,
-      [groupId]: values,
-    }));
+    setFilterValues((prev) => ({ ...prev, [groupId]: values }));
   };
 
   const handleClearAll = () => {
     setFilterValues({});
     setSearch('');
     setRecommendedActive(false);
-    setActiveTab('All');
+    setActiveTab(ALL_TAB_ID);
   };
 
   const filteredServices = useMemo(() => {
-    return services.filter((s) => {
-      // Tab filter
+    return services.filter((service) => {
       const matchesTab =
-        activeTab === 'All' || s.category.includes(activeTab);
+        activeTab === ALL_TAB_ID || service.category === activeTab;
 
-      // Search filter — title, description, owner, category
-      const q = search.toLowerCase();
+      const query = search.toLowerCase();
       const matchesSearch =
-        !q ||
-        s.title.toLowerCase().includes(q) ||
-        s.description.toLowerCase().includes(q) ||
-        s.owner.toLowerCase().includes(q) ||
-        s.category.toLowerCase().includes(q);
+        !query ||
+        service.title.toLowerCase().includes(query) ||
+        service.description.toLowerCase().includes(query) ||
+        service.owner.toLowerCase().includes(query) ||
+        service.category.toLowerCase().includes(query) ||
+        service.id.toLowerCase().includes(query);
 
-      // Panel filters
-      const matchesCategory =
-        !filterValues.category?.length ||
-        filterValues.category.includes(s.category);
-      const matchesSla =
-        !filterValues.sla?.length || filterValues.sla.includes(s.sla);
+      const matchesDomain =
+        !filterValues.domain?.length ||
+        filterValues.domain.includes(service.category);
       const matchesApproval =
         !filterValues.approval?.length ||
-        filterValues.approval.includes(s.approval);
-      const matchesOwner =
-        !filterValues.owner?.length || filterValues.owner.includes(s.owner);
+        filterValues.approval.includes(service.approval);
+      const matchesRisk =
+        !filterValues.risk?.length || filterValues.risk.includes(service.risk);
+      const matchesRecommended =
+        !recommendedActive ||
+        service.approval === 'Required' ||
+        service.risk !== 'Standard';
 
       return (
         matchesTab &&
         matchesSearch &&
-        matchesCategory &&
-        matchesSla &&
+        matchesDomain &&
         matchesApproval &&
-        matchesOwner
+        matchesRisk &&
+        matchesRecommended
       );
     });
-  }, [services, activeTab, search, filterValues]);
+  }, [services, activeTab, search, filterValues, recommendedActive]);
 
-  // ── KPI data ────────────────────────────────────────────────────
-  const atRiskCount = requests.filter(
-    (r) => r.slaState === 'At Risk'
-  ).length;
+  const activeCategory = serviceCategories.find(
+    (category) => category.name === activeTab,
+  );
 
   return (
-    <div className="max-w-[1280px] mx-auto px-6 py-8">
-      {/* Page header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-primary mb-2">
-          Service Catalogue
-        </h1>
-        <p className="text-text-secondary">
-          Discover and submit requests for support, access, and governance.
-        </p>
+    <MarketplaceCatalogLayout
+      breadcrumbItems={buildCatalogTrail(stage, SERVICES_CATALOG_LABEL)}
+      title="Governed discovery for support, access, and governance services."
+      lede="Organised through the DWS service taxonomy — request domains, approval rules, and fulfilment paths. Discovery layer only; starting a request creates a tracked record with owner, SLA, and audit trail."
+      searchPlaceholder="Search services, owners, SLAs, or request types…"
+      search={search}
+      onSearchChange={setSearch}
+      itemLabel="services"
+      totalCount={services.length}
+      visibleCount={filteredServices.length}
+      tabs={categoryTabs}
+      activeTabId={activeTab}
+      onTabChange={setActiveTab}
+      toneStrip={
+        activeCategory
+          ? { code: activeCategory.id, description: activeCategory.description }
+          : null
+      }
+      filterHelperText="Refine by request domain, approval requirement, and risk profile."
+      filterGroups={filterGroups}
+      filterValues={filterValues}
+      onFilterChange={handleFilterChange}
+      onClearAll={handleClearAll}
+      recommendedActive={recommendedActive}
+      onRecommendedChange={setRecommendedActive}
+      showEmpty={filteredServices.length === 0}
+      emptyTitle="No services match your filters"
+      emptyMessage="Try adjusting your search or filters, or clear all filters to see all available services."
+    >
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {filteredServices.map((service) => (
+          <ServiceCard key={service.id} service={service} />
+        ))}
       </div>
-
-      {/* KPI strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <KpiTile label="Available Services" value={services.length.toString()} status="info" />
-        <KpiTile label="Avg Routing Time" value="< 1d" status="success" />
-        <KpiTile
-          label="At-Risk Requests"
-          value={atRiskCount.toString()}
-          status="warning"
-        />
-        <KpiTile label="Closed This Week" value="21" status="success" />
-      </div>
-
-      {/* Category tabs */}
-      <FilterBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
-
-      {/* Top filter bar */}
-      <div className="mt-4">
-        <MarketplaceTopFilterBar
-          searchPlaceholder="Search services, owners, SLAs, or request types"
-          searchValue={search}
-          onSearchChange={setSearch}
-          groups={filterGroups}
-          values={filterValues}
-          onChange={handleFilterChange}
-          recommendedActive={recommendedActive}
-          onRecommendedChange={setRecommendedActive}
-          onClearAll={handleClearAll}
-        />
-      </div>
-
-      {/* Service card grid */}
-      {filteredServices.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filteredServices.map((service) => (
-            <ServiceCard key={service.id} service={service} />
-          ))}
-        </div>
-      ) : (
-        <ServiceEmptyState
-          title="No services match your filters"
-          message="Try adjusting your search or filters, or clear all filters to see all available services."
-          ctaLabel="Clear filters"
-          onCtaClick={handleClearAll}
-        />
-      )}
-    </div>
+    </MarketplaceCatalogLayout>
   );
 }

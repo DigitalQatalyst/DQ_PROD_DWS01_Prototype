@@ -1,12 +1,11 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Bell } from 'lucide-react';
 interface NotificationBellProps {
   count?: number;
   urgentCount?: number;
 }
 export function NotificationBell({
-  count = 4,
-  urgentCount = 1
+  count = 4
 }: NotificationBellProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [localCount, setLocalCount] = useState(count);
@@ -25,12 +24,12 @@ export function NotificationBell({
     setIsOpen(false);
   };
   return <div className="relative" ref={dropdownRef}>
-      <button onClick={() => setIsOpen(!isOpen)} className="relative p-2 rounded-button hover:bg-surface transition-colors text-text-secondary hover:text-primary">
-        <Bell size={20} />
-        {localCount > 0 && <span className={`absolute top-1.5 right-1.5 w-2 h-2 rounded-full ${urgentCount > 0 ? 'bg-danger' : 'bg-primary'}`} />}
+      <button onClick={() => setIsOpen(!isOpen)} aria-label="Notifications" className="relative p-2 rounded-button hover:bg-surface transition-colors text-primary focus:outline-none focus:ring-4 focus:ring-primary/10">
+        <Bell size={20} strokeWidth={1.5} />
+        {localCount > 0 && <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-secondary" />}
       </button>
 
-      {isOpen && <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-card shadow-lg border border-border-default overflow-hidden z-50">
+      {isOpen && <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-card shadow-xl border border-border-default overflow-hidden z-50">
           <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle">
             <h3 className="font-semibold text-primary">Notifications</h3>
             {localCount > 0 && <button onClick={handleMarkAllRead} className="text-xs text-secondary hover:underline">

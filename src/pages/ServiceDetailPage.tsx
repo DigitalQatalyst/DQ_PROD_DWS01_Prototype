@@ -1,28 +1,57 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useServiceLifecycle } from '../context/ServiceLifecycleContext';
-import { ServiceDetailHero } from '../components/ServiceDetailHero';
-import { ServiceMetadataRail } from '../components/ServiceMetadataRail';
-import { WhenToUseCard } from '../components/WhenToUseCard';
-import { RequiredInputsList } from '../components/RequiredInputsList';
-import { FulfilmentTimeline } from '../components/FulfilmentTimeline';
-import { ApprovalPathCard } from '../components/ApprovalPathCard';
-import { RelatedItemsCard } from '../components/RelatedItemsCard';
-import { AuditNoteCard } from '../components/AuditNoteCard';
 import { ServiceEmptyState } from '../components/ServiceEmptyState';
+import { ServiceDetailPageHeader } from '../components/marketplace/service/ServiceDetailPageHeader';
+import { ServiceDetailRail } from '../components/marketplace/service/ServiceDetailRail';
+import { MarketplaceDetailPageGrid } from '../components/marketplace/shared/MarketplaceDetailPageGrid';
+import { KnowledgeOverviewTab } from '../components/marketplace/knowledge/KnowledgeOverviewTab';
+import { KnowledgeGovernanceTab } from '../components/marketplace/knowledge/KnowledgeGovernanceTab';
+import { KnowledgeResourcesTab } from '../components/marketplace/knowledge/KnowledgeResourcesTab';
+import {
+  buildFulfilmentFlowSteps,
+  buildServiceAppliesTo,
+  getServiceChangeHistory,
+  buildServiceKeyReminders,
+  buildServiceOverviewRows,
+  buildServicePolicyLinks,
+  buildServiceRelatedResources,
+  buildServiceSupportingMaterials,
+} from '../utils/serviceDetailContent';
+import {
+  buildServiceDetailTrail,
+  resolveMarketplaceStage,
+} from '../utils/marketplaceBreadcrumbs';
+import {
+  parseMarketplaceDetailTab,
+  type MarketplaceDetailTab,
+} from '../types/marketplaceDetail';
 
 export function ServiceDetailPage() {
   const { serviceId } = useParams<{ serviceId: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const stage = resolveMarketplaceStage(searchParams.get('from'), 'deploy');
+  const activeTab = parseMarketplaceDetailTab(searchParams.get('tab'));
   const { getServiceById, getServiceDetailByServiceId } = useServiceLifecycle();
-  
+
   const [loading, setLoading] = useState(true);
 
-  // Fetch data
   const service = serviceId ? getServiceById(serviceId) : undefined;
   const detail = serviceId ? getServiceDetailByServiceId(serviceId) : undefined;
 
-  // Simulate network loading
+  const handleTabChange = useCallback(
+    (tab: MarketplaceDetailTab) => {
+      const next = new URLSearchParams(searchParams);
+      if (tab === 'overview') {
+        next.delete('tab');
+      } else {
+        next.set('tab', tab);
+      }
+      setSearchParams(next, { replace: true });
+    },
+    [searchParams, setSearchParams],
+  );
+
   useEffect(() => {
     setLoading(true);
     const timer = setTimeout(() => {
@@ -33,23 +62,17 @@ export function ServiceDetailPage() {
 
   if (loading) {
     return (
-      <div className="bg-[#F6F6FB] min-h-screen py-8">
-        <div className="max-w-[1440px] mx-auto px-6 lg:px-8">
-          {/* Breadcrumb Skeleton */}
-          <div className="w-64 h-4 bg-border-default animate-pulse rounded mb-6" />
-          
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-8 space-y-6">
-              {/* Hero Skeleton */}
-              <div className="bg-white rounded-card border border-border-default h-48 animate-pulse" />
-              {/* Content Skeletons */}
-              <div className="bg-white rounded-card border border-border-default h-64 animate-pulse" />
-              <div className="bg-white rounded-card border border-border-default h-48 animate-pulse" />
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="mx-auto max-w-[1440px] px-6 lg:px-8">
+          <div className="mb-6 h-4 w-72 animate-pulse rounded bg-gray-200" />
+          <div className="mb-8 h-28 animate-pulse rounded-card bg-gray-200/70" />
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+            <div className="space-y-6 lg:col-span-8">
+              <div className="h-12 animate-pulse rounded bg-gray-200" />
+              <div className="h-80 animate-pulse rounded-card bg-gray-200/70" />
             </div>
-            
             <div className="lg:col-span-4">
-              {/* Rail Skeleton */}
-              <div className="bg-white rounded-card border border-border-default h-96 animate-pulse sticky top-[88px]" />
+              <div className="sticky top-24 h-[520px] animate-pulse rounded-card bg-gray-200/70" />
             </div>
           </div>
         </div>
@@ -59,10 +82,10 @@ export function ServiceDetailPage() {
 
   if (!service || !detail) {
     return (
-      <div className="bg-[#F6F6FB] min-h-screen py-20 px-6">
-        <div className="max-w-3xl mx-auto">
-          <ServiceEmptyState 
-            title="Service not found" 
+      <div className="min-h-screen bg-gray-50 py-20 px-6">
+        <div className="mx-auto max-w-3xl">
+          <ServiceEmptyState
+            title="Service not found"
             message={`We couldn't find a service matching the ID "${serviceId}". It may have been removed or you might have an incorrect link.`}
             ctaLabel="Back to Service Catalogue"
             onCtaClick={() => window.history.back()}
@@ -72,53 +95,51 @@ export function ServiceDetailPage() {
     );
   }
 
-  return (
-    <div className="bg-[#F6F6FB] min-h-screen pb-12">
-      <div className="max-w-[1440px] mx-auto px-6 lg:px-8 pt-8">
-        
-        {/* Breadcrumbs */}
-        <div className="flex items-center gap-2 text-[12px] font-medium text-text-muted mb-6">
-          <Link to="/marketplaces/services" className="hover:text-primary transition-colors">Marketplaces</Link>
-          <ChevronRight size={12} />
-          <Link to="/marketplaces/services" className="hover:text-primary transition-colors">Services</Link>
-          <ChevronRight size={12} />
-          <span className="text-text-primary">{service.title}</span>
-        </div>
+  const startRequestHref = `/requests/start/${service.id}?from=${stage}`;
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
-          {/* Main Content (8 cols) */}
-          <div className="lg:col-span-8 space-y-6">
-            <ServiceDetailHero service={service} detail={detail} />
-            
-            <WhenToUseCard 
-              whenToUse={detail.whenToUse} 
-              whenNotToUse={detail.whenNotToUse} 
+  return (
+    <div className="min-h-screen bg-gray-50 pb-12">
+      <div className="mx-auto max-w-[1440px] px-6 pt-8 lg:px-8">
+        <ServiceDetailPageHeader
+          breadcrumbItems={buildServiceDetailTrail(
+            stage,
+            service.title,
+            service.id,
+            service.category,
+          )}
+          service={service}
+          startRequestHref={startRequestHref}
+        />
+
+        <MarketplaceDetailPageGrid
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          rail={<ServiceDetailRail service={service} detail={detail} />}
+        >
+          {activeTab === 'overview' && (
+            <KnowledgeOverviewTab
+              overviewRows={buildServiceOverviewRows(service, detail)}
+              appliesTo={buildServiceAppliesTo(detail, service)}
+              keyReminders={buildServiceKeyReminders(detail)}
             />
-            
-            <RequiredInputsList inputs={detail.requiredInputs} />
-            
-            <FulfilmentTimeline path={detail.fulfilmentPath} />
-            
-            <ApprovalPathCard 
-              requirement={detail.approval} 
-              detail={detail.approvalDetail} 
+          )}
+
+          {activeTab === 'governance' && (
+            <KnowledgeGovernanceTab
+              approvalSteps={buildFulfilmentFlowSteps(detail)}
+              versionHistory={getServiceChangeHistory(service.id, detail)}
+              policyLinks={buildServicePolicyLinks(detail)}
+              flowTitle="Fulfilment Flow"
             />
-            
-            <RelatedItemsCard 
-              knowledgeLinks={detail.relatedKnowledge} 
-              serviceLinks={detail.relatedServices} 
+          )}
+
+          {activeTab === 'resources' && (
+            <KnowledgeResourcesTab
+              relatedResources={buildServiceRelatedResources(detail)}
+              supportingMaterials={buildServiceSupportingMaterials(service)}
             />
-            
-            <AuditNoteCard note={detail.auditNote} />
-          </div>
-          
-          {/* Metadata Rail (4 cols) */}
-          <div className="lg:col-span-4 relative">
-            <ServiceMetadataRail detail={detail} />
-          </div>
-          
-        </div>
+          )}
+        </MarketplaceDetailPageGrid>
       </div>
     </div>
   );

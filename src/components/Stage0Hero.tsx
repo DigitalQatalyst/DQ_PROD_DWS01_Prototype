@@ -89,9 +89,7 @@ export function Stage0Hero({
   const isNewJoiner = mode === 'first-time';
   const cards = isNewJoiner ? newJoinerCards : returningCards;
   const headline = isNewJoiner ? 'Welcome to DWS.01' : 'Welcome back to DWS.01';
-  const subtitle = isNewJoiner ?
-  'Your digital entry point into how DQ works — discover services, understand ways of working, access knowledge, and start your onboarding journey.' :
-  'Continue into your workspace, review what has changed, and access the right marketplace entry points before moving into execution.';
+  const subtitle = 'Start here for platform context, announcements, quick links, and recent activity.';
   const visualLabels = isNewJoiner ?
   ['Onboarding', 'Access', 'Knowledge', '4D Marketplaces'] :
   ['Workspace Entry', 'Recent Updates', 'Saved Destinations', 'Marketplace Access'];
@@ -107,6 +105,9 @@ export function Stage0Hero({
       <div className="relative mx-auto flex min-h-[calc(100vh-64px)] max-w-7xl flex-col px-6 py-10 sm:px-8 lg:px-10">
         <div className="grid flex-1 grid-cols-1 items-center gap-10 py-8 lg:grid-cols-[1.02fr_0.98fr] lg:gap-14">
           <div className="max-w-3xl">
+            <div className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-info-text">
+              Home · Start here
+            </div>
             <h1 className="text-[42px] font-bold leading-[1.06] text-primary sm:text-[56px] lg:text-[68px]">
               {headline}
             </h1>

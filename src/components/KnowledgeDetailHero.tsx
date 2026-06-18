@@ -40,7 +40,7 @@ export function KnowledgeDetailHero({ asset }: KnowledgeDetailHeroProps) {
           onClick={() => navigate('/marketplaces/knowledge')}
           className="hover:text-primary transition-colors"
         >
-          Stage 01 Marketplaces
+          DWS Marketplace
         </button>
         <ChevronRight size={14} className="text-border-default" />
         <button

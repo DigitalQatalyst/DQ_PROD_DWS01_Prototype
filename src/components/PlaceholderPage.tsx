@@ -33,8 +33,8 @@ export function PlaceholderPage({
         </div>
 
         <div className="flex items-center justify-center gap-4">
-          <button onClick={() => navigate('/stage-0/orientation')} className="px-4 py-2 rounded-button bg-white border border-border-strong text-text-secondary hover:bg-surface transition-colors font-medium text-sm">
-            Return to Stage 0
+          <button onClick={() => navigate('/home')} className="px-4 py-2 rounded-button bg-white border border-border-strong text-text-secondary hover:bg-surface transition-colors font-medium text-sm">
+            Return to Home
           </button>
           <button onClick={() => navigate(activePersona.defaultRoute)} className="px-4 py-2 rounded-button bg-primary text-white hover:bg-navy-800 transition-colors font-medium text-sm">
             Open my workspace

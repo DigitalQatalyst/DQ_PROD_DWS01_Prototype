@@ -1,4 +1,5 @@
 import React from 'react';
+import { noop } from '../utils/noop';
 import { RolePageScaffold } from '../components/RolePageScaffold';
 import { DataTable } from '../components/DataTable';
 import { StatusPill } from '../components/StatusPill';
@@ -84,7 +85,7 @@ export function TaskTemplateGovernancePage() {
       purpose="Review and manage global task templates.">
       
       <div className="bg-white rounded-[12px] border border-[#D8D9E6] shadow-sm overflow-hidden">
-        <DataTable columns={columns} rows={templates} onRowClick={() => {}} />
+        <DataTable columns={columns} rows={templates} onRowClick={noop} />
       </div>
     </RolePageScaffold>);
 

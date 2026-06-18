@@ -239,7 +239,7 @@ export function getStage02Dataset(mode: ViewingMode, role: WorkspaceRole): Stage
   ] : [
     activity('AI-5', '6 tasks are overdue', 'Review and take action to stay on track.'),
     activity('AI-6', '2 workflows need your input', 'Provide updates to unblock progress.'),
-    activity('AI-7', role === 'Governance Lead' ? 'Control exposure increased' : 'Risk exposure increased', '3 risks exceed appetite threshold.'),
+    activity('AI-7', getRoleFamily(role) === 'Governance Lead' ? 'Control exposure increased' : 'Risk exposure increased', '3 risks exceed appetite threshold.'),
     activity('AI-8', 'Report ready to generate', 'Q2 Governance Status Report.')
   ];
 

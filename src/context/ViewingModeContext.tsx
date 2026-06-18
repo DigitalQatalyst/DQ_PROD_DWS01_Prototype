@@ -1,4 +1,4 @@
-import React, { useState, createContext, useContext } from 'react';
+import React, { useState, createContext, useContext, type ReactNode } from 'react';
 export type ViewingMode = 'first-time' | 'returning';
 interface ViewingModeContextType {
   mode: ViewingMode;

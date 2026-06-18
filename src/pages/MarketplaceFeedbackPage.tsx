@@ -1,361 +1,228 @@
-import React, { useState } from 'react';
-import { toast } from 'sonner';
-import { DataTable } from '../components/DataTable';
-import { StatusPill } from '../components/StatusPill';
+import React, { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { MessageSquare, Send } from 'lucide-react';
-import { FilterBar } from '../components/FilterBar';
-import {
-  MarketplaceTopFilterBar,
-} from '../components/MarketplaceTopFilterBar';
+import { MarketplaceCatalogLayout } from '../components/marketplace/MarketplaceCatalogLayout';
+import { MarketplaceCatalogCard } from '../components/marketplace/MarketplaceCatalogCard';
 import type { FilterGroup } from '../components/MarketplaceFilterPanel';
 import { usePersona } from '../context/PersonaContext';
 import { MarketplaceActionRouter } from '../components/MarketplaceActionRouter';
-export function MarketplaceFeedbackPage() {
-  const { activePersona } = usePersona();
-  const [activeTab, setActiveTab] = useState('All Feedback');
-  const [search, setSearch] = useState('');
-  // Form state
-  const [category, setCategory] = useState('');
-  const [area, setArea] = useState('');
-  const [description, setDescription] = useState('');
-  const [suggestion, setSuggestion] = useState('');
-  const [urgency, setUrgency] = useState('Low');
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  // Filter state
-  const [filterValues, setFilterValues] = useState<Record<string, string[]>>({});
-  const [isFlowOpen, setIsFlowOpen] = useState(false);
-  const tabs = ['All Feedback', 'My Feedback', 'Resolved'];
-  const filterGroups: FilterGroup[] = [
-  {
-    id: 'type',
-    label: 'Feedback Type',
-    options: [
-    {
-      value: 'Unclear Service',
-      label: 'Unclear Service'
-    },
-    {
-      value: 'Missing Template',
-      label: 'Missing Template'
-    },
-    {
-      value: 'Outdated Knowledge',
-      label: 'Outdated Knowledge'
-    },
-    {
-      value: 'Incorrect Owner',
-      label: 'Incorrect Owner'
-    },
-    {
-      value: 'Broken Navigation',
-      label: 'Broken Navigation'
-    }]
+import { buildCatalogTrail, resolveMarketplaceStage } from '../utils/marketplaceBreadcrumbs';
 
-  },
-  {
-    id: 'status',
-    label: 'Status',
-    options: [
-    {
-      value: 'New',
-      label: 'New'
-    },
-    {
-      value: 'Routed',
-      label: 'Routed'
-    },
-    {
-      value: 'Under Review',
-      label: 'Under Review'
-    },
-    {
-      value: 'Resolved',
-      label: 'Resolved'
-    },
-    {
-      value: 'Closed',
-      label: 'Closed'
-    }]
+const FEEDBACK_TABS = [
+  { id: 'All Feedback', label: 'All Feedback' },
+  { id: 'My Feedback', label: 'My Feedback' },
+  { id: 'Resolved', label: 'Resolved' },
+];
 
-  },
-  {
-    id: 'urgency',
-    label: 'Urgency',
-    options: [
-    {
-      value: 'Low',
-      label: 'Low'
-    },
-    {
-      value: 'Medium',
-      label: 'Medium'
-    },
-    {
-      value: 'High',
-      label: 'High'
-    }]
-
-  },
-  {
-    id: 'owner',
-    label: 'Owner',
-    options: [
-    {
-      value: 'Knowledge Content Owner',
-      label: 'Knowledge Content Owner'
-    },
-    {
-      value: 'HRA Fulfilment Queue',
-      label: 'HRA Fulfilment Queue'
-    },
-    {
-      value: 'Central Support Queue',
-      label: 'Central Support Queue'
-    },
-    {
-      value: 'Platform Support',
-      label: 'Platform Support'
-    },
-    {
-      value: 'Platform Governance Admin',
-      label: 'Platform Governance Admin'
-    }]
-
-  },
-  {
-    id: 'affected',
-    label: 'Affected Marketplace',
-    options: [
-    {
-      value: 'Services',
-      label: 'Services'
-    },
-    {
-      value: 'Task Templates',
-      label: 'Task Templates'
-    },
-    {
-      value: 'Knowledge',
-      label: 'Knowledge'
-    },
-    {
-      value: 'Work Directory',
-      label: 'Work Directory'
-    },
-    {
-      value: 'Analytics',
-      label: 'Analytics'
-    }]
-
-  },
-  {
-    id: 'submittedBy',
-    label: 'Submitted By',
-    options: [
-    {
-      value: 'My feedback',
-      label: 'My feedback'
-    },
-    {
-      value: 'My team',
-      label: 'My team'
-    },
-    {
-      value: 'All visible feedback',
-      label: 'All visible feedback'
-    }]
-
-  }];
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const newErrors: Record<string, string> = {};
-    if (!category) newErrors.category = 'Category is required';
-    if (!description.trim()) newErrors.description = 'Description is required';
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-    toast.success('Marketplace feedback captured in prototype mode');
-    setCategory('');
-    setArea('');
-    setDescription('');
-    setSuggestion('');
-    setUrgency('Low');
-    setErrors({});
-  };
-  const recentFeedback = [
+const recentFeedback = [
   {
     id: 'FB-101',
     category: 'Missing Template',
     area: 'Task Templates',
     status: 'Under Review',
-    date: '2026-05-12'
+    date: '2026-05-12',
   },
   {
     id: 'FB-102',
     category: 'Unclear Service',
     area: 'IT & Access',
     status: 'Closed',
-    date: '2026-05-10'
+    date: '2026-05-10',
   },
   {
     id: 'FB-103',
     category: 'Outdated Knowledge',
     area: 'Playbooks',
     status: 'Routed',
-    date: '2026-05-09'
+    date: '2026-05-09',
   },
   {
     id: 'FB-104',
     category: 'Incorrect Owner',
     area: 'Work Directory',
     status: 'Closed',
-    date: '2026-05-05'
+    date: '2026-05-05',
   },
   {
     id: 'FB-105',
     category: 'Broken Navigation',
     area: 'Analytics',
     status: 'Under Review',
-    date: '2026-05-01'
-  }];
+    date: '2026-05-01',
+  },
+];
+
+export function MarketplaceFeedbackPage() {
+  const [searchParams] = useSearchParams();
+  const { activePersona } = usePersona();
+  const stage = resolveMarketplaceStage(searchParams.get('from'), 'drive');
+
+  const [activeTab, setActiveTab] = useState('All Feedback');
+  const [search, setSearch] = useState('');
+  const [filterValues, setFilterValues] = useState<Record<string, string[]>>({});
+  const [isFlowOpen, setIsFlowOpen] = useState(false);
+
+  const filterGroups: FilterGroup[] = [
+    {
+      id: 'type',
+      label: 'Feedback Type',
+      options: [
+        { value: 'Unclear Service', label: 'Unclear Service' },
+        { value: 'Missing Template', label: 'Missing Template' },
+        { value: 'Outdated Knowledge', label: 'Outdated Knowledge' },
+        { value: 'Incorrect Owner', label: 'Incorrect Owner' },
+        { value: 'Broken Navigation', label: 'Broken Navigation' },
+      ],
+    },
+    {
+      id: 'status',
+      label: 'Status',
+      options: [
+        { value: 'New', label: 'New' },
+        { value: 'Routed', label: 'Routed' },
+        { value: 'Under Review', label: 'Under Review' },
+        { value: 'Resolved', label: 'Resolved' },
+        { value: 'Closed', label: 'Closed' },
+      ],
+    },
+    {
+      id: 'urgency',
+      label: 'Urgency',
+      options: [
+        { value: 'Low', label: 'Low' },
+        { value: 'Medium', label: 'Medium' },
+        { value: 'High', label: 'High' },
+      ],
+    },
+    {
+      id: 'affected',
+      label: 'Affected Marketplace',
+      options: [
+        { value: 'Services', label: 'Services' },
+        { value: 'Task Templates', label: 'Task Templates' },
+        { value: 'Knowledge', label: 'Knowledge' },
+        { value: 'Work Directory', label: 'Work Directory' },
+        { value: 'Analytics', label: 'Analytics' },
+      ],
+    },
+  ];
+
+  const categoryTabs = useMemo(
+    () =>
+      FEEDBACK_TABS.map((tab) => ({
+        ...tab,
+        count:
+          tab.id === 'Resolved'
+            ? recentFeedback.filter(
+                (item) =>
+                  item.status === 'Resolved' || item.status === 'Closed',
+              ).length
+            : tab.id === 'My Feedback'
+              ? 2
+              : recentFeedback.length,
+      })),
+    [],
+  );
 
   const handleFilterChange = (groupId: string, values: string[]) => {
-    setFilterValues((prev) => ({
-      ...prev,
-      [groupId]: values
-    }));
+    setFilterValues((prev) => ({ ...prev, [groupId]: values }));
   };
+
   const handleClearAll = () => {
     setFilterValues({});
     setSearch('');
+    setActiveTab('All Feedback');
   };
-  const filteredFeedback = recentFeedback.filter((fb) => {
+
+  const filteredFeedback = recentFeedback.filter((item) => {
     const matchesTab =
-    activeTab === 'All Feedback' ||
-    activeTab === 'Resolved' && (
-    fb.status === 'Resolved' || fb.status === 'Closed');
+      activeTab === 'All Feedback' ||
+      (activeTab === 'Resolved' &&
+        (item.status === 'Resolved' || item.status === 'Closed')) ||
+      (activeTab === 'My Feedback' && ['FB-101', 'FB-103'].includes(item.id));
+
+    const query = search.toLowerCase();
     const matchesSearch =
-    fb.id.toLowerCase().includes(search.toLowerCase()) ||
-    fb.category.toLowerCase().includes(search.toLowerCase()) ||
-    fb.area.toLowerCase().includes(search.toLowerCase());
+      !query ||
+      item.id.toLowerCase().includes(query) ||
+      item.category.toLowerCase().includes(query) ||
+      item.area.toLowerCase().includes(query);
     const matchesType =
-    !filterValues.type?.length || filterValues.type.includes(fb.category);
+      !filterValues.type?.length || filterValues.type.includes(item.category);
     const matchesStatus =
-    !filterValues.status?.length || filterValues.status.includes(fb.status);
+      !filterValues.status?.length ||
+      filterValues.status.includes(item.status);
+
     return matchesTab && matchesSearch && matchesType && matchesStatus;
   });
-  const columns = [
-  {
-    header: 'ID',
-    accessor: (row: any) =>
-    <span className="font-mono text-xs">{row.id}</span>
-
-  },
-  {
-    header: 'Category',
-    accessor: (row: any) =>
-    <span className="font-medium">{row.category}</span>
-
-  },
-  {
-    header: 'Area',
-    accessor: (row: any) => row.area
-  },
-  {
-    header: 'Status',
-    accessor: (row: any) => <StatusPill status={row.status} />
-  },
-  {
-    header: 'Date',
-    accessor: (row: any) => row.date
-  }];
 
   return (
-    <div className="max-w-[1280px] mx-auto px-6 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-primary mb-2">
-          Marketplace Feedback
-        </h1>
-        <p className="text-text-secondary">
-          Flag unclear services, missing templates, outdated knowledge,
-          incorrect owners, or broken navigation.
-        </p>
-      </div>
-
-      <FilterBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
-
-      <div className="mt-4 mb-6">
-        <MarketplaceTopFilterBar
-          searchPlaceholder="Search feedback, affected items, owners, or statuses"
-          searchValue={search}
-          onSearchChange={setSearch}
-          groups={filterGroups}
-          values={filterValues}
-          onChange={handleFilterChange}
-          onClearAll={handleClearAll}
+    <MarketplaceCatalogLayout
+      breadcrumbItems={buildCatalogTrail(stage, 'Marketplace Feedback')}
+      title="Governed discovery for marketplace improvement signals."
+      lede="Raise and track feedback on unclear services, missing templates, outdated knowledge, incorrect owners, or broken navigation paths. Submissions route to accountable marketplace owners."
+      searchPlaceholder="Search feedback, affected items, owners, or statuses…"
+      search={search}
+      onSearchChange={setSearch}
+      itemLabel="records"
+      totalCount={recentFeedback.length}
+      visibleCount={filteredFeedback.length}
+      tabs={categoryTabs}
+      activeTabId={activeTab}
+      onTabChange={setActiveTab}
+      filterHelperText="Refine by feedback type, status, urgency, and affected marketplace."
+      filterGroups={filterGroups}
+      filterValues={filterValues}
+      onFilterChange={handleFilterChange}
+      onClearAll={handleClearAll}
+      showEmpty={filteredFeedback.length === 0}
+      emptyTitle="No feedback records match your filters"
+      emptyMessage="Try adjusting your search or filters, or clear all filters to see all feedback records."
+      belowContent={
+        <MarketplaceActionRouter
+          marketplaceType={isFlowOpen ? 'feedback' : null}
+          item={null}
+          activePersona={activePersona}
+          onClose={() => setIsFlowOpen(false)}
         />
+      }
+    >
+      <div className="mb-6 rounded-xl border border-border-default bg-white p-6">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-navy-50 text-primary">
+            <MessageSquare size={20} />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-primary">Submit Feedback</h2>
+            <p className="text-sm text-text-secondary">
+              Open the feedback flow to route your suggestions to the correct owner.
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => setIsFlowOpen(true)}
+          className="flex items-center justify-center gap-2 rounded-button bg-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-800"
+        >
+          Start Feedback Flow
+          <Send size={16} />
+        </button>
       </div>
 
-      <div className="space-y-8">
-        <div className="bg-white rounded-card border border-border-default p-6 shadow-sm">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-navy-50 flex items-center justify-center text-primary">
-              <MessageSquare size={20} />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-primary">
-                Submit Feedback
-              </h2>
-              <p className="text-sm text-text-secondary">
-                Open the feedback flow to route your suggestions to the
-                correct owner.
-              </p>
-            </div>
-          </div>
-
-          <button
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {filteredFeedback.map((item) => (
+          <MarketplaceCatalogCard
+            key={item.id}
+            typeLabel={`${item.category.split(' ')[0].toUpperCase()} · Feedback`}
+            metaLabel={`${item.status} · ${item.date}`}
+            title={item.category}
+            description={`Affected area: ${item.area}`}
+            footerId={item.id}
+            highlighted={item.status === 'Under Review'}
             onClick={() => setIsFlowOpen(true)}
-            className="w-full md:w-auto px-6 py-2.5 bg-primary text-white font-semibold text-sm rounded-button hover:bg-navy-800 transition-colors flex items-center justify-center gap-2">
-            
-            Start Feedback Flow
-            <Send size={16} />
-          </button>
-        </div>
-
-        <div className="bg-white rounded-card border border-border-default shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-border-subtle">
-            <h2 className="text-lg font-semibold text-primary">
-              Feedback Records
-            </h2>
-          </div>
-          {filteredFeedback.length > 0 ?
-          <div className="p-6">
-              <DataTable columns={columns} rows={filteredFeedback} />
-            </div> :
-
-          <div className="text-center py-16">
-              <p className="text-text-muted mb-4">
-                No marketplace items match your filters.
-              </p>
-              <button
-              onClick={handleClearAll}
-              className="px-4 py-2 bg-surface text-primary font-semibold text-sm rounded-button hover:bg-navy-50 transition-colors">
-              
-                Clear filters
-              </button>
-            </div>
-          }
-        </div>
+          />
+        ))}
       </div>
-
-      <MarketplaceActionRouter
-        marketplaceType={isFlowOpen ? 'feedback' : null}
-        item={null}
-        activePersona={activePersona}
-        onClose={() => setIsFlowOpen(false)} />
-      
-    </div>);
-
+    </MarketplaceCatalogLayout>
+  );
 }

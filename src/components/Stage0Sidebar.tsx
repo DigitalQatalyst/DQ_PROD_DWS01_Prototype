@@ -79,7 +79,7 @@ const groups: NavGroup[] = [
   {
     label: 'PERFORMANCE & GOVERNANCE',
     items: [
-      { label: 'Execution Dashboard', route: '/reports/execution-dashboard', icon: BarChart3 },
+      { label: 'Execution Dashboard', route: '/analytics/execution-analytics/execution-overview', icon: BarChart3 },
       { label: 'Governance Overview', route: '/governance/dashboard', icon: ShieldCheck }
     ]
   },

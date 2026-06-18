@@ -493,7 +493,7 @@ export function getPerformanceDataset(mode: ViewingMode, role: WorkspaceRole): P
   const aiInsights: AiInsight[] = [
     { id: 'AI-PERF-1', title: newJoiner ? 'You have 3 onboarding goals in progress.' : 'You’re on track to achieve 3 of 4 goals.', description: 'Keep goal evidence updated before your next review.', status: 'On Track', prompt: 'Summarise my performance' },
     { id: 'AI-PERF-2', title: '2 tasks are overdue and may impact your on-time delivery score.', description: 'Resolve overdue items or add mitigation notes.', status: 'Watch', prompt: 'Recommend next actions' },
-    { id: 'AI-PERF-3', title: role === 'Governance Lead' ? '2 governance modules are recommended.' : '2 learning modules are recommended to improve your governance skills.', description: 'Learning completion can improve your evaluation readiness.', status: 'In Progress', prompt: 'Explain what affects my rating' },
+    { id: 'AI-PERF-3', title: getRoleFamily(role) === 'Governance Lead' ? '2 governance modules are recommended.' : '2 learning modules are recommended to improve your governance skills.', description: 'Learning completion can improve your evaluation readiness.', status: 'In Progress', prompt: 'Explain what affects my rating' },
     { id: 'AI-PERF-4', title: newJoiner ? 'You have 1 new feedback item.' : 'You have 2 new feedback items.', description: 'Review feedback and create action items where needed.', status: 'Pending', prompt: 'Prepare my self-review' },
     { id: 'AI-PERF-5', title: newJoiner ? 'Your onboarding check is due in 27 days.' : 'Your self review is due in 17 days.', description: 'Start preparing achievements and evidence now.', status: 'Due Soon', prompt: 'Generate weekly performance update' }
   ];

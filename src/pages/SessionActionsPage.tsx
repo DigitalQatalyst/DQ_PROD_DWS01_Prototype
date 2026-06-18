@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { noop } from '../utils/noop';
 import { RolePageScaffold } from '../components/RolePageScaffold';
 import { DataTable } from '../components/DataTable';
 import { MonoId } from '../components/MonoId';
@@ -47,7 +48,7 @@ export function SessionActionsPage() {
   }
   return <RolePageScaffold eyebrow="Working Sessions" title="Actions & Follow-ups" purpose="Track action items extracted from working sessions.">
       <div className="bg-white rounded-[12px] border border-[#D8D9E6] shadow-sm overflow-hidden">
-        <DataTable columns={columns} rows={mockActions} onRowClick={() => {}} />
+        <DataTable columns={columns} rows={mockActions} onRowClick={noop} />
       </div>
     </RolePageScaffold>;
 }
