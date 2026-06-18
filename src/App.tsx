@@ -804,6 +804,24 @@ function AppRoutes() {
           }
         />
 
+        <Route
+          path="/marketplace/drive/tracker-marketplace"
+          element={
+            <RouteGuard>
+              <TrackerMarketplacePage />
+            </RouteGuard>
+          }
+        />
+
+        <Route
+          path="/marketplace/drive/tracker-marketplace/:trackerSlug"
+          element={
+            <RouteGuard>
+              <TrackerDetailsPage />
+            </RouteGuard>
+          }
+        />
+
           <Route
             path="/marketplace/feedback"
             element={

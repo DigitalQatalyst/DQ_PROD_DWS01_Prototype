@@ -28,7 +28,7 @@ export const launchFlags = {
     enabled: true,
 
     serviceHub: true,
-    serviceOverview: true,
+    serviceOverview: false,
     myRequests: true,
     pendingActions: true,
 

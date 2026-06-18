@@ -226,7 +226,6 @@ export const servicesFeatureArea: NavItem = {
       flag: 'services.serviceHub',
       visibleTo: ALL_ROLES,
       children: [
-        { id: 'service-overview', label: 'Service Overview', route: '/services/service-hub/service-overview', flag: 'services.serviceOverview' },
         { id: 'my-requests', label: 'My Requests', route: '/services/service-hub/my-requests', flag: 'services.myRequests' },
         { id: 'pending-actions', label: 'Pending Actions', route: '/services/service-hub/pending-actions', flag: 'services.pendingActions' },
       ],

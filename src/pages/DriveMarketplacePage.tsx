@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BarChart3, LineChart, ShieldCheck, Sparkles, Target } from 'lucide-react';
+import { BarChart3, Target } from 'lucide-react';
 import { MarketplaceEyebrowTrail } from '../components/marketplace/MarketplaceEyebrowTrail';
 import { MARKETPLACE_ROOT } from '../utils/marketplaceBreadcrumbs';
 
@@ -11,39 +11,15 @@ const driveCards = [
     description: 'Discover governed dashboards, reports, and views. Preview metrics and charts before opening the live destination.',
     icon: BarChart3,
     route: '/marketplace/drive/analytics-marketplace',
-    color: 'bg-orange-50 text-orange-600 border-orange-200',
+    iconClassName: 'bg-[#fff2ef] text-secondary',
   },
   {
-    id: 'performance-dashboards',
-    label: 'Performance Dashboards',
-    description: 'Personal, team, unit, SLA, governance, and executive performance views.',
-    icon: LineChart,
-    route: '/marketplace/analytics-discovery?from=drive',
-    color: 'bg-blue-50 text-blue-600 border-blue-200',
-  },
-  {
-    id: 'governance-reviews',
-    label: 'Governance Reviews',
-    description: 'Audit exceptions, policy compliance, and governance risk signals.',
-    icon: ShieldCheck,
-    route: '/executive/enterprise-execution',
-    color: 'bg-purple-50 text-purple-600 border-purple-200',
-  },
-  {
-    id: 'strategic-initiatives',
-    label: 'Strategic Initiatives Tracker',
-    description: 'Enterprise execution health, strategic initiatives, and value delivery.',
+    id: 'tracker-marketplace',
+    label: 'Tracker Marketplace',
+    description: 'Discover available trackers, monitoring views, and governed tracking templates used across DWS.',
     icon: Target,
-    route: '/executive/strategic-initiatives',
-    color: 'bg-green-50 text-green-600 border-green-200',
-  },
-  {
-    id: 'ai-report-generator',
-    label: 'AI Status Report Generator',
-    description: 'Generate AI-powered status reports for teams, units, and enterprise views.',
-    icon: Sparkles,
-    route: '',
-    color: 'bg-amber-50 text-amber-600 border-amber-200',
+    route: '/marketplace/drive/tracker-marketplace',
+    iconClassName: 'bg-[#ebfbf1] text-success',
   },
 ];
 
@@ -51,52 +27,46 @@ export function DriveMarketplacePage() {
   const navigate = useNavigate();
 
   return (
-    <div className="mx-auto max-w-[1440px] px-6 py-8 lg:px-8">
-      <MarketplaceEyebrowTrail
-        items={[MARKETPLACE_ROOT, { label: 'Drive' }]}
-        className="mb-4"
-      />
+    <div className="min-h-[calc(100vh-125px)] bg-[#f7f7fd]">
+      <div className="mx-auto max-w-[1440px] px-6 pb-24 pt-6 lg:px-8">
+        <MarketplaceEyebrowTrail
+          items={[MARKETPLACE_ROOT, { label: 'Drive' }]}
+          className="mb-4"
+        />
 
-      <h1 className="dq-page-title">Drive Marketplace</h1>
-      <p className="mt-2 max-w-3xl text-[14px] leading-relaxed text-text-secondary">
-        Monitor and improve execution through governed analytics assets, dashboards, and performance tools.
-      </p>
+        <h1 className="text-[32px] font-bold leading-tight text-primary md:text-[36px]">Drive Marketplace</h1>
+        <p className="mt-3 max-w-4xl text-[14px] leading-relaxed text-text-secondary">
+          Monitor and improve execution through governed analytics assets, dashboards, and performance tools.
+        </p>
 
-      <div className="mt-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-        {driveCards.map((card) => {
-          const Icon = card.icon;
-          const isPlaceholder = !card.route;
-          return (
-            <button
-              key={card.id}
-              type="button"
-              onClick={() => {
-                if (card.route) navigate(card.route);
-              }}
-              disabled={isPlaceholder}
-              className={`group relative flex flex-col rounded-xl border bg-white p-5 text-left transition ${
-                isPlaceholder
-                  ? 'cursor-default border-dashed border-border-default opacity-70'
-                  : 'border-border-default hover:border-secondary/30 hover:shadow-sm'
-              }`}
-            >
-              <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl ${card.color}`}>
-                <Icon size={22} strokeWidth={1.5} />
-              </div>
+        <div className="mt-8 grid gap-5 lg:grid-cols-2">
+          {driveCards.map((card) => {
+            const Icon = card.icon;
+            return (
+              <button
+                key={card.id}
+                type="button"
+                onClick={() => navigate(card.route)}
+                className="group flex h-[218px] flex-col rounded-[10px] border border-border-default bg-white px-5 py-5 text-left transition hover:border-secondary/30 hover:shadow-sm focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/10 md:px-6"
+              >
+                <div className={`mb-5 flex h-12 w-12 items-center justify-center rounded-[13px] ${card.iconClassName}`}>
+                  <Icon size={22} strokeWidth={1.6} />
+                </div>
 
-              <h3 className="text-[15.5px] font-bold text-primary">{card.label}</h3>
-              <p className="mt-1.5 flex-1 text-[12.5px] leading-relaxed text-text-muted">
-                {card.description}
-              </p>
+                <h2 className="text-[15.5px] font-bold leading-5 text-primary">{card.label}</h2>
+                <p className="mt-2 flex-1 text-[12.5px] leading-[1.65] text-text-muted">
+                  {card.description}
+                </p>
 
-              <div className="mt-4 flex items-center justify-between border-t border-border-subtle pt-3">
-                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-text-disabled">
-                  {isPlaceholder ? 'Coming soon' : 'Explore →'}
-                </span>
-              </div>
-            </button>
-          );
-        })}
+                <div className="mt-4 border-t border-border-subtle pt-3">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-disabled">
+                    Explore →
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
