@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import type { ReactNode } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   AlertCircle,
@@ -37,12 +37,18 @@ import {
   getRecordsForTracker,
   getTrackerBySlug,
 } from '../mocks/trackers.mock';
-import type { TrackerDefinition, TrackerHealth, TrackerPriority, TrackerRecord } from '../types/tracker';
+import type { TrackerDefinition, TrackerHealth, TrackerHistoryEvent, TrackerPriority, TrackerRecord } from '../types/tracker';
 
 const currentUser = 'Bilal Waqar';
 const viewStorageKey = 'dws-active-tracker-saved-view';
 const settingsStorageKey = 'dws-active-tracker-settings';
 const closedStatuses = ['closed', 'completed', 'done', 'resolved', 'implemented', 'balanced'];
+const recordTypeOptions = ['Capacity / Workload', 'Backlog', 'Project Health', 'Governance', 'Risk / Issue', 'Decision', 'Action Log'];
+const recordHealthOptions = ['Green', 'Amber', 'Red', 'Healthy', 'Closed'];
+const recordPriorityOptions: TrackerPriority[] = ['Low', 'Medium', 'High', 'Critical'];
+const recordStatusOptions = ['Created', 'Open', 'In Progress', 'Overloaded', 'Balanced', 'Reviewed', 'Closed', 'Escalated', 'Blocked'];
+const assigneeOptions = ['Maya Khan', 'Rohan Patel', 'Hina Adam', 'Sara Khan', 'Unassigned'];
+const teamSquadOptions = ['Squad Alpha', 'Platform Team', 'Governance', 'Delivery Ops', 'PMO'];
 const tabs = ['Records', 'My Items', 'Overdue', 'At Risk', 'Recently Updated', 'About Tracker'] as const;
 
 type ActiveTab = typeof tabs[number];
@@ -246,7 +252,30 @@ export function ActiveTrackerPage() {
     downloadCsv(`${tracker.slug}-records.csv`, ['Record ID', 'Title', 'Owner', 'Team / Squad', 'Priority', 'Status', 'Due Date', 'RAG', 'Last Updated', 'Next Action', 'Description'], rows);
     toast.success('Tracker export downloaded');
   };
-  const addRecord = (draft: AddRecordDraft) => {
+  const createRecordLocal = (draft: AddRecordDraft) => {
+    const slugify = (value: string) =>
+      value
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+    const ragToHealth = (status: string, rag: TrackerHealth): TrackerRecord['health'] => {
+      const s = status.toLowerCase();
+      if (s === 'closed' || s.includes('closed')) return 'Closed';
+      if (s === 'reviewed') return 'Healthy';
+      if (rag === 'Green') return 'Green';
+      if (rag === 'Amber') return 'Amber';
+      return 'Red';
+    };
+    const now = new Date();
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const opened = `${now.getDate()} ${monthNames[now.getMonth()]} ${now.getFullYear()} at ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const unit = tracker.id === 'workload-distribution' ? 'Workload Distribution' : tracker.name;
+    const type = tracker.id === 'workload-distribution' ? 'Capacity / Workload' : tracker.trackerType;
+    const health = ragToHealth(draft.status, draft.rag);
+    const tags = [tracker.id === 'workload-distribution' ? 'Workload' : unit, health];
+    const workflowSlug = tracker.id === 'workload-distribution' ? 'workload-review' : 'tracker-workflow';
+
     const nextRecord: TrackerRecord = {
       id: nextRecordId(tracker, records),
       trackerId: tracker.id,
@@ -254,12 +283,27 @@ export function ActiveTrackerPage() {
       description: draft.description || `${draft.title} requires governed tracker follow-up.`,
       owner: draft.owner,
       teamOrSquad: draft.teamOrSquad,
+      unit,
+      type,
       priority: draft.priority,
       status: draft.status,
       dueDate: draft.dueDate,
       rag: draft.rag,
+      health,
       lastUpdated: 'Today',
+      opened,
       nextAction: draft.nextAction,
+      tags,
+      savedCount: 0,
+      workspace: 'DWS.01',
+      ownerSlug: slugify(draft.owner || 'Unassigned'),
+      teamSlug: slugify(draft.teamOrSquad || 'Unassigned'),
+      workflowSlug,
+      history: [
+        { id: `history-${Date.now()}-created`, eventType: 'Created', actor: currentUser, timestamp: 'Today' },
+        { id: `history-${Date.now()}-status`, eventType: 'Status', actor: currentUser, timestamp: 'Today', newValue: draft.status },
+        { id: `history-${Date.now()}-health`, eventType: 'Health', actor: currentUser, timestamp: 'Today', newValue: health },
+      ],
       evidenceCount: 0,
       commentCount: 0,
       isOverdue: false,
@@ -271,12 +315,27 @@ export function ActiveTrackerPage() {
       activity: [{ id: `activity-${Date.now()}`, actor: currentUser, action: 'Created tracker record', timestamp: 'Today' }],
     };
     setRecords((current) => [nextRecord, ...current]);
-    setAddOpen(false);
-    toast.success('Tracker record added');
+    return nextRecord;
   };
-  const updateRecord = (record: TrackerRecord) => {
+
+  const insertRecordLocal = (record: TrackerRecord) => {
+    setRecords((current) => [record, ...current]);
+  };
+
+  const deleteRecordLocal = (recordId: string) => {
+    setRecords((current) => current.filter((item) => item.id !== recordId));
+  };
+
+  const updateRecord = (record: TrackerRecord, opts?: { toast?: string | false }) => {
     setRecords((current) => current.map((item) => item.id === record.id ? record : item));
-    toast.success('Tracker record updated');
+    if (opts?.toast === false) return;
+    toast.success(opts?.toast ?? 'Tracker record updated');
+  };
+
+  const addRecord = (draft: AddRecordDraft) => {
+    createRecordLocal(draft);
+    setAddOpen(false);
+    toast.success('Tracker record created');
   };
   const updateRecordField = (record: TrackerRecord, patch: Partial<TrackerRecord>) => {
     const updated = {
@@ -319,7 +378,10 @@ export function ActiveTrackerPage() {
         recordId={recordId}
         search={recordSearch}
         onSearch={setRecordSearch}
-        onSave={updateRecord}
+        onSave={(next) => updateRecord(next, { toast: false })}
+        onCreateRecord={(draftData) => createRecordLocal(draftData)}
+        onInsertRecord={insertRecordLocal}
+        onDeleteRecord={deleteRecordLocal}
         onBack={() => navigate(`/tracker/active-tracker/${tracker.slug}`)}
         onHub={() => navigate('/tracker/tracker-hub')}
         onSelect={(id) => navigate(`/tracker/active-tracker/${tracker.slug}/records/${id}`)}
@@ -403,6 +465,9 @@ function RecordDetailRoute({
   search,
   onSearch,
   onSave,
+  onCreateRecord,
+  onInsertRecord,
+  onDeleteRecord,
   onBack,
   onHub,
   onSelect,
@@ -414,6 +479,9 @@ function RecordDetailRoute({
   search: string;
   onSearch: (value: string) => void;
   onSave: (record: TrackerRecord) => void;
+  onCreateRecord: (draft: AddRecordDraft) => TrackerRecord;
+  onInsertRecord: (record: TrackerRecord) => void;
+  onDeleteRecord: (recordId: string) => void;
   onBack: () => void;
   onHub: () => void;
   onSelect: (recordId: string) => void;
@@ -426,17 +494,34 @@ function RecordDetailRoute({
   const [showLinkFields, setShowLinkFields] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [escalateOpen, setEscalateOpen] = useState(false);
+  const [escalationReason, setEscalationReason] = useState('');
+  const [escalationNote, setEscalationNote] = useState('');
+  const [escalationOwner, setEscalationOwner] = useState('');
+  const [leftPage, setLeftPage] = useState(1);
+  const commentInputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     setDraft(record);
     setDirty(false);
+    setLeftPage(1);
     setComment('');
     setLinkTitle('');
     setLinkUrl('');
     setShowLinkFields(false);
     setMoreOpen(false);
     setActiveTab('Overview');
+    setAddOpen(false);
+    setEscalateOpen(false);
+    setEscalationReason('');
+    setEscalationNote('');
+    setEscalationOwner('');
   }, [record?.id]);
+
+  useEffect(() => {
+    setLeftPage(1);
+  }, [search]);
 
   if (!record || !draft) {
     return <RecordNotFound tracker={tracker} recordId={recordId} onBack={onBack} onHub={onHub} />;
@@ -450,44 +535,216 @@ function RecordDetailRoute({
     navigate();
   };
   const updateDraft = (patch: Partial<TrackerRecord>) => {
+    const slugify = (value: string) =>
+      value
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
     setDraft((current) => current ? {
       ...current,
       ...patch,
       missingOwner: patch.owner !== undefined ? !patch.owner : current.missingOwner,
       isBlocked: patch.status !== undefined ? patch.status.toLowerCase().includes('blocked') : current.isBlocked,
+      ownerSlug: patch.owner !== undefined ? slugify(patch.owner || 'Unassigned') : current.ownerSlug,
+      teamSlug: patch.teamOrSquad !== undefined ? slugify(patch.teamOrSquad || 'Unassigned') : current.teamSlug,
     } : current);
     setDirty(true);
   };
   const saveDraft = () => {
-    const updated = {
+    const updated: TrackerRecord = {
       ...draft,
-      lastUpdated: draft.lastUpdated || 'Today',
+      lastUpdated: 'Today',
       commentCount: draft.comments.length,
       evidenceCount: draft.evidence.length,
+      savedCount: draft.savedCount + 1,
+      activity: [{ id: `activity-${Date.now()}-saved`, actor: currentUser, action: 'Saved changes', timestamp: 'Now' }, ...draft.activity],
+      history: [{ id: `history-${Date.now()}-saved`, eventType: 'Saved', actor: currentUser, timestamp: 'Now', newValue: 'Changes saved' }, ...draft.history],
     };
     onSave(updated);
     setDraft(updated);
     setDirty(false);
+    toast.success('Record saved');
   };
   const markComplete = () => {
-    const completedStatus = tracker.defaultStatuses.find((status) => closedStatuses.includes(status.toLowerCase())) || 'Completed';
-    const updated = {
+    const updated: TrackerRecord = {
       ...draft,
-      status: completedStatus,
-      rag: 'Green' as TrackerHealth,
-      isOverdue: false,
+      status: 'In Progress',
+      rag: 'Amber',
+      health: 'Amber',
       isBlocked: false,
       lastUpdated: 'Today',
-      activity: [{ id: `activity-${Date.now()}`, actor: currentUser, action: 'Marked record complete', timestamp: 'Now' }, ...draft.activity],
+      activity: [{ id: `activity-${Date.now()}-started`, actor: currentUser, action: 'Started working on record', timestamp: 'Now' }, ...draft.activity],
+      history: [{ id: `history-${Date.now()}-started`, eventType: 'Activity', actor: currentUser, timestamp: 'Now', newValue: 'Started working on record' }, ...draft.history],
     };
-    setDraft(updated);
     onSave(updated);
+    setDraft(updated);
     setDirty(false);
-    toast.success('Tracker record marked complete');
+    toast.success('Record moved to In Progress');
+  };
+
+  const healthToRag = (health: TrackerRecord['health']): TrackerHealth => {
+    if (health === 'Green' || health === 'Healthy' || health === 'Closed') return 'Green';
+    if (health === 'Amber') return 'Amber';
+    return 'Red';
+  };
+
+  const stageIndexFromStatus = (status: string) => {
+    if (status === 'Created' || status === 'Open') return 0;
+    if (status === 'In Progress') return 1;
+    if (status === 'Overloaded' || status === 'Escalated' || status === 'Blocked') return 2;
+    if (status === 'Reviewed' || status === 'Balanced') return 3;
+    if (status === 'Closed') return 4;
+    return 2;
+  };
+
+  const updateStageStatus = (nextStatus: TrackerRecord['status']) => {
+    const currentStageIndex = stageIndexFromStatus(draft.status);
+    const nextStageIndex = stageIndexFromStatus(nextStatus);
+
+    if (draft.status === 'Closed' && nextStageIndex < currentStageIndex) {
+      toast.warning('Closed records cannot move backwards');
+      return;
+    }
+
+    const rag: TrackerHealth =
+      nextStatus === 'Reviewed' || nextStatus === 'Closed'
+        ? 'Green'
+        : 'Amber';
+    const health: TrackerRecord['health'] =
+      nextStatus === 'Reviewed' ? 'Healthy' : nextStatus === 'Closed' ? 'Closed' : 'Amber';
+
+    const updated: TrackerRecord = {
+      ...draft,
+      status: nextStatus,
+      rag,
+      health,
+      isBlocked: false,
+      isOverdue: nextStatus === 'Closed' ? false : draft.isOverdue,
+      lastUpdated: 'Today',
+      activity: [{ id: `activity-${Date.now()}-stage`, actor: currentUser, action: `Stage updated to ${nextStatus}`, timestamp: 'Now' }, ...draft.activity],
+      history: [{ id: `history-${Date.now()}-stage`, eventType: 'Status', actor: currentUser, timestamp: 'Now', oldValue: draft.status, newValue: nextStatus }, ...draft.history],
+    };
+
+    onSave(updated);
+    setDraft(updated);
+    setDirty(false);
+    toast.success('Record status updated');
+  };
+
+  const submitEscalation = () => {
+    const reason = escalationReason.trim();
+    if (!reason) {
+      toast.warning('Escalation reason is required');
+      return;
+    }
+
+    const assignedOwner = escalationOwner.trim() || currentUser;
+    const nextTags = Array.from(new Set([...(draft.tags || []), 'Escalated']));
+
+    const updated: TrackerRecord = {
+      ...draft,
+      status: 'Escalated',
+      rag: 'Red',
+      health: 'Red',
+      tags: nextTags,
+      isBlocked: false,
+      lastUpdated: 'Today',
+      activity: [{ id: `activity-${Date.now()}-escalate`, actor: assignedOwner, action: `Escalated record: ${reason}`, timestamp: 'Now' }, ...draft.activity],
+      history: [
+        {
+          id: `history-${Date.now()}-escalate`,
+          eventType: 'Escalation',
+          actor: assignedOwner,
+          timestamp: 'Now',
+          oldValue: draft.status,
+          newValue: 'Escalated',
+        },
+        ...draft.history,
+      ],
+    };
+
+    onSave(updated);
+    setDraft(updated);
+    setDirty(false);
+    setEscalateOpen(false);
+    toast.success('Record escalated');
+  };
+
+  const markBlocked = () => {
+    const updated: TrackerRecord = {
+      ...draft,
+      status: 'Blocked',
+      rag: 'Red',
+      health: 'Red',
+      isBlocked: true,
+      lastUpdated: 'Today',
+      tags: Array.from(new Set([...(draft.tags || []), 'Blocked'])),
+      activity: [{ id: `activity-${Date.now()}-blocked`, actor: currentUser, action: 'Record marked blocked', timestamp: 'Now' }, ...draft.activity],
+      history: [{ id: `history-${Date.now()}-blocked`, eventType: 'Status', actor: currentUser, timestamp: 'Now', oldValue: draft.status, newValue: 'Blocked' }, ...draft.history],
+    };
+    onSave(updated);
+    setDraft(updated);
+    setDirty(false);
+    toast.success('Record marked blocked');
+    setMoreOpen(false);
+  };
+
+  const copyRecordLink = async () => {
+    try {
+      await navigator.clipboard?.writeText(window.location.href);
+      toast.success('Record link copied');
+    } catch {
+      toast.error('Could not copy link');
+    }
+    setMoreOpen(false);
+  };
+
+  const duplicateRecord = () => {
+    if (dirty) {
+      toast.warning('Save changes before duplicating this record');
+      return;
+    }
+    const nextId = nextRecordId(tracker, records);
+    const now = new Date();
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const opened = `${now.getDate()} ${monthNames[now.getMonth()]} ${now.getFullYear()} at ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+    const duplicated: TrackerRecord = {
+      ...draft,
+      id: nextId,
+      opened,
+      lastUpdated: 'Today',
+      savedCount: 0,
+      history: [{ id: `history-${Date.now()}-duplicate`, eventType: 'Duplicated', actor: currentUser, timestamp: 'Now', oldValue: draft.id, newValue: nextId }, ...draft.history],
+      activity: [{ id: `activity-${Date.now()}-duplicate`, actor: currentUser, action: 'Duplicated record', timestamp: 'Now' }, ...draft.activity],
+    };
+
+    onInsertRecord(duplicated);
+    setMoreOpen(false);
+    onSelect(nextId);
+  };
+
+  const deleteLocalRecord = () => {
+    if (dirty) {
+      toast.warning('Save changes before deleting this record');
+      return;
+    }
+    if (!window.confirm('Delete local record?')) return;
+
+    const idx = records.findIndex((r) => r.id === draft.id);
+    const next = records[idx + 1] || records[idx - 1] || null;
+
+    onDeleteRecord(draft.id);
+    setMoreOpen(false);
+    toast.success('Tracker record deleted');
+
+    if (next) onSelect(next.id);
+    else onBack();
   };
   const openNote = () => {
     setActiveTab('Comments');
-    toast.message('Add a note in the comments panel');
+    setTimeout(() => commentInputRef.current?.focus(), 0);
   };
   const openEvidence = () => {
     setActiveTab('Evidence');
@@ -527,121 +784,454 @@ function RecordDetailRoute({
     updateDraft({ activity: [{ ...current, action: value, timestamp: 'Now' }, ...draft.activity.slice(1)] });
   };
 
+  const recordIndex = records.findIndex((r) => r.id === draft.id);
+  const prevRecordId = recordIndex > 0 ? records[recordIndex - 1].id : null;
+  const followingRecordId = recordIndex >= 0 && recordIndex < records.length - 1 ? records[recordIndex + 1].id : null;
+
+  const stageIndex = stageIndexFromStatus(draft.status);
+  const stages: Array<{ number: number; status: TrackerRecord['status']; label: string }> = [
+    { number: 1, status: 'Created', label: 'Created' },
+    { number: 2, status: 'In Progress', label: 'In Progress' },
+    { number: 3, status: 'Overloaded', label: 'Overloaded' },
+    { number: 4, status: 'Reviewed', label: 'Reviewed' },
+    { number: 5, status: 'Closed', label: 'Closed' },
+  ];
+
+  const healthBadgeClass = (health: TrackerRecord['health']) => {
+    if (health === 'Amber') return 'dq-badge-warning';
+    if (health === 'Red') return 'dq-badge-danger';
+    if (health === 'Green' || health === 'Healthy') return 'dq-badge-success';
+    return 'dq-badge-gray dq-badge-orange';
+  };
+
+  const addTag = (tag: string) => {
+    const value = tag.trim();
+    if (!value) return;
+    const nextTags = Array.from(new Set([...(draft.tags || []), value]));
+    const updated: TrackerRecord = {
+      ...draft,
+      tags: nextTags,
+      activity: [{ id: `activity-${Date.now()}-tag-add`, actor: currentUser, action: `Added tag ${value}`, timestamp: 'Now' }, ...draft.activity],
+      history: [{ id: `history-${Date.now()}-tag-add`, eventType: 'Tag added', actor: currentUser, timestamp: 'Now', newValue: value }, ...draft.history],
+    };
+    onSave(updated);
+    setDraft(updated);
+    setDirty(false);
+  };
+
+  const removeTag = (tag: string) => {
+    const value = tag.trim();
+    const nextTags = (draft.tags || []).filter((t) => t !== value);
+    const updated: TrackerRecord = {
+      ...draft,
+      tags: nextTags,
+      activity: [{ id: `activity-${Date.now()}-tag-remove`, actor: currentUser, action: `Removed tag ${value}`, timestamp: 'Now' }, ...draft.activity],
+      history: [{ id: `history-${Date.now()}-tag-remove`, eventType: 'Tag removed', actor: currentUser, timestamp: 'Now', oldValue: value }, ...draft.history],
+    };
+    onSave(updated);
+    setDraft(updated);
+    setDirty(false);
+  };
+
   return (
-    <div className="flex h-[calc(100vh-64px)] flex-col overflow-hidden px-6 lg:px-8">
-      <header className="shrink-0 pt-6">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-          <nav className="flex flex-wrap items-center gap-2 text-sm font-semibold text-secondary" aria-label="Breadcrumb">
-            <span>Tracker</span>
-            <span>/</span>
-            <button onClick={() => guardedNavigate(onHub)} className="hover:text-gray-900">Tracker Hub</button>
-            <span>/</span>
-            <button onClick={() => guardedNavigate(onBack)} className="hover:text-gray-900">{tracker.name}</button>
-            <span>/</span>
-            <span className="font-mono text-xs font-bold">{draft.id}</span>
-          </nav>
-          <div className="relative flex shrink-0 flex-wrap items-center justify-end gap-2">
-            <DqButton variant="outline" onClick={() => guardedNavigate(onBack)} className="h-11 px-4"><ArrowLeft size={16} strokeWidth={1.5} /> Back to Tracker</DqButton>
-            <DqButton variant="outline" onClick={openNote} className="h-11 px-4"><MessageSquare size={16} strokeWidth={1.5} /> Add Note</DqButton>
-            <DqButton variant="outline" onClick={openEvidence} className="h-11 px-4"><Paperclip size={16} strokeWidth={1.5} /> Add Evidence</DqButton>
-            <DqIconButton label="More record actions" onClick={() => setMoreOpen((open) => !open)} className="h-11 w-11"><MoreHorizontal size={18} strokeWidth={1.5} /></DqIconButton>
-            {moreOpen && (
-              <div className="absolute right-0 top-12 z-20 w-52 rounded-card border border-border-default bg-white p-2 text-sm font-semibold text-primary shadow-lg">
-                <button onClick={() => { navigator.clipboard?.writeText(draft.id); setMoreOpen(false); toast.success('Record ID copied'); }} className="w-full rounded-button px-3 py-2 text-left hover:bg-navy-50">Copy record ID</button>
-                <button onClick={() => { updateDraft({ isBlocked: true, status: tracker.defaultStatuses.find((status) => status.toLowerCase().includes('blocked')) || draft.status, rag: 'Red' }); setMoreOpen(false); }} className="w-full rounded-button px-3 py-2 text-left hover:bg-navy-50">Flag as blocked</button>
-                <button onClick={() => { setDraft(record); setDirty(false); setMoreOpen(false); toast.message('Draft reset'); }} className="w-full rounded-button px-3 py-2 text-left hover:bg-navy-50">Reset unsaved edits</button>
-              </div>
-            )}
+    <div className="flex h-[calc(100vh-64px)] gap-4 overflow-hidden px-6 lg:px-8">
+      <aside className="w-[360px] shrink-0">
+        <RecordListPanel
+          tracker={tracker}
+          records={records}
+          selectedRecordId={draft.id}
+          search={search}
+          onSearch={onSearch}
+          onSelect={(id) => guardedNavigate(() => onSelect(id))}
+          onNewTracker={() => setAddOpen(true)}
+          page={leftPage}
+          pageSize={10}
+          onPageChange={setLeftPage}
+        />
+      </aside>
+
+      <section className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-card border border-border-default bg-white shadow-sm">
+        <div className="shrink-0 border-b border-border-subtle bg-white px-5 pb-3 pt-5">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => guardedNavigate(onBack)}
+                className="grid h-11 w-11 place-items-center rounded-button border border-border-default bg-white text-primary hover:bg-navy-50"
+                aria-label="Back"
+              >
+                <ArrowLeft size={16} strokeWidth={1.5} />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => prevRecordId && guardedNavigate(() => onSelect(prevRecordId))}
+                disabled={!prevRecordId}
+                className="grid h-10 w-10 place-items-center rounded-button border border-border-default bg-white text-secondary font-bold disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                ‹
+              </button>
+
+              <span className="px-2 text-sm font-bold text-secondary">
+                {(recordIndex >= 0 ? recordIndex + 1 : 0)} / {records.length}
+              </span>
+
+              <button
+                type="button"
+                onClick={() => followingRecordId && guardedNavigate(() => onSelect(followingRecordId))}
+                disabled={!followingRecordId}
+                className="grid h-10 w-10 place-items-center rounded-button border border-border-default bg-white text-secondary font-bold disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                ›
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => guardedNavigate(onBack)}
+                className="rounded-button px-2 py-2 text-sm font-bold text-primary hover:bg-navy-50"
+              >
+                List
+              </button>
+              <button
+                type="button"
+                onClick={() => guardedNavigate(onHub)}
+                className="grid h-10 w-10 place-items-center rounded-button border border-border-default bg-white text-primary font-bold hover:bg-navy-50"
+              >
+                X
+              </button>
+            </div>
           </div>
-        </div>
-      </header>
 
-      <div className="min-h-0 flex-1 grid gap-5 overflow-hidden" style={{ gridTemplateColumns: '1fr 3fr' }}>
-        {/* Tracker Records Card */}
-        <section className="rounded-card border border-border-default bg-white shadow-sm">
-          <RecordListPanel
-            records={records}
-            selectedRecordId={draft.id}
-            search={search}
-            onSearch={onSearch}
-            onSelect={(id) => guardedNavigate(() => onSelect(id))}
-          />
-        </section>
-
-        {/* Tabs + Content */}
-        <section className="flex min-w-0 flex-col overflow-hidden rounded-card border border-border-default bg-white shadow-sm h-full">
-          <div className="sticky top-0 z-10 border-b border-border-subtle bg-white">
-            <div className="flex flex-wrap items-start justify-between gap-3 px-5 pb-3 pt-4">
-              <div className="min-w-0 flex-1">
-                <input
-                  value={draft.title}
-                  onChange={(event) => updateDraft({ title: event.target.value })}
-                  aria-label="Record title"
-                  className="w-full border-0 bg-transparent p-0 text-xl font-bold leading-tight text-primary outline-none placeholder:text-text-muted focus:ring-0"
-                />
-                <div className="mt-1 flex flex-wrap items-center gap-3">
-                  <span className="text-sm font-semibold text-text-muted">{draft.status}</span>
-                  <span className={`text-sm font-bold ${draft.rag === 'Red' ? 'text-danger' : draft.rag === 'Amber' ? 'text-warning' : 'text-success'}`}>{draft.rag}</span>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <DqButton variant="orange" onClick={saveDraft} className="h-10 px-4"><Check size={16} strokeWidth={1.5} /> Save Changes</DqButton>
-                <DqButton variant="navy" onClick={markComplete} className="h-10 px-4">Mark Complete</DqButton>
+          <div className="mt-4">
+            <h1 className="text-[28px] font-bold leading-tight text-primary">{draft.title}</h1>
+            <div className="mt-2 flex flex-wrap items-center gap-3">
+              <span className={`dq-badge ${healthBadgeClass(draft.health)}`}>{draft.health}</span>
+              <span className="rounded-full border border-border-subtle bg-surface px-3 py-1 text-xs font-bold text-primary">
+                {draft.status}
+              </span>
+            </div>
+            <div className="mt-2 flex items-center gap-3">
+              <div className="h-4 w-1 rounded-full bg-secondary" />
+              <div className="text-sm font-semibold text-text-secondary">
+                {draft.unit} · Created {draft.opened}
               </div>
             </div>
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <DqButton
+                variant="orange"
+                onClick={markComplete}
+                disabled={draft.status === 'Closed'}
+                className="h-11 px-5"
+              >
+                Start Working
+              </DqButton>
+              <DqButton variant="outline" onClick={() => setEscalateOpen(true)} className="h-11 px-5">
+                Escalate
+              </DqButton>
+              <DqButton variant="outline" onClick={openNote} className="h-11 px-5">
+                <MessageSquare size={16} strokeWidth={1.5} /> Add note
+              </DqButton>
+            </div>
+
+            <div className="relative flex items-center gap-2">
+              <DqButton variant="outline" onClick={saveDraft} disabled={!dirty} className="h-11 px-5">
+                <Check size={16} strokeWidth={1.5} /> Save
+              </DqButton>
+              <DqIconButton
+                label="More record actions"
+                onClick={() => setMoreOpen((open) => !open)}
+                className="h-11 w-11"
+              >
+                <MoreHorizontal size={18} strokeWidth={1.5} />
+              </DqIconButton>
+
+              {moreOpen && (
+                <div className="absolute right-0 top-12 z-20 w-56 rounded-card border border-border-default bg-white p-2 text-sm font-semibold text-primary shadow-lg">
+                  <button onClick={duplicateRecord} className="w-full rounded-button px-3 py-2 text-left hover:bg-navy-50">
+                    Duplicate Record
+                  </button>
+                  <button onClick={copyRecordLink} className="w-full rounded-button px-3 py-2 text-left hover:bg-navy-50">
+                    Copy Record Link
+                  </button>
+                  <button onClick={markBlocked} className="w-full rounded-button px-3 py-2 text-left hover:bg-navy-50">
+                    Mark Blocked
+                  </button>
+                  <button onClick={deleteLocalRecord} className="w-full rounded-button px-3 py-2 text-left hover:bg-navy-50">
+                    Delete Local Record
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-card border border-border-subtle bg-white p-4 shadow-sm">
+            <div className="flex items-center">
+              {stages.map((stage, i) => {
+                const isActive = stageIndex === i;
+                const isBackDisabled = draft.status === 'Closed' && i < stageIndex;
+                return (
+                  <Fragment key={stage.status}>
+                    <button
+                      type="button"
+                      onClick={() => updateStageStatus(stage.status)}
+                      disabled={isBackDisabled}
+                      className={`flex min-w-[84px] flex-col items-center gap-1 ${isBackDisabled ? 'cursor-not-allowed opacity-50' : ''}`}
+                    >
+                      <span
+                        className={`grid h-10 w-10 place-items-center rounded-full text-sm font-bold ${
+                          isActive
+                            ? 'bg-secondary text-white'
+                            : i < stageIndex
+                              ? 'bg-surface text-text-muted border border-border-default'
+                              : 'bg-white text-text-muted border border-border-default'
+                        }`}
+                      >
+                        {stage.number}
+                      </span>
+                      <span className={`text-[11px] font-bold ${isActive ? 'text-secondary' : 'text-text-muted'}`}>
+                        {stage.label}
+                      </span>
+                    </button>
+                    {i < stages.length - 1 && (
+                      <div
+                        className={`mx-3 h-0.5 flex-1 ${i < stageIndex ? 'bg-secondary' : 'bg-border-subtle'}`}
+                      />
+                    )}
+                  </Fragment>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="mt-4">
             <RecordDetailTabs activeTab={activeTab} onTab={setActiveTab} />
           </div>
-          <div className="flex-1 min-h-0 overflow-y-auto space-y-4 bg-surface p-5">
-            {activeTab === 'Overview' && (
-              <>
-                <RecordDetailsForm tracker={tracker} draft={draft} latestUpdate={latestUpdate} onUpdate={updateDraft} onLatestUpdate={updateLatest} />
-                <CommentsPanel comments={draft.comments} comment={comment} onComment={setComment} onPost={postComment} />
-                <EvidencePanel evidence={draft.evidence} showLinkFields={showLinkFields} linkTitle={linkTitle} linkUrl={linkUrl} onShowLinkFields={() => setShowLinkFields(true)} onLinkTitle={setLinkTitle} onLinkUrl={setLinkUrl} onAddLink={addLink} onUpload={uploadEvidence} />
-                <ActivityTimeline activity={draft.activity} />
-              </>
-            )}
-            {activeTab === 'Activity' && <ActivityTimeline activity={draft.activity} />}
-            {activeTab === 'Comments' && <CommentsPanel comments={draft.comments} comment={comment} onComment={setComment} onPost={postComment} />}
-            {activeTab === 'Evidence' && <EvidencePanel evidence={draft.evidence} showLinkFields={showLinkFields} linkTitle={linkTitle} linkUrl={linkUrl} onShowLinkFields={() => setShowLinkFields(true)} onLinkTitle={setLinkTitle} onLinkUrl={setLinkUrl} onAddLink={addLink} onUpload={uploadEvidence} />}
-            {activeTab === 'History' && <ActivityTimeline title="Change History" activity={draft.activity} />}
-          </div>
-        </section>
-      </div>
+        </div>
 
+        <div className="flex-1 min-h-0 overflow-y-auto space-y-4 bg-surface p-5">
+          {activeTab === 'Overview' && (
+            <RecordDetailsForm
+              draft={draft}
+              latestUpdate={latestUpdate}
+              onUpdate={updateDraft}
+              onLatestUpdate={updateLatest}
+            />
+          )}
+          {activeTab === 'Activity' && <ActivityTimeline activity={draft.activity} />}
+          {activeTab === 'Comments' && (
+            <CommentsPanel
+              comments={draft.comments}
+              comment={comment}
+              onComment={setComment}
+              onPost={postComment}
+              inputRef={commentInputRef}
+            />
+          )}
+          {activeTab === 'Evidence' && (
+            <EvidencePanel
+              evidence={draft.evidence}
+              showLinkFields={showLinkFields}
+              linkTitle={linkTitle}
+              linkUrl={linkUrl}
+              onShowLinkFields={() => setShowLinkFields(true)}
+              onLinkTitle={setLinkTitle}
+              onLinkUrl={setLinkUrl}
+              onAddLink={addLink}
+              onUpload={uploadEvidence}
+            />
+          )}
+          {activeTab === 'History' && <HistoryTimeline events={draft.history} />}
+        </div>
+      </section>
+
+      <aside className="w-[300px] shrink-0 overflow-y-auto rounded-card border border-border-default bg-white shadow-sm">
+        <RecordDetailRightRail
+          record={draft}
+          onAddTag={addTag}
+          onRemoveTag={removeTag}
+          onLinkedEntityOpened={() => toast.success('Linked entity opened')}
+        />
+      </aside>
+
+      <AddRecordModal
+        tracker={tracker}
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        onAdd={(draftData) => {
+          const created = onCreateRecord(draftData);
+          setAddOpen(false);
+          toast.success('Tracker record created');
+          onSelect(created.id);
+        }}
+      />
+
+      {escalateOpen && (
+        <ModalFrame title="Escalate record" width="max-w-xl" onClose={() => setEscalateOpen(false)}>
+          <section className="space-y-4">
+            <ModalField label="Escalation reason" value={escalationReason} onChange={setEscalationReason} />
+            <label className="block">
+              <span className="dq-field-label">Escalation note</span>
+              <textarea
+                value={escalationNote}
+                onChange={(e) => setEscalationNote(e.target.value)}
+                rows={4}
+                className="dq-textarea mt-2"
+              />
+            </label>
+            <ModalField
+              label="Escalation owner"
+              value={escalationOwner}
+              onChange={setEscalationOwner}
+            />
+          </section>
+          <div className="mt-6 flex justify-end gap-2">
+            <DqButton variant="outline" onClick={() => setEscalateOpen(false)}>
+              Cancel
+            </DqButton>
+            <DqButton variant="orange" onClick={submitEscalation}>
+              Escalate
+            </DqButton>
+          </div>
+        </ModalFrame>
+      )}
     </div>
   );
 }
 
-function RecordListPanel({ records, selectedRecordId, search, onSearch, onSelect }: { records: TrackerRecord[]; selectedRecordId: string; search: string; onSearch: (value: string) => void; onSelect: (recordId: string) => void }) {
+function RecordListPanel({
+  tracker,
+  records,
+  selectedRecordId,
+  search,
+  onSearch,
+  onSelect,
+  onNewTracker,
+  page,
+  pageSize,
+  onPageChange,
+}: {
+  tracker: TrackerDefinition;
+  records: TrackerRecord[];
+  selectedRecordId: string;
+  search: string;
+  onSearch: (value: string) => void;
+  onSelect: (recordId: string) => void;
+  onNewTracker: () => void;
+  page: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+}) {
   const query = search.trim().toLowerCase();
-  const visibleRecords = records.filter((record) => !query || `${record.id} ${record.title} ${record.owner} ${record.status} ${record.rag}`.toLowerCase().includes(query));
+  const filtered = records.filter((record) => {
+    if (!query) return true;
+    const haystack = [
+      record.title,
+      record.unit,
+      record.type,
+      record.status,
+      record.health,
+      record.owner,
+      record.teamOrSquad,
+      tracker.name,
+    ].join(' ').toLowerCase();
+    return haystack.includes(query);
+  });
+  const total = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const start = total === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const end = Math.min(currentPage * pageSize, total);
+  const paged = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const now = new Date();
+  const dateLabel = now.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+  const timeLabel = now.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
+
+  const dueLabel = (record: TrackerRecord) => {
+    if (record.isOverdue) return 'Due Today';
+    if (record.dueDate === 'Today') return 'Today';
+    return record.dueDate;
+  };
+
   return (
-    <aside className="rounded-card border border-border-default bg-white p-4 shadow-sm h-full flex flex-col">
-      <h2 className="dq-card-title">Tracker Records</h2>
-      <div className="relative mt-3 shrink-0">
-        <Search size={16} strokeWidth={1.5} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
-        <input value={search} onChange={(event) => onSearch(event.target.value)} placeholder="Search records..." className="dq-input pl-9" />
+    <aside className="flex h-full flex-col rounded-card border border-border-default bg-white p-4 shadow-sm">
+      <div className="shrink-0">
+        <h2 className="text-lg font-bold text-primary">Tracker Hub</h2>
+        <p className="mt-1 text-xs font-semibold text-text-muted">{dateLabel} · {timeLabel}</p>
+        <DqButton variant="orange" onClick={onNewTracker} className="mt-3 h-10 w-full px-4">
+          <Plus size={16} strokeWidth={1.5} /> New Tracker
+        </DqButton>
+        <p className="mt-3 text-xs font-bold text-text-secondary">{records.length} Trackers</p>
+        <div className="relative mt-2">
+          <Search size={16} strokeWidth={1.5} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+          <input
+            value={search}
+            onChange={(event) => onSearch(event.target.value)}
+            placeholder="Search list..."
+            className="dq-input pl-9"
+          />
+        </div>
       </div>
-      <div className="mt-4 flex-1 min-h-0 space-y-2 overflow-y-auto pr-1 pb-4">
-        {visibleRecords.map((record) => {
+
+      <div className="mt-4 flex-1 min-h-0 space-y-1 overflow-y-auto pr-1">
+        {records.length === 0 && (
+          <div className="rounded-card border border-border-subtle p-4 text-sm font-semibold text-text-secondary">
+            No tracker records found.
+            <div className="mt-1 text-xs">Create a new tracker record or clear your search.</div>
+          </div>
+        )}
+        {records.length > 0 && filtered.length === 0 && (
+          <div className="rounded-card border border-border-subtle p-4 text-sm font-semibold text-text-secondary">
+            No matching tracker records.
+            <div className="mt-1 text-xs">Try adjusting your search.</div>
+          </div>
+        )}
+        {paged.map((record) => {
           const active = record.id === selectedRecordId;
           return (
             <button
               key={record.id}
               onClick={() => onSelect(record.id)}
-              className={`w-full rounded-r-lg border-l-2 px-3 py-3 text-left transition ${active ? 'border-secondary bg-orange-50 text-primary' : 'border-transparent hover:bg-navy-50'}`}>
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <div className="font-mono text-[11px] font-bold text-text-muted">{record.id}</div>
-                  <div className="mt-1 truncate text-sm font-bold text-primary">{record.title}</div>
-                </div>
-                <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${healthColor(record.rag)}`} />
+              className={`w-full rounded-r-lg border-l-[3px] px-3 py-3 text-left transition ${active ? 'border-secondary bg-orange-50 text-primary' : 'border-transparent hover:bg-navy-50'}`}
+            >
+              <div className="truncate text-sm font-bold text-primary">{record.title}</div>
+              <div className="mt-1 truncate text-xs font-semibold text-text-secondary">
+                {record.unit} · {record.status} · {record.health}
               </div>
-              <div className={`mt-2 text-xs font-semibold ${record.isOverdue ? 'text-danger' : 'text-text-muted'}`}>{record.isOverdue ? `Overdue · ${record.dueDate}` : `Updated ${record.lastUpdated}`}</div>
+              <div className={`mt-1 text-xs font-semibold ${record.isOverdue ? 'text-danger' : 'text-text-muted'}`}>
+                {dueLabel(record)}
+              </div>
             </button>
           );
         })}
-        {visibleRecords.length === 0 && <div className="rounded-card border border-border-subtle p-4 text-sm font-semibold text-text-secondary">No records found.</div>}
+      </div>
+
+      <div className="mt-3 shrink-0 border-t border-border-subtle pt-3">
+        <div className="flex items-center justify-between gap-2 text-xs font-semibold text-text-muted">
+          <span>{start}–{end} of {total}</span>
+          <div className="flex gap-1">
+            <button
+              type="button"
+              disabled={currentPage <= 1}
+              onClick={() => onPageChange(currentPage - 1)}
+              className="rounded-button border border-border-default px-2 py-1 font-bold text-primary disabled:opacity-40"
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              disabled={currentPage >= totalPages}
+              onClick={() => onPageChange(currentPage + 1)}
+              className="rounded-button border border-border-default px-2 py-1 font-bold text-primary disabled:opacity-40"
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </div>
     </aside>
   );
@@ -660,28 +1250,38 @@ function RecordDetailTabs({ activeTab, onTab }: { activeTab: DetailTab; onTab: (
   );
 }
 
-function RecordDetailsForm({ tracker, draft, latestUpdate, onUpdate, onLatestUpdate }: { tracker: TrackerDefinition; draft: TrackerRecord; latestUpdate: string; onUpdate: (patch: Partial<TrackerRecord>) => void; onLatestUpdate: (value: string) => void }) {
+function RecordDetailsForm({ draft, latestUpdate, onUpdate, onLatestUpdate }: { draft: TrackerRecord; latestUpdate: string; onUpdate: (patch: Partial<TrackerRecord>) => void; onLatestUpdate: (value: string) => void }) {
+  const syncHealth = (health: TrackerRecord['health']) => {
+    const rag: TrackerHealth = health === 'Green' || health === 'Healthy' || health === 'Closed' ? 'Green' : health === 'Amber' ? 'Amber' : 'Red';
+    onUpdate({ health, rag });
+  };
+
   return (
     <>
       <section className="dq-card">
-        <h2 className="dq-card-title">Details</h2>
-        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <h2 className="dq-card-title">DETAILS</h2>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <DetailField label="Tracker name *" value={draft.title} onChange={(title) => onUpdate({ title })} />
           <DetailField label="Record ID" value={draft.id} readOnly monospace onChange={() => undefined} />
-          <DetailField label="Owner" value={draft.owner} onChange={(owner) => onUpdate({ owner })} />
-          <DetailField label="Team / Squad" value={draft.teamOrSquad} onChange={(teamOrSquad) => onUpdate({ teamOrSquad })} />
-          <DetailSelect label="Priority" value={draft.priority} options={['Low', 'Medium', 'High', 'Critical']} onChange={(priority) => onUpdate({ priority: priority as TrackerPriority })} />
-          <DetailSelect label="Status" value={draft.status} options={tracker.defaultStatuses} onChange={(status) => onUpdate({ status })} />
-          <DetailField label="Due Date" value={draft.dueDate} onChange={(dueDate) => onUpdate({ dueDate })} />
-          <DetailSelect label="RAG" value={draft.rag} options={['Green', 'Amber', 'Red']} onChange={(rag) => onUpdate({ rag: rag as TrackerHealth })} />
-          <DetailField label="Last Updated" value={draft.lastUpdated} onChange={(lastUpdated) => onUpdate({ lastUpdated })} />
+          <DetailField label="Unit *" value={draft.unit} onChange={(unit) => onUpdate({ unit })} />
+          <DetailSelect label="Team / Squad" value={draft.teamOrSquad} options={teamSquadOptions} onChange={(teamOrSquad) => onUpdate({ teamOrSquad })} />
+          <DetailSelect label="Type *" value={draft.type} options={recordTypeOptions} onChange={(type) => onUpdate({ type })} />
+          <DetailSelect label="Priority" value={draft.priority} options={recordPriorityOptions} onChange={(priority) => onUpdate({ priority: priority as TrackerPriority })} />
+          <DetailSelect label="Health *" value={draft.health} options={recordHealthOptions} onChange={(health) => syncHealth(health as TrackerRecord['health'])} />
+          <DetailSelect label="Status" value={draft.status} options={recordStatusOptions} onChange={(status) => onUpdate({ status })} />
+          <DetailSelect label="Assigned to" value={draft.owner || 'Unassigned'} options={assigneeOptions} onChange={(owner) => onUpdate({ owner: owner === 'Unassigned' ? '' : owner })} />
+          <DetailField label="Last Updated" value={draft.lastUpdated} readOnly onChange={() => undefined} />
+          <DetailField label="Opened *" value={draft.opened} readOnly onChange={() => undefined} />
+          <DetailField label="Review due" value={draft.dueDate} onChange={(dueDate) => onUpdate({ dueDate, isOverdue: dueDate === 'Today' })} />
         </div>
       </section>
-      <DetailTextarea title="Description / Context" value={draft.description} onChange={(description) => onUpdate({ description })} />
-      <DetailTextarea title="Latest Update" value={latestUpdate} onChange={onLatestUpdate} />
-      <section className="dq-card">
-        <h2 className="dq-card-title">Next Action</h2>
-        <input value={draft.nextAction} onChange={(event) => onUpdate({ nextAction: event.target.value })} className="dq-input mt-4" />
-      </section>
+      <DetailTextarea title="DESCRIPTION" value={draft.description} onChange={(description) => onUpdate({ description })} />
+      {latestUpdate && (
+        <section className="dq-card">
+          <h2 className="dq-card-title">LATEST UPDATE</h2>
+          <textarea value={latestUpdate} onChange={(event) => onLatestUpdate(event.target.value)} rows={3} className="dq-textarea mt-4" />
+        </section>
+      )}
     </>
   );
 }
@@ -720,12 +1320,12 @@ function DetailTextarea({ title, value, onChange }: { title: string; value: stri
   );
 }
 
-function CommentsPanel({ comments, comment, onComment, onPost }: { comments: TrackerRecord['comments']; comment: string; onComment: (value: string) => void; onPost: () => void }) {
+function CommentsPanel({ comments, comment, onComment, onPost, inputRef }: { comments: TrackerRecord['comments']; comment: string; onComment: (value: string) => void; onPost: () => void; inputRef?: RefObject<HTMLTextAreaElement> }) {
   return (
     <section className="dq-card">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="dq-card-title">Comments / Notes</h2>
-        <span className="text-xs font-semibold text-text-muted">{comments.length} notes</span>
+        <h2 className="dq-card-title">Comments</h2>
+        <span className="text-xs font-semibold text-text-muted">{comments.length} comments</span>
       </div>
       <div className="mt-4 space-y-3">
         {comments.map((entry) => (
@@ -735,10 +1335,15 @@ function CommentsPanel({ comments, comment, onComment, onPost }: { comments: Tra
             <div className="mt-1 text-xs font-semibold text-text-muted">{entry.timestamp}</div>
           </div>
         ))}
-        {comments.length === 0 && <p className="text-sm font-semibold text-text-secondary">No notes posted yet.</p>}
+        {comments.length === 0 && (
+          <p className="text-sm font-semibold text-text-secondary">
+            No comments yet.
+            <span className="mt-1 block text-xs font-normal">Add a note or comment to start the conversation.</span>
+          </p>
+        )}
       </div>
-      <textarea value={comment} onChange={(event) => onComment(event.target.value)} rows={3} placeholder="Add comment..." className="dq-textarea mt-4" />
-      <DqButton variant="navy" onClick={onPost} className="mt-3"><MessageSquare size={15} strokeWidth={1.5} /> Post comment</DqButton>
+      <textarea ref={inputRef} value={comment} onChange={(event) => onComment(event.target.value)} rows={3} placeholder="Add comment..." className="dq-textarea mt-4" />
+      <DqButton variant="navy" onClick={onPost} className="mt-3"><MessageSquare size={15} strokeWidth={1.5} /> Post</DqButton>
     </section>
   );
 }
@@ -767,7 +1372,12 @@ function EvidencePanel({ evidence, showLinkFields, linkTitle, linkUrl, onShowLin
             <span className="text-xs text-text-muted">{entry.addedBy} · {entry.addedAt}</span>
           </div>
         ))}
-        {evidence.length === 0 && <p className="text-sm font-semibold text-text-secondary">No evidence linked yet.</p>}
+        {evidence.length === 0 && (
+          <p className="text-sm font-semibold text-text-secondary">
+            No evidence added yet.
+            <span className="mt-1 block text-xs font-normal">Upload evidence or add a link to support this record.</span>
+          </p>
+        )}
       </div>
     </section>
   );
@@ -785,8 +1395,132 @@ function ActivityTimeline({ activity, title = 'Activity History' }: { activity: 
             <div className="mt-1 text-xs font-semibold text-text-muted">{entry.timestamp}</div>
           </div>
         ))}
+        {activity.length === 0 && <p className="text-sm font-semibold text-text-secondary">No activity recorded yet.</p>}
       </div>
     </section>
+  );
+}
+
+function HistoryTimeline({ events }: { events: TrackerHistoryEvent[] }) {
+  return (
+    <section className="dq-card">
+      <h2 className="dq-card-title">History</h2>
+      <div className="mt-4 space-y-4">
+        {events.map((entry) => (
+          <div key={entry.id} className="border-l-2 border-border-default pl-4 text-sm text-primary">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-bold">{entry.eventType}</span>
+              <span className="text-xs font-semibold text-text-muted">{entry.timestamp}</span>
+            </div>
+            <div className="mt-1 text-xs font-semibold text-text-secondary">{entry.actor}</div>
+            {(entry.oldValue || entry.newValue) && (
+              <p className="mt-1 text-sm leading-6">
+                {entry.oldValue && <span className="text-text-muted">{entry.oldValue}</span>}
+                {entry.oldValue && entry.newValue && <span className="text-text-muted"> → </span>}
+                {entry.newValue && <span className="font-semibold">{entry.newValue}</span>}
+              </p>
+            )}
+          </div>
+        ))}
+        {events.length === 0 && <p className="text-sm font-semibold text-text-secondary">No history events yet.</p>}
+      </div>
+    </section>
+  );
+}
+
+function RecordDetailRightRail({
+  record,
+  onAddTag,
+  onRemoveTag,
+  onLinkedEntityOpened,
+}: {
+  record: TrackerRecord;
+  onAddTag: (tag: string) => void;
+  onRemoveTag: (tag: string) => void;
+  onLinkedEntityOpened: () => void;
+}) {
+  const [tagInput, setTagInput] = useState('');
+  const overdueCount = record.isOverdue || record.dueDate === 'Today' ? 1 : 0;
+  const blockedCount = record.isBlocked || record.status === 'Blocked' ? 1 : 0;
+
+  const addTag = () => {
+    if (!tagInput.trim()) return;
+    onAddTag(tagInput.trim());
+    setTagInput('');
+  };
+
+  return (
+    <div className="space-y-4 p-4">
+      <section className="rounded-card border border-border-subtle p-4">
+        <h3 className="text-xs font-bold uppercase tracking-wide text-text-muted">TAGS</h3>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {(record.tags || []).map((tag) => (
+            <span key={tag} className="group inline-flex items-center gap-1 rounded-full border border-border-subtle bg-surface px-2 py-1 text-xs font-bold text-primary">
+              {tag}
+              <button type="button" onClick={() => onRemoveTag(tag)} className="text-text-muted opacity-0 group-hover:opacity-100 hover:text-danger" aria-label={`Remove ${tag}`}>
+                <X size={12} />
+              </button>
+            </span>
+          ))}
+          <button
+            type="button"
+            onClick={() => {
+              const value = window.prompt('Add tag');
+              if (value) onAddTag(value);
+            }}
+            className="rounded-full border border-dashed border-border-default px-2 py-1 text-xs font-bold text-secondary"
+          >
+            +
+          </button>
+        </div>
+        <div className="mt-2 flex gap-2">
+          <input value={tagInput} onChange={(e) => setTagInput(e.target.value)} placeholder="Add tag" className="dq-input h-8 text-xs" onKeyDown={(e) => e.key === 'Enter' && addTag()} />
+          <DqButton variant="outline" onClick={addTag} className="h-8 px-2 text-xs">Add</DqButton>
+        </div>
+      </section>
+
+      <section className="rounded-card border border-border-subtle p-4">
+        <h3 className="text-xs font-bold uppercase tracking-wide text-text-muted">CUSTOM FIELDS</h3>
+        <dl className="mt-3 space-y-2 text-sm">
+          <div className="flex justify-between gap-3"><dt className="text-text-muted">Tracker ID</dt><dd className="font-mono font-bold text-primary">TR-00005</dd></div>
+          <div className="flex justify-between gap-3"><dt className="text-text-muted">Workspace</dt><dd className="font-semibold text-primary">{record.workspace}</dd></div>
+        </dl>
+      </section>
+
+      <section className="rounded-card border border-border-subtle p-4">
+        <h3 className="text-xs font-bold uppercase tracking-wide text-text-muted">LINKED ENTITIES</h3>
+        <dl className="mt-3 space-y-2 text-sm">
+          {[
+            ['Owner', record.ownerSlug],
+            ['Team', record.teamSlug],
+            ['Workflow', record.workflowSlug],
+          ].map(([label, value]) => (
+            <button key={label} type="button" onClick={onLinkedEntityOpened} className="flex w-full justify-between gap-3 rounded-button px-1 py-1 text-left hover:bg-navy-50">
+              <dt className="text-text-muted">{label}</dt>
+              <dd className="font-semibold text-info-text">{value}</dd>
+            </button>
+          ))}
+        </dl>
+      </section>
+
+      <section className="rounded-card border border-border-subtle p-4">
+        <h3 className="text-xs font-bold uppercase tracking-wide text-text-muted">MAINTENANCE STATE</h3>
+        <dl className="mt-3 space-y-2 text-sm">
+          <div className="flex items-center justify-between gap-3">
+            <dt className="flex items-center gap-2 text-text-muted"><span className="h-2 w-2 rounded-full bg-success" />Saved</dt>
+            <dd className="font-mono font-bold text-primary">{record.savedCount}</dd>
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <dt className="flex items-center gap-2 text-text-muted"><span className="h-2 w-2 rounded-full bg-warning" />Overdue</dt>
+            <dd className="font-mono font-bold text-primary">{overdueCount}</dd>
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <dt className="flex items-center gap-2 text-text-muted"><span className="h-2 w-2 rounded-full bg-danger" />Blocked</dt>
+            <dd className="font-mono font-bold text-primary">{blockedCount}</dd>
+          </div>
+        </dl>
+      </section>
+    </div>
   );
 }
 
@@ -804,8 +1538,8 @@ function RecordNotFound({ tracker, recordId, onBack, onHub }: { tracker: Tracker
       </nav>
       <section className="mt-16 max-w-lg rounded-card border border-border-default bg-white p-8 text-center shadow-sm">
         <FileSearch className="mx-auto text-text-muted" size={42} strokeWidth={1.5} />
-        <h1 className="mt-4 text-2xl font-bold text-primary">Record not found</h1>
-        <p className="mt-2 text-sm text-text-secondary">This tracker record may have been removed or is not available.</p>
+        <h1 className="mt-4 text-2xl font-bold text-primary">Tracker record not found.</h1>
+        <p className="mt-2 text-sm text-text-secondary">This tracker record could not be found in the prototype data.</p>
         <DqButton variant="navy" onClick={onBack} className="mt-6">Back to Tracker</DqButton>
       </section>
     </div>

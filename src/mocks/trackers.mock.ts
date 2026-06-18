@@ -1,4 +1,11 @@
-import type { TrackerDefinition, TrackerHealth, TrackerPriority, TrackerRecord } from '../types/tracker';
+import type {
+  TrackerDefinition,
+  TrackerHealth,
+  TrackerPriority,
+  TrackerRecord,
+  TrackerHealthExtended,
+  TrackerHistoryEvent,
+} from '../types/tracker';
 
 export const trackerDefinitions: TrackerDefinition[] = [
   {
@@ -184,8 +191,103 @@ type RecordSeed = {
   description?: string;
 };
 
+function slugify(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+function healthFromStatusAndRag(status: string, rag: TrackerHealth): TrackerHealthExtended {
+  const s = status.toLowerCase();
+  if (s === 'closed' || s.includes('closed')) return 'Closed';
+  if (s === 'reviewed') return 'Healthy';
+  if (rag === 'Green') return 'Green';
+  if (rag === 'Amber') return 'Amber';
+  return 'Red';
+}
+
+function typeDefaultsForTracker(trackerId: string) {
+  switch (trackerId) {
+    case 'workload-distribution':
+      return 'Capacity / Workload';
+    case 'squad-backlog':
+      return 'Backlog';
+    case 'project-backlog':
+      return 'Project Health';
+    case 'strategic-initiatives':
+      return 'Decision';
+    case 'project-health':
+      return 'Risk / Issue';
+    case 'governance-follow-up':
+      return 'Governance';
+    case 'action-log':
+      return 'Action Log';
+    case 'decision':
+      return 'Decision';
+    case 'risk-issue':
+      return 'Risk / Issue';
+    default:
+      return 'Capacity / Workload';
+  }
+}
+
+function unitDefaultsForTracker(trackerId: string) {
+  switch (trackerId) {
+    case 'workload-distribution':
+      return 'Workload Distribution';
+    case 'squad-backlog':
+      return 'Squad Backlog';
+    case 'project-backlog':
+      return 'Project Backlog';
+    case 'strategic-initiatives':
+      return 'Strategic Initiatives';
+    case 'project-health':
+      return 'Project Health';
+    case 'governance-follow-up':
+      return 'Governance Follow-ups';
+    case 'action-log':
+      return 'Action Log';
+    case 'decision':
+      return 'Decisions';
+    case 'risk-issue':
+      return 'Risk / Issue';
+    default:
+      return 'Workspace';
+  }
+}
+
+function workflowDefaultsForTracker(trackerId: string) {
+  switch (trackerId) {
+    case 'workload-distribution':
+      return 'workload-review';
+    case 'squad-backlog':
+      return 'squad-backlog-review';
+    case 'project-backlog':
+      return 'project-backlog-review';
+    case 'strategic-initiatives':
+      return 'initiative-review';
+    case 'project-health':
+      return 'project-health-review';
+    case 'governance-follow-up':
+      return 'governance-follow-up';
+    case 'action-log':
+      return 'action-follow-up';
+    case 'decision':
+      return 'decision-review';
+    case 'risk-issue':
+      return 'risk-mitigation';
+    default:
+      return 'tracker-workflow';
+  }
+}
+
 function record(seed: RecordSeed): TrackerRecord {
   const owner = seed.owner || 'Unassigned';
+  const unit = unitDefaultsForTracker(seed.trackerId);
+  const itemType = typeDefaultsForTracker(seed.trackerId);
+  const health = healthFromStatusAndRag(seed.status, seed.rag);
   return {
     ...seed,
     description: seed.description || `${seed.title} requires governed tracking, owner confirmation, current status, and supporting evidence before the next review cycle.`,
@@ -195,6 +297,20 @@ function record(seed: RecordSeed): TrackerRecord {
     isBlocked: Boolean(seed.isBlocked || seed.status === 'Blocked'),
     missingOwner: Boolean(seed.missingOwner || !seed.owner),
     notUpdatedRecently: Boolean(seed.notUpdatedRecently || seed.lastUpdated.includes('days')),
+    unit,
+    type: itemType,
+    health,
+    opened: '12 May 2026 at 09:30',
+    tags: [
+      seed.trackerId === 'workload-distribution' ? 'Workload' : unit,
+      health,
+    ],
+    savedCount: 0,
+    workspace: 'DWS.01',
+    ownerSlug: slugify(owner),
+    teamSlug: slugify(seed.teamOrSquad),
+    workflowSlug: workflowDefaultsForTracker(seed.trackerId),
+    history: buildInitialHistory(seed, health),
     comments: [
       { id: `${seed.id}-comment-1`, author: owner, body: `${seed.nextAction} is the next action for this tracker record.`, timestamp: seed.lastUpdated },
       { id: `${seed.id}-comment-2`, author: 'DQ Operations', body: 'Status review logged in the tracker workspace.', timestamp: 'Yesterday' },
@@ -209,12 +325,56 @@ function record(seed: RecordSeed): TrackerRecord {
   };
 }
 
+function buildInitialHistory(seed: RecordSeed, health: TrackerHealthExtended): TrackerHistoryEvent[] {
+  const created: TrackerHistoryEvent = {
+    id: `history-${seed.id}-created`,
+    eventType: 'Created',
+    actor: 'Tracker Hub',
+    timestamp: seed.lastUpdated || 'Today',
+  };
+  const statusChanged: TrackerHistoryEvent = {
+    id: `history-${seed.id}-status`,
+    eventType: 'Status',
+    actor: 'Tracker Hub',
+    timestamp: seed.lastUpdated || 'Today',
+    newValue: seed.status,
+  };
+  const healthSet: TrackerHistoryEvent = {
+    id: `history-${seed.id}-health`,
+    eventType: 'Health',
+    actor: 'Tracker Hub',
+    timestamp: 'Yesterday',
+    newValue: health,
+  };
+  return [created, statusChanged, healthSet];
+}
+
 export const trackerRecords: TrackerRecord[] = [
+  // Workload Distribution tracker fixtures (24 records for prototype pagination).
   record({ id: 'WLD-1001', trackerId: 'workload-distribution', title: 'Squad Alpha capacity rebalance', owner: 'Maya Khan', teamOrSquad: 'Squad Alpha', priority: 'High', status: 'Overloaded', dueDate: 'Today', rag: 'Amber', lastUpdated: 'Today', nextAction: 'Confirm capacity move', isOverdue: true }),
-  record({ id: 'WLD-1002', trackerId: 'workload-distribution', title: 'Platform team workload review', owner: 'Rohan Patel', teamOrSquad: 'Platform Team', priority: 'Medium', status: 'In Progress', dueDate: '20 May', rag: 'Green', lastUpdated: 'Today', nextAction: 'Update allocation notes' }),
-  record({ id: 'WLD-1003', trackerId: 'workload-distribution', title: 'Governance pod overload check', owner: 'Hina Adam', teamOrSquad: 'Governance', priority: 'High', status: 'Overloaded', dueDate: '18 May', rag: 'Amber', lastUpdated: 'Yesterday', nextAction: 'Escalate resourcing' }),
-  record({ id: 'WLD-1004', trackerId: 'workload-distribution', title: 'Delivery Ops assignment cleanup', owner: 'Sara Khan', teamOrSquad: 'Delivery Ops', priority: 'Low', status: 'Balanced', dueDate: '24 May', rag: 'Green', lastUpdated: 'Today', nextAction: 'Close review' }),
-  record({ id: 'WLD-1005', trackerId: 'workload-distribution', title: 'Unassigned workload intake', owner: '', teamOrSquad: 'PMO', priority: 'Medium', status: 'Open', dueDate: '22 May', rag: 'Amber', lastUpdated: '3 days ago', nextAction: 'Assign owner', missingOwner: true, notUpdatedRecently: true }),
+  record({ id: 'WLD-1002', trackerId: 'workload-distribution', title: 'Platform team workload review', owner: 'Rohan Patel', teamOrSquad: 'Platform Team', priority: 'Medium', status: 'In Progress', dueDate: 'Today', rag: 'Green', lastUpdated: 'Today', nextAction: 'Update allocation notes' }),
+  record({ id: 'WLD-1003', trackerId: 'workload-distribution', title: 'Governance pod overload check', owner: 'Hina Adam', teamOrSquad: 'Governance', priority: 'High', status: 'Overloaded', dueDate: 'Today', rag: 'Amber', lastUpdated: 'Yesterday', nextAction: 'Escalate resourcing' }),
+  record({ id: 'WLD-1004', trackerId: 'workload-distribution', title: 'Delivery Ops assignment clearance', owner: 'Sara Khan', teamOrSquad: 'Delivery Ops', priority: 'Low', status: 'Balanced', dueDate: 'Today', rag: 'Green', lastUpdated: 'Today', nextAction: 'Close review' }),
+  record({ id: 'WLD-1005', trackerId: 'workload-distribution', title: 'Unassigned workload intake', owner: '', teamOrSquad: 'PMO', priority: 'Medium', status: 'Open', dueDate: 'Today', rag: 'Amber', lastUpdated: 'Today', nextAction: 'Assign owner', missingOwner: true, notUpdatedRecently: true }),
+  record({ id: 'WLD-1006', trackerId: 'workload-distribution', title: 'Capacity risk review', owner: 'Maya Khan', teamOrSquad: 'Squad Alpha', priority: 'High', status: 'Reviewed', dueDate: 'Today', rag: 'Green', lastUpdated: 'Today', nextAction: 'Publish review summary' }),
+  record({ id: 'WLD-1007', trackerId: 'workload-distribution', title: 'Workload escalation tracker', owner: 'Rohan Patel', teamOrSquad: 'Platform Team', priority: 'Medium', status: 'In Progress', dueDate: 'Today', rag: 'Amber', lastUpdated: 'Yesterday', nextAction: 'Confirm escalation owner' }),
+  record({ id: 'WLD-1008', trackerId: 'workload-distribution', title: 'Squad allocation audit', owner: 'Sara Khan', teamOrSquad: 'Squad Delta', priority: 'Low', status: 'Closed', dueDate: 'Today', rag: 'Green', lastUpdated: 'Today', nextAction: 'Archive audit evidence' }),
+  record({ id: 'WLD-1009', trackerId: 'workload-distribution', title: 'Team capacity forecast check', owner: 'Ali Raza', teamOrSquad: 'Squad Beta', priority: 'High', status: 'Overloaded', dueDate: 'Today', rag: 'Amber', lastUpdated: 'Today', nextAction: 'Adjust forecast assumptions' }),
+  record({ id: 'WLD-1010', trackerId: 'workload-distribution', title: 'Integration workload reprioritisation', owner: 'Hina Adam', teamOrSquad: 'Governance', priority: 'Critical', status: 'In Progress', dueDate: 'Today', rag: 'Amber', lastUpdated: 'Today', nextAction: 'Update reprioritisation plan' }),
+  record({ id: 'WLD-1011', trackerId: 'workload-distribution', title: 'Release window resourcing review', owner: 'Musa Kibet', teamOrSquad: 'Delivery Ops', priority: 'Medium', status: 'Balanced', dueDate: 'Today', rag: 'Green', lastUpdated: 'Yesterday', nextAction: 'Confirm release staffing' }),
+  record({ id: 'WLD-1012', trackerId: 'workload-distribution', title: 'Unblocking dependencies triage', owner: 'Bilal Waqar', teamOrSquad: 'Platform Team', priority: 'High', status: 'Overloaded', dueDate: 'Today', rag: 'Amber', lastUpdated: 'Today', nextAction: 'Escalate blockers' }),
+  record({ id: 'WLD-1013', trackerId: 'workload-distribution', title: 'Squad alpha workload balancing', owner: 'Maya Khan', teamOrSquad: 'Squad Alpha', priority: 'High', status: 'Balanced', dueDate: 'Today', rag: 'Green', lastUpdated: 'Today', nextAction: 'Monitor post-transfer' }),
+  record({ id: 'WLD-1014', trackerId: 'workload-distribution', title: 'Governance follow-up resourcing', owner: 'Hina Adam', teamOrSquad: 'Governance', priority: 'High', status: 'Overloaded', dueDate: 'Today', rag: 'Amber', lastUpdated: 'Yesterday', nextAction: 'Confirm additional reviewer' }),
+  record({ id: 'WLD-1015', trackerId: 'workload-distribution', title: 'Delivery ops capacity calibration', owner: 'Sara Khan', teamOrSquad: 'Delivery Ops', priority: 'Low', status: 'Reviewed', dueDate: 'Today', rag: 'Green', lastUpdated: 'Today', nextAction: 'Close calibration' }),
+  record({ id: 'WLD-1016', trackerId: 'workload-distribution', title: 'Workload hygiene sweep', owner: 'Ali Raza', teamOrSquad: 'Squad Beta', priority: 'Medium', status: 'In Progress', dueDate: 'Today', rag: 'Amber', lastUpdated: 'Today', nextAction: 'Add update notes' }),
+  record({ id: 'WLD-1017', trackerId: 'workload-distribution', title: 'Capacity reallocation audit', owner: 'Musa Kibet', teamOrSquad: 'PMO', priority: 'Critical', status: 'Open', dueDate: 'Today', rag: 'Amber', lastUpdated: '3 days ago', nextAction: 'Assign owners' , notUpdatedRecently: true, missingOwner: true}),
+  record({ id: 'WLD-1018', trackerId: 'workload-distribution', title: 'Escalated review follow-up', owner: 'Rohan Patel', teamOrSquad: 'Platform Team', priority: 'High', status: 'In Progress', dueDate: 'Today', rag: 'Amber', lastUpdated: 'Yesterday', nextAction: 'Follow up escalation request' }),
+  record({ id: 'WLD-1019', trackerId: 'workload-distribution', title: 'Operational workload closure', owner: 'Sara Khan', teamOrSquad: 'Delivery Ops', priority: 'Low', status: 'Closed', dueDate: 'Today', rag: 'Green', lastUpdated: 'Today', nextAction: 'Publish closure notice' }),
+  record({ id: 'WLD-1020', trackerId: 'workload-distribution', title: 'Squad allocation health check', owner: 'Maya Khan', teamOrSquad: 'Squad Gamma', priority: 'Medium', status: 'Reviewed', dueDate: 'Today', rag: 'Green', lastUpdated: 'Today', nextAction: 'Confirm review completed' }),
+  record({ id: 'WLD-1021', trackerId: 'workload-distribution', title: 'Platform workload review cycle', owner: 'Rohan Patel', teamOrSquad: 'Platform Team', priority: 'High', status: 'Overloaded', dueDate: 'Today', rag: 'Amber', lastUpdated: 'Today', nextAction: 'Assess overload drivers' }),
+  record({ id: 'WLD-1022', trackerId: 'workload-distribution', title: 'Governance resource re-balance', owner: 'Hina Adam', teamOrSquad: 'Governance', priority: 'Critical', status: 'In Progress', dueDate: 'Today', rag: 'Amber', lastUpdated: 'Yesterday', nextAction: 'Track escalation approval' }),
+  record({ id: 'WLD-1023', trackerId: 'workload-distribution', title: 'Delivery ops workload stabilization', owner: 'Sara Khan', teamOrSquad: 'Delivery Ops', priority: 'Medium', status: 'Balanced', dueDate: 'Today', rag: 'Green', lastUpdated: 'Today', nextAction: 'Maintain current balance' }),
+  record({ id: 'WLD-1024', trackerId: 'workload-distribution', title: 'Squad beta workload closure', owner: 'Ali Raza', teamOrSquad: 'Squad Beta', priority: 'Low', status: 'Closed', dueDate: 'Today', rag: 'Green', lastUpdated: 'Today', nextAction: 'Archive final evidence' }),
 
   record({ id: 'SQB-1001', trackerId: 'squad-backlog', title: 'Ageing API backlog triage', owner: 'James Tan', teamOrSquad: 'Squad Beta', priority: 'High', status: 'Blocked', dueDate: '17 May', rag: 'Red', lastUpdated: '2 days ago', nextAction: 'Resolve dependency', isBlocked: true, isOverdue: true }),
   record({ id: 'SQB-1002', trackerId: 'squad-backlog', title: 'Ready queue grooming', owner: 'Maya Khan', teamOrSquad: 'Squad Alpha', priority: 'Medium', status: 'Ready', dueDate: '21 May', rag: 'Green', lastUpdated: 'Today', nextAction: 'Confirm sprint slot' }),
