@@ -11,7 +11,10 @@ const categoryLabels: Record<MarketplaceCategoryKey, string> = {
   design: 'Design',
   deploy: 'Deploy',
   drive: 'Drive',
+<<<<<<< HEAD
   trackerMarketplace: 'Tracker Marketplace',
+=======
+>>>>>>> origin/Feat/TrackerHub-Rose
 };
 
 export const MARKETPLACE_ROOT: MarketplaceBreadcrumbItem = {
@@ -148,7 +151,11 @@ export function buildMarketplaceHubTrail(groupTitle: string): MarketplaceBreadcr
   ];
 }
 
+<<<<<<< HEAD
 export const KNOWLEDGE_DISCOVERY_LABEL = 'Knowledge Discovery';
+=======
+export const KNOWLEDGE_HUB_LABEL = 'Knowledge Hub';
+>>>>>>> origin/Feat/TrackerHub-Rose
 
 export function getKnowledgeHubHref(stage: MarketplaceCategoryKey = 'discern'): string {
   return `/marketplace/knowledge-discovery?from=${stage}`;
@@ -168,9 +175,16 @@ export function buildKnowledgeDetailTrail(
   assetId: string,
 ): MarketplaceBreadcrumbItem[] {
   return [
+<<<<<<< HEAD
     MARKETPLACE_ROOT,
     stageSegment(stage),
     { label: KNOWLEDGE_DISCOVERY_LABEL, href: getKnowledgeHubHref(stage) },
+=======
+    { label: assetType },
+    MARKETPLACE_ROOT,
+    stageSegment(stage),
+    { label: KNOWLEDGE_HUB_LABEL, href: getKnowledgeHubHref(stage) },
+>>>>>>> origin/Feat/TrackerHub-Rose
     { label: assetTitle, href: getKnowledgeDetailHref(assetId, stage) },
   ];
 }

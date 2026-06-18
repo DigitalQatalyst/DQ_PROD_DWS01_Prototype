@@ -172,12 +172,15 @@ export function AnalyticsMarketplacePage() {
 
   const handleFilterChange = (groupId: string, values: string[]) => {
     setFilterValues((prev) => ({ ...prev, [groupId]: values }));
+    setFilterValues((prev) => ({ ...prev, [groupId]: values }));
   };
+
 
   const handleClearAll = () => {
     setFilterValues({});
     setSearch("");
     setRecommendedActive(false);
+    setActiveTab(ALL_TAB_ID);
     setActiveTab(ALL_TAB_ID);
   };
 
@@ -228,6 +231,7 @@ export function AnalyticsMarketplacePage() {
       if (!aRec && bRec) return 1;
       return 0;
     });
+
 
   return (
     <MarketplaceCatalogLayout

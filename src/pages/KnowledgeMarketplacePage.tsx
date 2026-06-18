@@ -1,10 +1,28 @@
 import React, { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import React, { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useKnowledgeLifecycle } from '../context/KnowledgeLifecycleContext';
 import { KnowledgeCard } from '../components/KnowledgeCard';
 import { MarketplaceCatalogLayout } from '../components/marketplace/MarketplaceCatalogLayout';
+import { MarketplaceCatalogLayout } from '../components/marketplace/MarketplaceCatalogLayout';
 import type { FilterGroup } from '../components/MarketplaceFilterPanel';
 import { KnowledgeAssetType } from '../types/knowledgeDiscovery';
+import { buildCatalogTrail, resolveMarketplaceStage } from '../utils/marketplaceBreadcrumbs';
+import { ALL_TAB_ID } from '../utils/marketplaceCatalogTabs';
+
+const KNOWLEDGE_TABS: { id: KnowledgeAssetType | typeof ALL_TAB_ID; label: string }[] = [
+  { id: ALL_TAB_ID, label: 'All' },
+  { id: 'Guideline', label: 'Guidelines' },
+  { id: 'Operating Standard', label: 'Operating Standards' },
+  { id: 'Process Reference', label: 'Process References' },
+  { id: 'Evidence Standard', label: 'Evidence Standards' },
+  { id: 'Playbook', label: 'Playbooks' },
+  { id: 'Template', label: 'Templates' },
+  { id: 'GHC Reference', label: 'GHC References' },
+  { id: '6xD Reference', label: '6xD References' },
+  { id: 'Workspace Guide', label: 'Workspace Guides' },
+  { id: 'Learning Reference', label: 'Learning References' },
 import { buildCatalogTrail, resolveMarketplaceStage } from '../utils/marketplaceBreadcrumbs';
 import { ALL_TAB_ID } from '../utils/marketplaceCatalogTabs';
 
@@ -28,13 +46,21 @@ const TAB_DESCRIPTIONS: Partial<Record<string, string>> = {
   'GHC Reference': 'Global Handbook of Compliance references and standards.',
   '6xD Reference': '6xD lifecycle references aligned to DWS execution stages.',
 };
+const TAB_DESCRIPTIONS: Partial<Record<string, string>> = {
+  Playbook: 'Step-by-step operating playbooks for repeatable work patterns.',
+  Template: 'Reusable content and document templates for governed delivery.',
+  'GHC Reference': 'Global Handbook of Compliance references and standards.',
+  '6xD Reference': '6xD lifecycle references aligned to DWS execution stages.',
+};
 
 export function KnowledgeMarketplacePage() {
+  const [searchParams] = useSearchParams();
   const [searchParams] = useSearchParams();
   const { assets, isLoading } = useKnowledgeLifecycle();
   const stage = resolveMarketplaceStage(searchParams.get('from'), 'discern');
   const initialTab = 'Guideline';
 
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [activeTab, setActiveTab] = useState(initialTab);
   const [search, setSearch] = useState('');
   const [filterValues, setFilterValues] = useState<Record<string, string[]>>({});
@@ -44,6 +70,12 @@ export function KnowledgeMarketplacePage() {
     {
       id: 'type',
       label: 'Knowledge Type',
+      options: KNOWLEDGE_TABS.filter((tab) => tab.id !== ALL_TAB_ID).map(
+        (tab) => ({
+          value: tab.id,
+          label: tab.label,
+        }),
+      ),
       options: KNOWLEDGE_TABS.filter((tab) => tab.id !== ALL_TAB_ID).map(
         (tab) => ({
           value: tab.id,
@@ -61,13 +93,22 @@ export function KnowledgeMarketplacePage() {
         { value: 'Needs Update', label: 'Needs Update' },
         { value: 'Deprecated', label: 'Deprecated' },
       ],
+        { value: 'Effective', label: 'Effective' },
+        { value: 'Under Review', label: 'Under Review' },
+        { value: 'Draft', label: 'Draft' },
+        { value: 'Needs Update', label: 'Needs Update' },
+        { value: 'Deprecated', label: 'Deprecated' },
+      ],
     },
     {
       id: 'ack',
       label: 'Acknowledgement',
       options: [
         { value: 'required', label: 'Required' },
+        { value: 'required', label: 'Required' },
         { value: 'not-required', label: 'Not Required' },
+      ],
+    },
       ],
     },
   ];
@@ -87,6 +128,7 @@ export function KnowledgeMarketplacePage() {
   );
 
   const handleFilterChange = (groupId: string, values: string[]) => {
+    setFilterValues((prev) => ({ ...prev, [groupId]: values }));
     setFilterValues((prev) => ({ ...prev, [groupId]: values }));
   };
 
@@ -170,3 +212,4 @@ export function KnowledgeMarketplacePage() {
     </MarketplaceCatalogLayout>
   );
 }
+

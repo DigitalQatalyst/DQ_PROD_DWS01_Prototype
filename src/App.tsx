@@ -1,4 +1,5 @@
 import React from "react";
+import React from "react";
 import {
   BrowserRouter,
   Routes,
@@ -39,8 +40,48 @@ import { OperatingGuidePage } from "./pages/OperatingGuidePage";
 import { OnboardingPage } from "./pages/OnboardingPage";
 import { Stage0ActionPage } from "./pages/Stage0ActionPage";
 import { Stage0PlatformUpdatesPage } from "./pages/Stage0PlatformUpdatesPage";
+  useLocation,
+} from "react-router-dom";
+import { Toaster } from "sonner";
+import { PersonaProvider, usePersona } from "./context/PersonaContext";
+import { ViewingModeProvider } from "./context/ViewingModeContext";
+import { WorkspaceRoleProvider } from "./context/WorkspaceRoleContext";
+import { useWorkspaceRole } from "./context/WorkspaceRoleContext";
+import { ServiceLifecycleProvider } from "./context/ServiceLifecycleContext";
+import { TaskLifecycleProvider } from "./context/TaskLifecycleContext";
+import { KnowledgeLifecycleProvider } from "./context/KnowledgeLifecycleContext";
+import { navigationItems, getNavigationItem } from "./config/navigation";
+import { hasAnyPermission } from "./config/permissions";
+
+import { AppLayout } from "./layouts/AppLayout";
+import { Stage02Layout } from "./layouts/Stage02Layout";
+import { Stage0ShellLayout } from "./layouts/Stage0ShellLayout";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { LoginPage } from "./pages/LoginPage";
+import { MarketplaceLayout } from "./layouts/MarketplaceLayout";
+import { PlaceholderPage } from "./components/PlaceholderPage";
+import {
+  FeatureAreaRoute,
+  FeatureGroupRoute,
+  FeatureWorkspaceRoute,
+} from "./components/FeatureAreaPages";
+import { featureAreas } from "./data/featureAreas";
+import { HomeLandingPage } from "./pages/HomeLandingPage";
+import { OrientationFeatureGroupPage } from "./pages/OrientationFeatureGroupPage";
+import { MarketplaceFeatureGroupPage } from "./pages/MarketplaceFeatureGroupPage";
+import { Stage0OrientationPage } from "./pages/Stage0OrientationPage";
+import { OperatingGuidePage } from "./pages/OperatingGuidePage";
+import { OnboardingPage } from "./pages/OnboardingPage";
+import { Stage0ActionPage } from "./pages/Stage0ActionPage";
+import { Stage0PlatformUpdatesPage } from "./pages/Stage0PlatformUpdatesPage";
 
 // New Knowledge Pages
+import { KnowledgeDetailPage } from "./pages/KnowledgeDetailPage";
+import { KnowledgeReferencePage } from "./pages/KnowledgeReferencePage";
+import { KnowledgeStartTaskPage } from "./pages/KnowledgeStartTaskPage";
+import { KnowledgeReviewQueuePage } from "./pages/KnowledgeReviewQueuePage";
+import { ExecutiveKnowledgeSignalPage } from "./pages/ExecutiveKnowledgeSignalPage";
 import { KnowledgeDetailPage } from "./pages/KnowledgeDetailPage";
 import { KnowledgeReferencePage } from "./pages/KnowledgeReferencePage";
 import { KnowledgeStartTaskPage } from "./pages/KnowledgeStartTaskPage";
@@ -269,6 +310,7 @@ import {
 
 // A wrapper to handle route guards
 function RouteGuard({ children }: { children: React.ReactNode }) {
+function RouteGuard({ children }: { children: React.ReactNode }) {
   const { activePersona, hasRouteAccess } = usePersona();
   const location = useLocation();
   if (!hasRouteAccess(location.pathname, activePersona)) {
@@ -276,6 +318,11 @@ function RouteGuard({ children }: { children: React.ReactNode }) {
       <div className="p-8">
         <PlaceholderPage
           title="This view is outside the active persona scope"
+          description="Switch role or return to Home to choose a permitted route."
+          phase="Prototype Shell"
+        />
+      </div>
+    );
           description="Switch role or return to Home to choose a permitted route."
           phase="Prototype Shell"
         />
@@ -292,8 +339,20 @@ function DwsRouteGuard({
   route: string;
   children: React.ReactNode;
 }) {
+function DwsRouteGuard({
+  route,
+  children,
+}: {
+  route: string;
+  children: React.ReactNode;
+}) {
   const { activeRole } = useWorkspaceRole();
   const navItem = getNavigationItem(route);
+  if (
+    navItem &&
+    (!navItem.allowedSegments.includes(activeRole) ||
+      !hasAnyPermission(activeRole, navItem.requiredPermissions))
+  ) {
   if (
     navItem &&
     (!navItem.allowedSegments.includes(activeRole) ||
@@ -302,6 +361,105 @@ function DwsRouteGuard({
     return <AccessRestrictedPage />;
   }
   return <>{children}</>;
+}
+
+function renderTaskFeaturePage(route: string): React.ReactNode | null {
+  const taskFeatureMap: Record<string, React.ReactNode> = {
+    "/tasks/my-work/assigned-tasks": <AssignedTasksPage />,
+    "/tasks/my-work/my-due-actions": <MyDueActionsPage />,
+    "/tasks/my-work/my-updates": <MyTaskUpdatesPage />,
+    "/tasks/my-work/my-blockers": <MyTaskBlockersPage />,
+    "/tasks/my-work/my-working-sessions": <MyWorkingSessionsPage />,
+    "/tasks/task-board/kanban-view": <KanbanViewPage />,
+    "/tasks/task-board/list-view": <ListViewPage />,
+    "/tasks/task-board/calendar-view": <CalendarViewPage />,
+    "/tasks/task-board/priority-view": <PriorityViewPage />,
+    "/tasks/task-board/team-task-view": <TeamTaskViewPage />,
+    "/tasks/task-creation-templates/create-task": <CreateTaskPage />,
+    "/tasks/task-creation-templates/select-task-template": (
+      <SelectTaskTemplatePage />
+    ),
+    "/tasks/task-creation-templates/define-purpose-output": (
+      <DefinePurposeOutputPage />
+    ),
+    "/tasks/task-creation-templates/assign-owner-contributors": (
+      <AssignOwnerContributorsPage />
+    ),
+    "/tasks/task-creation-templates/set-sla-due-date": <SetSlaDueDatePage />,
+    "/tasks/task-updates-evidence/progress-update": <ProgressUpdatePage />,
+    "/tasks/task-updates-evidence/evidence-upload-link": <EvidenceUploadPage />,
+    "/tasks/task-updates-evidence/comment-thread": <CommentThreadPage />,
+    "/tasks/task-updates-evidence/blocker-update": <BlockerUpdatePage />,
+    "/tasks/task-updates-evidence/task-history-timeline": (
+      <TaskHistoryTimelinePage />
+    ),
+    "/tasks/closure-reviews/request-closure-review": (
+      <RequestClosureReviewPage />
+    ),
+    "/tasks/closure-reviews/closure-checklist": <ClosureChecklistPage />,
+    "/tasks/closure-reviews/evidence-review": <EvidenceReviewPage />,
+    "/tasks/closure-reviews/return-for-rework": <ReturnForReworkPage />,
+    "/tasks/closure-reviews/close-task": <CloseTaskPage />,
+  };
+  return taskFeatureMap[route] || null;
+}
+
+function renderTrackerFeaturePage(route: string): React.ReactNode | null {
+  const trackerFeatureMap: Record<string, React.ReactNode> = {
+    // Tracker Hub
+    "/tracker/tracker-hub": <TrackerHubPage />,
+    // Request Status Tracker
+    "/tracker/request-status-tracker/submitted-requests": (
+      <SubmittedRequestsPage />
+    ),
+    "/tracker/request-status-tracker/request-drafts": <RequestDraftsPage />,
+    "/tracker/request-status-tracker/request-status": (
+      <TrackerRequestStatusPage />
+    ),
+    "/tracker/request-status-tracker/pending-information": (
+      <PendingInformationPage />
+    ),
+    "/tracker/request-status-tracker/request-closure-status": (
+      <RequestClosureStatusPage />
+    ),
+    // Action & Follow-up Tracker
+    "/tracker/action-follow-up-tracker/working-session-actions": (
+      <WorkingSessionActionsPage />
+    ),
+    "/tracker/action-follow-up-tracker/meeting-follow-ups": (
+      <MeetingFollowupsPage />
+    ),
+    "/tracker/action-follow-up-tracker/assigned-follow-ups": (
+      <AssignedFollowupsPage />
+    ),
+    "/tracker/action-follow-up-tracker/overdue-follow-ups": (
+      <OverdueFollowupsPage />
+    ),
+    "/tracker/action-follow-up-tracker/completed-follow-ups": (
+      <CompletedFollowupsPage />
+    ),
+    // Blocker & SLA Tracker
+    "/tracker/blocker-sla-tracker/active-blockers": <ActiveBlockersPage />,
+    "/tracker/blocker-sla-tracker/blocker-ageing": <BlockerAgeingPage />,
+    "/tracker/blocker-sla-tracker/sla-at-risk": <SlaAtRiskPage />,
+    "/tracker/blocker-sla-tracker/sla-breached": <SlaBreachedPage />,
+    "/tracker/blocker-sla-tracker/sla-resolved": <SlaResolvedPage />,
+    // Decision & Outcome Tracker
+    "/tracker/decision-outcome-tracker/decision-log": (
+      <TrackerDecisionLogPage />
+    ),
+    "/tracker/decision-outcome-tracker/decision-status": <DecisionStatusPage />,
+    "/tracker/decision-outcome-tracker/linked-tasks-requests": (
+      <LinkedTasksRequestsPage />
+    ),
+    "/tracker/decision-outcome-tracker/outcome-progress": (
+      <TrackerOutcomeProgressPage />
+    ),
+    "/tracker/decision-outcome-tracker/outcome-evidence": (
+      <OutcomeEvidencePage />
+    ),
+  };
+  return trackerFeatureMap[route] || null;
 }
 
 function renderTaskFeaturePage(route: string): React.ReactNode | null {
@@ -442,7 +600,51 @@ function renderDwsRoute(route: string) {
   if (route === "/service-owner/requests") return <ServiceOwnerQueuePage />;
   if (route === "/workflow/approvals") return <ApproverQueuePage />;
   if (route === "/intelligence/service-signals") return <ExecutiveSignalPage />;
+  if (route === "/workspace") return <WorkspaceMyWorkPage />;
+  if (route === "/workspace/my-tasks") return <TasksMyTasksPage />;
+  if (route === "/workspace/my-requests") return <WorkspaceMyRequestsPage />;
+  if (route === "/workspace/working-sessions")
+    return <WorkspaceWorkingSessionsPage />;
+  if (route === "/workspace/activity") return <WorkspaceActivityPage />;
+  if (route === "/requests/status") return <WorkspaceMyRequestsPage />;
+  if (route === "/support/service-desk") return <SupportOperationsPage />;
+  if (route === "/tasks/my-tasks") return <TasksMyTasksPage />;
+  if (route === "/tasks/all") return <TasksAllPage />;
+  if (route === "/tasks/create") return <TasksCreatePage />;
+  if (route === "/tasks/templates") return <TasksTemplatesPage />;
+  if (route === "/tasks/review") return <TasksReviewPage />;
+  if (route === "/tasks/blocked") return <TasksBlockedPage />;
+  if (route === "/tasks/closure-quality") return <TasksClosureQualityPage />;
+  if (route === "/tasks/evidence") return <TasksEvidencePage />;
+  if (route === "/performance/overview")
+    return <Stage02PerformancePage section="overview" />;
+  if (route === "/performance/goals")
+    return <Stage02PerformancePage section="goals" />;
+  if (route === "/performance/evaluation")
+    return <Stage02PerformancePage section="evaluation" />;
+  if (route === "/performance/feedback")
+    return <Stage02PerformancePage section="feedback" />;
+  if (route === "/performance/learning-progress")
+    return <Stage02PerformancePage section="learning" />;
+  if (route === "/performance/contribution-history")
+    return <Stage02PerformancePage section="contribution-history" />;
+  if (route === "/performance/role")
+    return <Stage02PerformancePage section="role-performance" />;
+  if (route === "/support/operations") return <SupportOperationsPage />;
+  if (route === "/reports/sla-dashboard") return <SlaDashboardPage />;
+  if (route === "/reports/team-unit-performance")
+    return <TeamUnitPerformancePage />;
+  if (route === "/platform-admin") return <AdminConsolePage />;
+  if (route === "/service-owner/requests") return <ServiceOwnerQueuePage />;
+  if (route === "/workflow/approvals") return <ApproverQueuePage />;
+  if (route === "/intelligence/service-signals") return <ExecutiveSignalPage />;
   return <DwsSectionPage route={route} />;
+}
+
+function RootRedirect() {
+  const { isAuthenticated, isLoading } = useAuth();
+  if (isLoading) return null;
+  return <Navigate to={isAuthenticated ? "/home" : "/login"} replace />;
 }
 
 function RootRedirect() {
