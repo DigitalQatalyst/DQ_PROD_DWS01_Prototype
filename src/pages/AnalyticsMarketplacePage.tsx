@@ -7,10 +7,6 @@ import type { FilterGroup } from '../components/MarketplaceFilterPanel';
 import { MarketplaceActionRouter } from '../components/MarketplaceActionRouter';
 import { RequestIntakeWizard } from '../components/RequestIntakeWizard';
 import { buildCatalogTrail, resolveMarketplaceStage } from '../utils/marketplaceBreadcrumbs';
-import {
-  buildCatalogTrail,
-  resolveMarketplaceStage,
-} from "../utils/marketplaceBreadcrumbs";
 import { ALL_TAB_ID, buildCatalogTabs } from "../utils/marketplaceCatalogTabs";
 
 const DASHBOARD_CATEGORIES = [
