@@ -7,7 +7,6 @@ import { LandingHero } from "../components/landing/LandingHero";
 import { LandingCtaSection } from "../components/landing/LandingCtaSection";
 import { HomeHero } from "../components/stage0-home/HomeHero";
 import { HomeSection } from "../components/stage0-home/HomeSection";
-import { AIDiscoverySearch } from "../components/stage0-home/AIDiscoverySearch";
 import { SetupJourneyPanel } from "../components/stage0-home/SetupJourneyPanel";
 import { DWSOperatingRhythm } from "../components/stage0-home/DWSOperatingRhythm";
 import { MarketplaceIntroCards } from "../components/stage0-home/MarketplaceIntroCards";
@@ -46,7 +45,15 @@ function ReturningHomeView() {
         }
         subtitle="Review priority actions, resolve risks early, and continue the work that moves DQ forward."
         showTrustItems={false}
-        slot={<AIDiscoverySearch isNewJoiner={false} />}
+        primaryCta={{
+          label: "Open Workspace",
+          onClick: () => navigate("/workspace"),
+        }}
+        secondaryCta={{
+          label: "My Dashboard",
+          onClick: () => navigate("/dashboard"),
+          icon: <LayoutDashboard size={14} />,
+        }}
       />
 
       <HomeSection eyebrow="Daily brief" title="Start with what matters most.">

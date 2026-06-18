@@ -12,6 +12,7 @@ const defaultTrustItems = [
 export interface LandingHeroCta {
   label: string;
   onClick: () => void;
+  icon?: ReactNode;
 }
 
 export interface LandingHeroProps {
@@ -102,7 +103,9 @@ export function LandingHero({
                   className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border border-[#c5cde8] bg-white/60 px-6 text-sm font-semibold text-dq-navy backdrop-blur-sm transition hover:border-[#a0aacc] hover:bg-white sm:w-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dq-orange focus-visible:ring-offset-2"
                 >
                   {resolvedSecondaryCta.label}
-                  <Play size={14} className="ml-0.5" fill="currentColor" />
+                  {resolvedSecondaryCta.icon ?? (
+                    <Play size={14} className="ml-0.5" fill="currentColor" />
+                  )}
                 </button>
               </div>
             )}
