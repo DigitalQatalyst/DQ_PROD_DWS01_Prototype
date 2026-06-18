@@ -1043,9 +1043,9 @@ export const featureAreas: FeatureArea[] = [
     groups: [
       {
         label: 'Tracker Hub',
-        description: 'Review personal, team, open, at-risk, and recently closed tracker items in one operating hub.',
+        description: 'Browse available trackers, review health, and open a tracker to manage its records.',
         healthStatus: 'Needs Attention',
-        features: ['My Tracker Overview', 'Team Tracker Overview', 'Open Items', 'At-Risk Items', 'Recently Closed Items'],
+        features: ['Tracker Hub'],
       },
       {
         label: 'Request Status Tracker',
@@ -1086,33 +1086,15 @@ export const featureAreas: FeatureArea[] = [
     groups: [
       {
         label: 'Service Hub',
-        description: 'Service overview, featured services, recently used services, categories, and guidance for choosing the right request path.',
+        description: 'Service overview, personal request ownership, pending actions, and operational summary widgets for request-handling operations.',
         healthStatus: 'Healthy',
-        features: ['Service Overview', 'Featured Services', 'Recently Used Services', 'Service Categories', 'Service Guidance'],
+        features: ['Service Overview', 'My Requests', 'Pending Actions'],
       },
       {
-        label: 'Service Catalogue',
-        description: 'Catalogue views for HRA, IT and access, platform support, knowledge/content, and administration requests.',
-        healthStatus: 'Recently Updated',
-        features: ['HRA Requests', 'IT & Access Requests', 'Platform Support Requests', 'Knowledge / Content Requests', 'Admin Requests'],
-      },
-      {
-        label: 'Request Intake & Submission',
-        description: 'Submit requests, complete forms, provide required inputs, upload attachments, and confirm request submission.',
-        healthStatus: 'Needs Attention',
-        features: ['Submit Request', 'Request Form', 'Required Inputs', 'Attachment Upload', 'Request Confirmation'],
-      },
-      {
-        label: 'Fulfilment Queues',
-        description: 'Central support, fulfilment owner, assigned request, queue priority, and SLA queue views for service operations.',
+        label: 'Request Queues',
+        description: 'Central support, fulfilment owner, assigned request, pending information, SLA, and closure review queue views for service operations.',
         healthStatus: 'At Risk',
-        features: ['Central Support Queue', 'Fulfilment Owner Queue', 'Assigned Requests', 'Queue Prioritisation', 'SLA Queue View'],
-      },
-      {
-        label: 'Service Closure & Feedback',
-        description: 'Fulfilment evidence, closure notes, request closure review, service rating, and request reopening controls.',
-        healthStatus: 'Needs Attention',
-        features: ['Fulfilment Evidence', 'Closure Notes', 'Request Closure Review', 'Service Rating', 'Reopen Request'],
+        features: ['Central Support Queue', 'Fulfilment Owner Queue', 'Assigned Requests', 'Pending Information', 'SLA Queue View', 'Closure Review Queue'],
       },
     ],
   }),

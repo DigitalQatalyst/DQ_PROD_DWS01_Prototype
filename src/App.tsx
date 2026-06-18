@@ -59,6 +59,10 @@ import { TaskTemplatesMarketplacePage } from "./pages/TaskTemplatesMarketplacePa
 import { KnowledgeMarketplacePage } from "./pages/KnowledgeMarketplacePage";
 import { WorkDirectoryMarketplacePage } from "./pages/WorkDirectoryMarketplacePage";
 import { AnalyticsMarketplacePage } from "./pages/AnalyticsMarketplacePage";
+import { AnalyticsMarketplaceLandingPage } from "./pages/AnalyticsMarketplaceLandingPage";
+import { AnalyticsDetailsPage } from "./pages/AnalyticsDetailsPage";
+import { AnalyticsDestinationPage } from "./pages/AnalyticsDestinationPage";
+import { DriveMarketplacePage } from "./pages/DriveMarketplacePage";
 import { MarketplaceFeedbackPage } from "./pages/MarketplaceFeedbackPage";
 import {
   DEFAULT_MARKETPLACE_ROUTE,
@@ -178,6 +182,12 @@ import { Stage02SectionPage } from "./pages/Stage02SectionPage";
 import { Stage02PerformancePage } from "./pages/Stage02PerformancePage";
 import { DwsSectionPage } from "./pages/DwsSectionPage";
 import { AiCockpitPage } from "./pages/AiCockpitPage";
+import { MvpSidebarDetailPage } from "./pages/MvpSidebarDetailPage";
+import {
+  ServiceRequestDetailPage,
+  ServicesHubPage,
+  ServicesQueuePage,
+} from "./pages/ServicesMvpPage";
 import { AccessRestrictedPage } from "./pages/AccessRestrictedPage";
 import {
   WorkspaceActivityPage,
@@ -235,11 +245,6 @@ import {
 
 // Tracker Feature Area Pages (purpose-built with distinct layouts per page)
 import {
-  MyTrackerOverviewPage,
-  TeamTrackerOverviewPage,
-  OpenItemsPage,
-  AtRiskItemsPage,
-  RecentlyClosedItemsPage,
   SubmittedRequestsPage,
   RequestDraftsPage,
   RequestStatusPage as TrackerRequestStatusPage,
@@ -343,11 +348,7 @@ function renderTaskFeaturePage(route: string): React.ReactNode | null {
 function renderTrackerFeaturePage(route: string): React.ReactNode | null {
   const trackerFeatureMap: Record<string, React.ReactNode> = {
     // Tracker Hub
-    "/tracker/tracker-hub/my-tracker-overview": <TrackerHubPage />,
-    "/tracker/tracker-hub/team-tracker-overview": <TeamTrackerOverviewPage />,
-    "/tracker/tracker-hub/open-items": <OpenItemsPage />,
-    "/tracker/tracker-hub/at-risk-items": <AtRiskItemsPage />,
-    "/tracker/tracker-hub/recently-closed-items": <RecentlyClosedItemsPage />,
+    "/tracker/tracker-hub": <TrackerHubPage />,
     // Request Status Tracker
     "/tracker/request-status-tracker/submitted-requests": (
       <SubmittedRequestsPage />
@@ -658,7 +659,9 @@ function AppRoutes() {
           <Route
             path="/marketplace/drive"
             element={
-              <Navigate to={MARKETPLACE_4D_DESTINATIONS.drive} replace />
+              <RouteGuard>
+                <DriveMarketplacePage />
+              </RouteGuard>
             }
           />
 
@@ -788,6 +791,24 @@ function AppRoutes() {
           />
 
           <Route
+            path="/marketplace/drive/analytics-marketplace"
+            element={
+              <RouteGuard>
+                <AnalyticsMarketplaceLandingPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
+            path="/marketplace/drive/analytics-marketplace/:assetSlug"
+            element={
+              <RouteGuard>
+                <AnalyticsDetailsPage />
+              </RouteGuard>
+            }
+          />
+
+          <Route
             path="/marketplace/drive/tracker-marketplace"
             element={<TrackerMarketplacePage />}
           />
@@ -907,11 +928,292 @@ function AppRoutes() {
             }
           />
           <Route
+            path="/services"
+            element={
+              <RouteGuard>
+                <ServicesHubPage view="overview" />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/services/service-hub"
+            element={
+              <RouteGuard>
+                <ServicesHubPage view="overview" />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/services/service-hub/service-overview"
+            element={
+              <RouteGuard>
+                <ServicesHubPage view="overview" />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/services/service-hub/my-requests"
+            element={
+              <RouteGuard>
+                <ServicesHubPage view="my-requests" />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/services/service-hub/pending-actions"
+            element={
+              <RouteGuard>
+                <ServicesHubPage view="pending-actions" />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/services/request-queues"
+            element={
+              <RouteGuard>
+                <ServicesQueuePage view="central-support-queue" />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/services/request-queues/central-support-queue"
+            element={
+              <RouteGuard>
+                <ServicesQueuePage view="central-support-queue" />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/services/request-queues/fulfilment-owner-queue"
+            element={
+              <RouteGuard>
+                <ServicesQueuePage view="fulfilment-owner-queue" />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/services/request-queues/assigned-requests"
+            element={
+              <RouteGuard>
+                <ServicesQueuePage view="assigned-requests" />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/services/request-queues/pending-information"
+            element={
+              <RouteGuard>
+                <ServicesQueuePage view="pending-information" />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/services/request-queues/sla-queue-view"
+            element={
+              <RouteGuard>
+                <ServicesQueuePage view="sla-queue-view" />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/services/request-queues/closure-review-queue"
+            element={
+              <RouteGuard>
+                <ServicesQueuePage view="closure-review-queue" />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/services/requests/:requestId"
+            element={
+              <RouteGuard>
+                <ServiceRequestDetailPage />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/services/request-case-management/*"
+            element={
+              <Navigate
+                to="/services/request-queues/assigned-requests"
+                replace
+              />
+            }
+          />
+          <Route
+            path="/services/sla-escalations/*"
+            element={
+              <Navigate to="/services/request-queues/sla-queue-view" replace />
+            }
+          />
+          <Route
+            path="/services/service-closure-feedback/*"
+            element={
+              <Navigate
+                to="/services/request-queues/closure-review-queue"
+                replace
+              />
+            }
+          />
+          <Route
+            path="/tracker"
+            element={
+              <RouteGuard>
+                <TrackerHubPage />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/tracker/my-tracker-overview"
+            element={
+              <RouteGuard>
+                <TrackerHubPage />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/tracker/team-tracker-overview"
+            element={
+              <RouteGuard>
+                <MvpSidebarDetailPage
+                  breadcrumbs={[
+                    { label: "Trackers", route: "/tracker" },
+                    { label: "Tracker Hub", route: "/tracker" },
+                    { label: "Team Tracker Overview" },
+                  ]}
+                  title="Team Tracker Overview"
+                  description="Team-level tracker workload, ownership, and operating signals will appear here as the tracker hub expands."
+                  backTo="/tracker"
+                  backLabel="Back to Tracker Hub"
+                />
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/tracker/tracker-insights"
+            element={
+              <RouteGuard>
+                <MvpSidebarDetailPage
+                  breadcrumbs={[
+                    { label: "Trackers", route: "/tracker" },
+                    { label: "Tracker Hub", route: "/tracker" },
+                    { label: "Tracker Insights" },
+                  ]}
+                  title="Tracker Insights"
+                  description="Tracker insights, risk signals, and trend summaries will appear here for MVP launch tracking."
+                  backTo="/tracker"
+                  backLabel="Back to Tracker Hub"
+                />
+              </RouteGuard>
+            }
+          />
+          <Route
             path="/tracker/tracker-hub"
             element={
               <RouteGuard>
                 <TrackerHubPage />
               </RouteGuard>
+            }
+          />
+          <Route
+            path="/admin/content-management"
+            element={
+              <DwsRouteGuard route="/platform-admin">
+                <MvpSidebarDetailPage
+                  breadcrumbs={[
+                    { label: "Platform Admin", route: "/platform-admin" },
+                    { label: "Content Management" },
+                  ]}
+                  title="Content Management"
+                  description="Manage launch-ready content for marketplace, service, tracker, and analytics surfaces from this workspace."
+                  backTo="/platform-admin"
+                  backLabel="Back to Platform Admin"
+                />
+              </DwsRouteGuard>
+            }
+          />
+          <Route
+            path="/admin/content-management/marketplace-content"
+            element={
+              <DwsRouteGuard route="/platform-admin">
+                <MvpSidebarDetailPage
+                  breadcrumbs={[
+                    { label: "Platform Admin", route: "/platform-admin" },
+                    {
+                      label: "Content Management",
+                      route: "/admin/content-management",
+                    },
+                    { label: "Marketplace Content" },
+                  ]}
+                  title="Marketplace Content"
+                  description="Curate marketplace catalogue content, launch copy, and approved service discovery entries."
+                  backTo="/admin/content-management"
+                  backLabel="Back to Content Management"
+                />
+              </DwsRouteGuard>
+            }
+          />
+          <Route
+            path="/admin/content-management/service-content"
+            element={
+              <DwsRouteGuard route="/platform-admin">
+                <MvpSidebarDetailPage
+                  breadcrumbs={[
+                    { label: "Platform Admin", route: "/platform-admin" },
+                    {
+                      label: "Content Management",
+                      route: "/admin/content-management",
+                    },
+                    { label: "Service Content" },
+                  ]}
+                  title="Service Content"
+                  description="Maintain service handling content for CRM request operations, service guidance, and closure support."
+                  backTo="/admin/content-management"
+                  backLabel="Back to Content Management"
+                />
+              </DwsRouteGuard>
+            }
+          />
+          <Route
+            path="/admin/content-management/tracker-content"
+            element={
+              <DwsRouteGuard route="/platform-admin">
+                <MvpSidebarDetailPage
+                  breadcrumbs={[
+                    { label: "Platform Admin", route: "/platform-admin" },
+                    {
+                      label: "Content Management",
+                      route: "/admin/content-management",
+                    },
+                    { label: "Tracker Content" },
+                  ]}
+                  title="Tracker Content"
+                  description="Maintain tracker definitions, overview content, and launch-ready tracker metadata."
+                  backTo="/admin/content-management"
+                  backLabel="Back to Content Management"
+                />
+              </DwsRouteGuard>
+            }
+          />
+          <Route
+            path="/admin/content-management/analytics-content"
+            element={
+              <DwsRouteGuard route="/platform-admin">
+                <MvpSidebarDetailPage
+                  breadcrumbs={[
+                    { label: "Platform Admin", route: "/platform-admin" },
+                    {
+                      label: "Content Management",
+                      route: "/admin/content-management",
+                    },
+                    { label: "Analytics Content" },
+                  ]}
+                  title="Analytics Content"
+                  description="Maintain analytics content, signal descriptions, and launch reporting metadata."
+                  backTo="/admin/content-management"
+                  backLabel="Back to Content Management"
+                />
+              </DwsRouteGuard>
             }
           />
           <Route

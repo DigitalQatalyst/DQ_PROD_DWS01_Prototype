@@ -1,6 +1,8 @@
 import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { FeatureUnavailablePage } from '../pages/FeatureUnavailablePage';
+import { isFeatureRouteEnabled } from '../utils/isFeatureRouteEnabled';
 
 export function ProtectedRoute() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -16,6 +18,10 @@ export function ProtectedRoute() {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+
+  if (!isFeatureRouteEnabled(location.pathname)) {
+    return <FeatureUnavailablePage />;
   }
 
   return <Outlet />;
