@@ -1,18 +1,10 @@
 import React from 'react';
-<<<<<<< HEAD
-import { useNavigate, useParams } from 'react-router-dom';
-=======
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
->>>>>>> origin/Feat/AnalyticsMarketplace-Rose
 import { toast } from 'sonner';
 import { ArrowUpRight, BarChart3, Download, FileBarChart, Lock, Plus } from 'lucide-react';
 import { usePersona } from '../context/PersonaContext';
 import { MarketplaceDetailHeader } from '../components/marketplace/MarketplaceDetailHeader';
-<<<<<<< HEAD
-import { buildCatalogTrail } from '../utils/marketplaceBreadcrumbs';
-=======
 import { buildAnalyticsMarketplaceTrail, resolveMarketplaceStage } from '../utils/marketplaceBreadcrumbs';
->>>>>>> origin/Feat/AnalyticsMarketplace-Rose
 import { assetDetails } from '../mocks/analyticsMarketplace.mock';
 import type { AssetDetail } from '../mocks/analyticsMarketplace.mock';
 
@@ -217,13 +209,9 @@ function renderChart(chart: { title: string; type: string; data: number[]; label
 export function AnalyticsDetailsPage() {
   const { assetSlug } = useParams<{ assetSlug: string }>();
   const navigate = useNavigate();
-<<<<<<< HEAD
-  const { activePersona } = usePersona();
-=======
   const [searchParams] = useSearchParams();
   const { activePersona } = usePersona();
   const stage = resolveMarketplaceStage(searchParams.get('from'), 'drive');
->>>>>>> origin/Feat/AnalyticsMarketplace-Rose
 
   const detail = assetSlug ? assetDetails[assetSlug] : undefined;
 
@@ -275,14 +263,7 @@ export function AnalyticsDetailsPage() {
   return (
     <div className="mx-auto max-w-[1440px] px-6 py-6 lg:px-8" style={{ minHeight: 'calc(100vh - 120px)' }}>
       <MarketplaceDetailHeader
-<<<<<<< HEAD
-        breadcrumbItems={[
-          ...buildCatalogTrail('drive', 'Analytics Marketplace'),
-          { label: asset.name },
-        ]}
-=======
         breadcrumbItems={buildAnalyticsMarketplaceTrail(stage, { label: asset.name })}
->>>>>>> origin/Feat/AnalyticsMarketplace-Rose
         title={asset.name}
         eyebrow={
           <span className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 font-mono text-[11px] font-semibold uppercase tracking-wider ${typeColorClass}`}>

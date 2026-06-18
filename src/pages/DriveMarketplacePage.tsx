@@ -1,11 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-<<<<<<< HEAD
-import { BarChart3, Target } from 'lucide-react';
-import { MARKETPLACE_4D_DESTINATIONS } from '../config/marketplace4dRoutes';
-=======
 import { BarChart3, LineChart, ShieldCheck, Sparkles, Target } from 'lucide-react';
->>>>>>> origin/Feat/AnalyticsMarketplace-Rose
 import { MarketplaceEyebrowTrail } from '../components/marketplace/MarketplaceEyebrowTrail';
 import { MARKETPLACE_ROOT } from '../utils/marketplaceBreadcrumbs';
 
@@ -13,27 +8,12 @@ const driveCards = [
   {
     id: 'analytics-marketplace',
     label: 'Analytics Marketplace',
-<<<<<<< HEAD
-    description:
-      'Discover governed dashboards, reports, and views. Preview metrics and charts before opening the live destination.',
-=======
     description: 'Discover governed dashboards, reports, and views. Preview metrics and charts before opening the live destination.',
->>>>>>> origin/Feat/AnalyticsMarketplace-Rose
     icon: BarChart3,
     route: '/marketplace/drive/analytics-marketplace',
     color: 'bg-orange-50 text-orange-600 border-orange-200',
   },
   {
-<<<<<<< HEAD
-    id: 'tracker-marketplace',
-    label: 'Tracker Marketplace',
-    description:
-      'Discover available trackers, monitoring views, and governed tracking templates used across DWS.',
-    icon: Target,
-    route: MARKETPLACE_4D_DESTINATIONS.trackerMarketplace,
-    color: 'bg-green-50 text-green-600 border-green-200',
-  },
-=======
     id: 'performance-dashboards',
     label: 'Performance Dashboards',
     description: 'Personal, team, unit, SLA, governance, and executive performance views.',
@@ -65,7 +45,6 @@ const driveCards = [
     route: '',
     color: 'bg-amber-50 text-amber-600 border-amber-200',
   },
->>>>>>> origin/Feat/AnalyticsMarketplace-Rose
 ];
 
 export function DriveMarketplacePage() {
@@ -73,19 +52,6 @@ export function DriveMarketplacePage() {
 
   return (
     <div className="mx-auto max-w-[1440px] px-6 py-8 lg:px-8">
-<<<<<<< HEAD
-      <header className="mb-8">
-        <MarketplaceEyebrowTrail items={[MARKETPLACE_ROOT, { label: 'Drive' }]} />
-        <h1 className="dq-page-title">Drive Marketplace</h1>
-        <p className="mt-3 max-w-3xl text-[14px] leading-relaxed text-text-secondary">
-          Monitor and improve execution through governed analytics assets, dashboards, and performance tools.
-        </p>
-      </header>
-
-      <div className="grid gap-5 sm:grid-cols-2">
-        {driveCards.map((card) => {
-          const Icon = card.icon;
-=======
       <MarketplaceEyebrowTrail
         items={[MARKETPLACE_ROOT, { label: 'Drive' }]}
         className="mb-4"
@@ -100,15 +66,10 @@ export function DriveMarketplacePage() {
         {driveCards.map((card) => {
           const Icon = card.icon;
           const isPlaceholder = !card.route;
->>>>>>> origin/Feat/AnalyticsMarketplace-Rose
           return (
             <button
               key={card.id}
               type="button"
-<<<<<<< HEAD
-              onClick={() => navigate(card.route)}
-              className="group relative flex flex-col rounded-xl border border-border-default bg-white p-5 text-left transition hover:border-secondary/30 hover:shadow-sm"
-=======
               onClick={() => {
                 if (card.route) navigate(card.route);
               }}
@@ -118,7 +79,6 @@ export function DriveMarketplacePage() {
                   ? 'cursor-default border-dashed border-border-default opacity-70'
                   : 'border-border-default hover:border-secondary/30 hover:shadow-sm'
               }`}
->>>>>>> origin/Feat/AnalyticsMarketplace-Rose
             >
               <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl ${card.color}`}>
                 <Icon size={22} strokeWidth={1.5} />
@@ -131,11 +91,7 @@ export function DriveMarketplacePage() {
 
               <div className="mt-4 flex items-center justify-between border-t border-border-subtle pt-3">
                 <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-text-disabled">
-<<<<<<< HEAD
-                  Explore →
-=======
                   {isPlaceholder ? 'Coming soon' : 'Explore →'}
->>>>>>> origin/Feat/AnalyticsMarketplace-Rose
                 </span>
               </div>
             </button>
