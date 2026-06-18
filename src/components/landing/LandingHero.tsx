@@ -13,7 +13,9 @@ export function LandingHero() {
   const navigate = useNavigate();
 
   const scrollToHowItWorks = () => {
-    document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });
+    document
+      .getElementById("how-it-works")
+      ?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -23,7 +25,10 @@ export function LandingHero() {
         className="absolute inset-0 -z-10"
         style={{ background: "var(--mesh-hero-light)" }}
       />
-      <div aria-hidden className="absolute inset-0 -z-10 hero-grid opacity-40" />
+      <div
+        aria-hidden
+        className="absolute inset-0 -z-10 hero-grid opacity-40"
+      />
 
       <div className="relative mx-auto max-w-[1280px] px-6 pb-16 pt-12 lg:px-8 lg:pb-24 lg:pt-16">
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-14">
@@ -38,9 +43,9 @@ export function LandingHero() {
             </h1>
 
             <p className="animate-fade-in-up animation-delay-200 mt-5 max-w-lg text-base leading-7 text-gray-600 sm:text-[17px]">
-              DWS.01 brings your tools, tasks, knowledge, and services together in one
-              intelligent hub — so every employee can discover, act, and collaborate
-              without switching between systems.
+              DWS.01 brings your tools, tasks, knowledge, and services together
+              in one intelligent hub so every employee can discover, act, and
+              collaborate without switching between systems.
             </p>
 
             <div className="animate-fade-in-up animation-delay-300 mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -52,7 +57,10 @@ export function LandingHero() {
               >
                 <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-dq-orange to-[#e04020] transition-transform duration-500 group-hover:translate-x-0" />
                 <span className="relative">Get Started</span>
-                <ArrowRight size={16} className="relative transition group-hover:translate-x-0.5" />
+                <ArrowRight
+                  size={16}
+                  className="relative transition group-hover:translate-x-0.5"
+                />
               </button>
               <button
                 type="button"
@@ -72,7 +80,9 @@ export function LandingHero() {
                     <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-navy-50 text-dq-navy">
                       <Icon size={16} />
                     </div>
-                    <span className="text-sm font-medium text-gray-700">{item.label}</span>
+                    <span className="text-sm font-medium text-gray-700">
+                      {item.label}
+                    </span>
                   </div>
                 );
               })}
