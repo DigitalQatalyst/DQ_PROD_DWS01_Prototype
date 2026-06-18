@@ -24,7 +24,7 @@ export function KnowledgeDetailPageHeader({
 
   return (
     <header className="mb-6">
-      <MarketplaceEyebrowTrail items={breadcrumbItems} className="mb-4" />
+      <MarketplaceEyebrowTrail items={breadcrumbItems} />
 
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 flex-1">
