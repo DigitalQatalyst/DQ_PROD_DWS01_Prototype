@@ -4,7 +4,6 @@ export interface MarketplaceCatalogTab {
   id: string;
   label: string;
   count: number;
-  disabled?: boolean;
 }
 
 interface MarketplaceCatalogTabsProps {
@@ -25,21 +24,14 @@ export function MarketplaceCatalogTabs({
     >
       {tabs.map((tab) => {
         const isActive = activeTabId === tab.id;
-        const isDisabled = tab.disabled ?? false;
         return (
           <button
             key={tab.id}
             role="tab"
             aria-selected={isActive}
-            aria-disabled={isDisabled}
-            disabled={isDisabled}
             onClick={() => onTabChange(tab.id)}
             className={`relative inline-flex items-center gap-1.5 px-3.5 py-2.5 text-[13px] font-semibold transition ${
-              isDisabled
-                ? 'cursor-not-allowed text-text-disabled opacity-70'
-                : isActive
-                  ? 'text-primary'
-                  : 'text-text-muted hover:text-primary'
+              isActive ? 'text-primary' : 'text-text-muted hover:text-primary'
             }`}
           >
             {tab.label}

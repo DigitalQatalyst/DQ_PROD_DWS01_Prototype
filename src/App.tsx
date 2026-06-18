@@ -271,6 +271,7 @@ import {
 function RouteGuard({ children }: { children: React.ReactNode }) {
   const { activePersona, hasRouteAccess } = usePersona();
   const location = useLocation();
+
   if (!hasRouteAccess(location.pathname, activePersona)) {
     return (
       <div className="p-8">
@@ -282,6 +283,7 @@ function RouteGuard({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
+
   return <>{children}</>;
 }
 
@@ -294,6 +296,7 @@ function DwsRouteGuard({
 }) {
   const { activeRole } = useWorkspaceRole();
   const navItem = getNavigationItem(route);
+
   if (
     navItem &&
     (!navItem.allowedSegments.includes(activeRole) ||
@@ -301,6 +304,7 @@ function DwsRouteGuard({
   ) {
     return <AccessRestrictedPage />;
   }
+
   return <>{children}</>;
 }
 

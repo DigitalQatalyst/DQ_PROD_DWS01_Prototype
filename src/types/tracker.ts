@@ -1,6 +1,31 @@
 export type TrackerHealth = 'Green' | 'Amber' | 'Red';
 export type TrackerPriority = 'Low' | 'Medium' | 'High' | 'Critical';
 
+// Extended model for the CRM-style record maintenance page.
+// Keep the original RAG concept (`rag`) used elsewhere in the prototype,
+// but allow the UI to also represent broader health states.
+export type TrackerHealthExtended = TrackerHealth | 'Healthy' | 'Closed';
+
+export type TrackerStatusExtended =
+  | 'Created'
+  | 'Open'
+  | 'In Progress'
+  | 'Overloaded'
+  | 'Balanced'
+  | 'Reviewed'
+  | 'Closed'
+  | 'Escalated'
+  | 'Blocked';
+
+export type TrackerHistoryEvent = {
+  id: string;
+  eventType: string;
+  actor: string;
+  timestamp: string;
+  oldValue?: string;
+  newValue?: string;
+};
+
 export type TrackerDefinition = {
   id: string;
   slug: string;
@@ -28,12 +53,23 @@ export type TrackerRecord = {
   owner: string;
   ownerAvatar?: string;
   teamOrSquad: string;
+  unit: string;
+  type: string;
   priority: TrackerPriority;
   status: string;
-  dueDate: string;
+  dueDate: string; // Used as "Review due" on the CRM maintenance page.
   rag: TrackerHealth;
+  health: TrackerHealthExtended; // Used as the CRM "Health" control.
   lastUpdated: string;
+  opened: string;
   nextAction: string;
+  tags: string[];
+  savedCount: number;
+  workspace: string;
+  ownerSlug: string;
+  teamSlug: string;
+  workflowSlug: string;
+  history: TrackerHistoryEvent[];
   evidenceCount: number;
   commentCount: number;
   isOverdue: boolean;

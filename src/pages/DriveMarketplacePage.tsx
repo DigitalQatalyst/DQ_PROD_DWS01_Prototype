@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BarChart3, LineChart, ShieldCheck, Sparkles, Target } from 'lucide-react';
+import { BarChart3, Target } from 'lucide-react';
+import { MARKETPLACE_4D_DESTINATIONS } from '../config/marketplace4dRoutes';
 import { MarketplaceEyebrowTrail } from '../components/marketplace/MarketplaceEyebrowTrail';
 import { MARKETPLACE_ROOT } from '../utils/marketplaceBreadcrumbs';
 
@@ -8,42 +9,20 @@ const driveCards = [
   {
     id: 'analytics-marketplace',
     label: 'Analytics Marketplace',
-    description: 'Discover governed dashboards, reports, and views. Preview metrics and charts before opening the live destination.',
+    description:
+      'Discover governed dashboards, reports, and views. Preview metrics and charts before opening the live destination.',
     icon: BarChart3,
     route: '/marketplace/drive/analytics-marketplace',
     color: 'bg-orange-50 text-orange-600 border-orange-200',
   },
   {
-    id: 'performance-dashboards',
-    label: 'Performance Dashboards',
-    description: 'Personal, team, unit, SLA, governance, and executive performance views.',
-    icon: LineChart,
-    route: '/marketplace/analytics-discovery?from=drive',
-    color: 'bg-blue-50 text-blue-600 border-blue-200',
-  },
-  {
-    id: 'governance-reviews',
-    label: 'Governance Reviews',
-    description: 'Audit exceptions, policy compliance, and governance risk signals.',
-    icon: ShieldCheck,
-    route: '/executive/enterprise-execution',
-    color: 'bg-purple-50 text-purple-600 border-purple-200',
-  },
-  {
-    id: 'strategic-initiatives',
-    label: 'Strategic Initiatives Tracker',
-    description: 'Enterprise execution health, strategic initiatives, and value delivery.',
+    id: 'tracker-marketplace',
+    label: 'Tracker Marketplace',
+    description:
+      'Discover available trackers, monitoring views, and governed tracking templates used across DWS.',
     icon: Target,
-    route: '/executive/strategic-initiatives',
+    route: MARKETPLACE_4D_DESTINATIONS.trackerMarketplace,
     color: 'bg-green-50 text-green-600 border-green-200',
-  },
-  {
-    id: 'ai-report-generator',
-    label: 'AI Status Report Generator',
-    description: 'Generate AI-powered status reports for teams, units, and enterprise views.',
-    icon: Sparkles,
-    route: '',
-    color: 'bg-amber-50 text-amber-600 border-amber-200',
   },
 ];
 
@@ -52,33 +31,23 @@ export function DriveMarketplacePage() {
 
   return (
     <div className="mx-auto max-w-[1440px] px-6 py-8 lg:px-8">
-      <MarketplaceEyebrowTrail
-        items={[MARKETPLACE_ROOT, { label: 'Drive' }]}
-        className="mb-4"
-      />
+      <header className="mb-8">
+        <MarketplaceEyebrowTrail items={[MARKETPLACE_ROOT, { label: 'Drive' }]} />
+        <h1 className="dq-page-title">Drive Marketplace</h1>
+        <p className="mt-3 max-w-3xl text-[14px] leading-relaxed text-text-secondary">
+          Monitor and improve execution through governed analytics assets, dashboards, and performance tools.
+        </p>
+      </header>
 
-      <h1 className="dq-page-title">Drive Marketplace</h1>
-      <p className="mt-2 max-w-3xl text-[14px] leading-relaxed text-text-secondary">
-        Monitor and improve execution through governed analytics assets, dashboards, and performance tools.
-      </p>
-
-      <div className="mt-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-2">
         {driveCards.map((card) => {
           const Icon = card.icon;
-          const isPlaceholder = !card.route;
           return (
             <button
               key={card.id}
               type="button"
-              onClick={() => {
-                if (card.route) navigate(card.route);
-              }}
-              disabled={isPlaceholder}
-              className={`group relative flex flex-col rounded-xl border bg-white p-5 text-left transition ${
-                isPlaceholder
-                  ? 'cursor-default border-dashed border-border-default opacity-70'
-                  : 'border-border-default hover:border-secondary/30 hover:shadow-sm'
-              }`}
+              onClick={() => navigate(card.route)}
+              className="group relative flex flex-col rounded-xl border border-border-default bg-white p-5 text-left transition hover:border-secondary/30 hover:shadow-sm"
             >
               <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl ${card.color}`}>
                 <Icon size={22} strokeWidth={1.5} />
@@ -91,7 +60,7 @@ export function DriveMarketplacePage() {
 
               <div className="mt-4 flex items-center justify-between border-t border-border-subtle pt-3">
                 <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-text-disabled">
-                  {isPlaceholder ? 'Coming soon' : 'Explore →'}
+                  Explore →
                 </span>
               </div>
             </button>
