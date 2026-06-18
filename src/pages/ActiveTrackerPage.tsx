@@ -814,7 +814,7 @@ function RecordDetailRoute({
   };
 
   return (
-    <div className="flex h-[calc(100vh-64px)] min-w-0 flex-col overflow-hidden px-4 py-4 text-primary lg:px-6">
+    <div className="flex h-full min-w-0 flex-col overflow-hidden px-4 py-4 text-primary lg:px-6">
       <nav className="mb-3 flex shrink-0 flex-wrap items-center gap-2 text-sm font-semibold text-text-secondary" aria-label="Breadcrumb">
         <span>Tracker</span>
         <span>/</span>
@@ -826,7 +826,7 @@ function RecordDetailRoute({
       </nav>
 
       <div className="grid min-h-0 flex-1 grid-cols-[320px_minmax(0,1fr)] overflow-hidden rounded-card border border-border-default bg-white shadow-sm">
-      <aside className="min-w-0 border-r border-border-default">
+      <aside className="min-h-0 min-w-0 overflow-hidden border-r border-border-default">
         <RecordListPanel
           tracker={tracker}
           records={records}
@@ -1002,7 +1002,7 @@ function RecordDetailRoute({
           <RecordDetailTabs activeTab={activeTab} onTab={setActiveTab} />
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto bg-white p-5">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-white p-5">
           {activeTab === 'Overview' && (
             <RecordDetailsForm
               draft={draft}

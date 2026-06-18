@@ -28,8 +28,9 @@ export function UserMenu() {
   }, []);
   const handleSignOut = () => {
     setIsOpen(false);
+    // BFF logout is a full-page redirect that clears the session cookie and
+    // ends the Entra session, returning the browser to /login.
     signOut();
-    navigate('/login');
   };
   const handleRoleChange = (role: typeof activeRole) => {
     setActiveRole(role);

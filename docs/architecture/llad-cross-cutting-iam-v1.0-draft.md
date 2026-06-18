@@ -34,6 +34,7 @@ concern_domains:
 | Version | Date | Author | Description |
 |---|---|---|---|
 | 1.0 | 2026-06-17 | Codex | Initial IAM cross-cutting LLAD draft for DWS.01 authentication and access control. |
+| 1.1 | 2026-06-18 | Codex | Resolved open design gaps DWS01-IAM-G-001 to G-004 (identity authority, session model, service-auth, data placement) and recorded the Entra-authentication / DWS-authorization decision. Added ADR-DWS01-IAM-009 to ADR-DWS01-IAM-012. Updated fit-gap counts, NFR-16 status, per-domain conformance statuses, and open-item registers. |
 
 ```{=openxml}
 <w:p><w:pPr><w:pStyle w:val="Normal"/><w:spacing w:before="240" w:after="120"/></w:pPr><w:r><w:rPr><w:color w:val="001035"/><w:sz w:val="28"/><w:szCs w:val="28"/><w:b/></w:rPr><w:t>Distribution List</w:t></w:r></w:p>
@@ -263,18 +264,18 @@ The IAM traceability baseline confirms that the RSR and HLAD require authenticat
 
 | # | Status | Count | Notes |
 |---|---|---|---|
-| 1 | Specification conformant | 7 | IAM domains in Section 5 specify the target design obligations for the baseline requirements. |
-| 2 | Gap | 3 | Claim mapping, session ownership, and service-auth model require architecture decisions. |
+| 1 | Specification conformant | 10 | IAM domains in Section 5 specify the target design obligations for the baseline requirements, including the resolved identity-authority, session, and service-auth decisions. |
+| 2 | Gap | 0 | All previously open IAM design decisions (G-001 to G-004) are resolved in v1.1; see Section 4.4. |
 | 3 | Not applicable | 1 | Public customer identity is outside the internal DQ user boundary. |
 | Total |  | 11 |  |
 
-The traceability rows below list only gaps or non-applicable items; conformant requirements are covered by the summary count and Section 5 design.
+The traceability rows below list the resolved former gaps and the non-applicable item; conformant requirements are covered by the summary count and Section 5 design.
 
 | Requirement ref | Baseline statement | Concern domain | Status | Note |
 |---|---|---|---|---|
-| HLAD 5.2 | Claim mapping and group source TBC. | 5.2 Role and Permission Model | Gap | The source for role, unit, team, and permission claims is unresolved. |
-| HLAD 5.2 | Bearer or session model TBC. | 5.4 Session Token and Claim Handling | Gap | The production session authority must be selected before API build. |
-| HLAD 5.4 | Service auth TBC. | 5.3 Access Enforcement and Route Guarding | Gap | The internal service-to-service trust model must be selected. |
+| HLAD 5.2 | Claim mapping and group source TBC. | 5.2 Role and Permission Model | Resolved (G-001, ADR-DWS01-IAM-009) | DWS platform records are the authoritative source for app roles, permissions, and unit/team scope; Entra groups/app-roles are bootstrap input only. |
+| HLAD 5.2 | Bearer or session model TBC. | 5.4 Session Token and Claim Handling | Resolved (G-002, ADR-DWS01-IAM-010) | BFF-managed server-side sessions over secure httpOnly cookies; the frontend holds no Entra tokens and reads context from `/api/session/me`. |
+| HLAD 5.4 | Service auth TBC. | 5.3 Access Enforcement and Route Guarding | Resolved (G-003, ADR-DWS01-IAM-011) | For MVP, service authorization is enforced inside the BFF; a distributed service-auth model is deferred until justified. |
 | RSR 4.1 | Public customer-facing experiences excluded. | 5.1 Identity and Session Management | Not applicable | IAM covers internal DQ users and associates only. |
 
 ## 4.3 NFR Coverage
@@ -283,8 +284,8 @@ The IAM NFR scope covers authenticated access, role-based authorisation, immutab
 
 | # | Status | Count | Notes |
 |---|---|---|---|
-| 1 | Specification conformant | 9 | Section 5 specifies controls for protected routes, permissions, sessions, audit, exceptions, access reviews, and automation inheritance. |
-| 2 | Gap | 2 | Data-residency and session-state implementation details require production architecture decisions. |
+| 1 | Specification conformant | 11 | Section 5 specifies controls for protected routes, permissions, sessions, audit, exceptions, access reviews, and automation inheritance; data placement and session-state decisions are resolved in v1.1. |
+| 2 | Gap | 0 | Data-residency and session-state decisions (G-004) are resolved; see Section 4.4. |
 | 3 | Not applicable | 0 | All identified IAM NFRs apply to DWS.01. |
 | Total |  | 11 |  |
 
@@ -298,19 +299,23 @@ The NFR gap rows below identify the outstanding decisions that affect conformanc
 | NFR-08 | Route requests and approvals to the correct owner. | 5.3 Access Enforcement and Route Guarding | Specification conformant | UAT workflow routing gate |
 | NFR-10 | Support growth in users, roles, units, and teams. | 5.2 Role and Permission Model | Specification conformant | Build data-model review gate |
 | NFR-14 | Expose permission exceptions to operators. | 5.5 Audit Exceptions and Access Review | Specification conformant | UAT operations gate |
-| NFR-16 | Apply hosting, access, retention, and transfer policies. | 5.4 Session Token and Claim Handling | Gap - design decision outstanding (DWS01-IAM-G-004) | Deployment architecture sign-off |
+| NFR-16 | Apply hosting, access, retention, and transfer policies. | 5.4 Session Token and Claim Handling | Specification conformant (resolved G-004, ADR-DWS01-IAM-012) | Deployment architecture sign-off |
 | NFR-17 | Provide permission histories for review. | 5.5 Audit Exceptions and Access Review | Specification conformant | UAT access-review gate |
 
 ## 4.4 Design Gaps
 
-Design gaps identified during the fit-gap assessment are recorded in full in the LLAD Traceability Annex (`workspace/llad-annex/annex-gap-register.md`). The table below summarises gaps relevant to this document.
+Design gaps identified during the fit-gap assessment are recorded in full in the LLAD Traceability Annex (`workspace/llad-annex/annex-gap-register.md`). All four IAM design gaps are **Resolved** in v1.1 under the single governing decision recorded as ADR-DWS01-IAM-009 to ADR-DWS01-IAM-012. The table below summarises each gap and its resolution.
 
-| Gap ID | Description | Priority | Owner | Resolution gate |
+| Gap ID | Description | Status | Resolution decision | ADR |
 |---|---|---|---|---|
-| DWS01-IAM-G-001 | Decide whether Entra groups, app roles, or platform records are the authoritative source for DWS.01 role, unit, team, and permission claims. | High | Technical Lead | Before Build API access-boundary implementation |
-| DWS01-IAM-G-002 | Decide whether the production application uses bearer-only validation, server-managed sessions, or a hybrid model for browser-to-BFF access. | High | Technical Lead | Before Build authentication middleware implementation |
-| DWS01-IAM-G-003 | Decide the internal service-auth model for BFF, domain services, audit services, automation jobs, and integration adapters. | Medium | Solution Architect | Before integration-service design sign-off |
-| DWS01-IAM-G-004 | Decide the production data-residency and session-state placement policy for identity, session, audit, and access records. | Medium | Governance Lead | Before deployment architecture sign-off |
+| DWS01-IAM-G-001 | Authoritative source for DWS.01 role, unit, team, and permission claims. | Resolved | DWS is the application authorization authority. Entra ID authenticates the user and may supply bootstrap group/app-role mappings, but DWS stores and enforces app roles, permissions, unit/team scopes, feature access, exceptions, and delegations in the platform database (Supabase/Postgres). | ADR-DWS01-IAM-009 |
+| DWS01-IAM-G-002 | Browser-to-BFF session and token validation model. | Resolved | Sessions are managed by the BFF using secure httpOnly cookies. The frontend holds no Entra tokens; it retrieves session context from `GET /api/session/me`. Token exchange and validation occur server-side at the BFF. | ADR-DWS01-IAM-010 |
+| DWS01-IAM-G-003 | Internal service-auth model for BFF, services, jobs, and adapters. | Resolved | For MVP, service authorization remains inside the BFF. A distributed service-to-service trust model is deferred until domain services are extracted out of the BFF. | ADR-DWS01-IAM-011 |
+| DWS01-IAM-G-004 | Production data-residency and session-state placement policy. | Resolved | Supabase/Postgres holds canonical IAM and audit records. Redis is introduced only if distributed sessions, caching, or scale requirements justify it; the MVP uses BFF-managed session state without Redis. | ADR-DWS01-IAM-012 |
+
+### 4.4.1 Governing Decision
+
+The four resolutions above derive from one architectural position: **Entra ID is the identity provider; DWS is the application authorization authority.** Entra establishes *who the user is*; DWS decides *what the user may do*. Identity material never reaches the browser as a bearer token — the BFF exchanges the authorization code, establishes a server-side session, and exposes only a resolved, least-privilege context to the client. This keeps client-local state non-authoritative (ADR-DWS01-IAM-002) while giving DWS full control of roles, permissions, scope, exceptions, delegations, and audit evidence in canonical platform records.
 
 # 5. Concern Domains
 
@@ -352,7 +357,7 @@ The target design uses Microsoft Entra ID as the production identity provider an
 | 3 | First landing | User completes sign-in | Application resolves role context; Stage 0 or home route is selected; permitted next-step destinations render | User receives role-aware entry context. |
 | 4 | Sign-out | User selects logout | Client calls sign-out endpoint; server clears session state; client clears local UI state; browser returns to login | Workspace access ends and protected routes redirect. |
 
-The prototype implementation uses an AuthProvider, Microsoft-styled login page, protected route component, session-scoped browser storage, and a mock internal user. The production design treats these as client shell responsibilities and moves identity validation, session authority, and claim trust to the application boundary.
+The original prototype used an AuthProvider, Microsoft-styled login page, protected route component, session-scoped browser storage, and a mock internal user. As of v1.1 the mock sign-in is replaced by a real Microsoft Entra ID authorization-code flow (PKCE) executed at the BFF. The client now initiates sign-in by navigating to the BFF (`/auth/login`), Entra returns to the registered redirect URI (`/auth/callback`), and the BFF exchanges the code, validates the identity token, resolves the DWS access context, and establishes a server-side session over a secure httpOnly cookie. The client never receives an Entra token and reads its context from `GET /api/session/me`. The AuthProvider and protected-route components remain as client shell responsibilities; identity validation, session authority, and claim trust now live at the application boundary.
 
 | # | Design element | Target rule | Enforcement point | Evidence |
 |---|---|---|---|---|
@@ -368,9 +373,9 @@ Identity and session rules apply uniformly across the client, application bounda
 | # | System | How concern applies | Key artefact | Conformance status |
 |---|---|---|---|---|
 | 1 | DWS.01 Client Prototype | Provides login experience, protected routes, sign-out action, and local UI session context. | AuthProvider and ProtectedRoute | Specification conformant - prototype validation gate |
-| 2 | DWS.01 Application API | Validates Entra identity, establishes access context, and mediates protected API calls. | Authentication middleware | Gap - design decision outstanding (DWS01-IAM-G-002) |
+| 2 | DWS.01 Application API | Validates Entra identity, establishes the server-side session, and mediates protected API calls. | BFF authentication middleware (`server/src/auth`) | Resolved (G-002) - implemented; httpOnly cookie session |
 | 3 | Microsoft Entra ID | Authenticates DQ users and issues identity material for DWS.01. | Entra app registration | Specification conformant - deployment security gate |
-| 4 | Redis State Store | Supports target server-side session or cache state when selected. | Session store configuration | Gap - design decision outstanding (DWS01-IAM-G-002) |
+| 4 | Redis State Store | Supports target server-side session or cache state when selected. | Session store configuration | Resolved (G-004) - not used in MVP; introduced only when scale justifies |
 | 5 | Supabase PostgreSQL | Stores identity-related platform records and audit evidence. | User and audit records | Specification conformant - data-model review gate |
 
 ### 5.1.4 Constraints and Obligations
@@ -397,7 +402,7 @@ The items below record unresolved design and implementation questions arising fr
 
 | # | Open item | Gap ref | Owner | Resolution gate |
 |---|---|---|---|---|
-| 1 | Select the production browser-to-BFF session authority and token validation model. | DWS01-IAM-G-002 (Staging blocker) | Technical Lead | Before Build authentication middleware implementation |
+| 1 | Select the production browser-to-BFF session authority and token validation model. | DWS01-IAM-G-002 - Resolved (ADR-DWS01-IAM-010) | Technical Lead | Closed: BFF httpOnly cookie session implemented |
 | 2 | Register Entra application settings, callback URLs, and logout URLs for each environment. |  | DevOps Engineer | Before UAT environment readiness |
 
 ## 5.2 Role and Permission Model
@@ -451,10 +456,10 @@ The role and permission model applies to route configuration, navigation configu
 | # | System | How concern applies | Key artefact | Conformance status |
 |---|---|---|---|---|
 | 1 | DWS.01 Client Prototype | Provides active workspace role, persona access checks, role-aware navigation, and permission-aware route metadata. | Role and permission configuration | Specification conformant - prototype validation gate |
-| 2 | DWS.01 Application API | Resolves canonical role, permission, unit, team, and service ownership scope before action execution. | Authorisation middleware | Gap - design decision outstanding (DWS01-IAM-G-001) |
-| 3 | Supabase PostgreSQL | Stores and enforces user, role, unit, team, permission, and record-scope policies. | RLS and canonical records | Gap - design decision outstanding (DWS01-IAM-G-001) |
+| 2 | DWS.01 Application API | Resolves canonical role, permission, unit, team, and service ownership scope before action execution. | BFF authorization (`server/src/iam`) | Resolved (G-001) - DWS is the authorization authority |
+| 3 | Supabase PostgreSQL | Stores and enforces user, role, unit, team, permission, and record-scope policies. | Canonical IAM records (`server/src/db/schema.sql`) | Resolved (G-001) - canonical IAM store of record |
 | 4 | Administration Console | Governs role assignment, permission exception, and access-review workflows. | User and role management views | Specification conformant - admin governance gate |
-| 5 | Microsoft Entra ID | Supplies identity and group or role source material. | Entra groups or app roles | Gap - design decision outstanding (DWS01-IAM-G-001) |
+| 5 | Microsoft Entra ID | Supplies identity and bootstrap group or app-role material only. | Entra groups or app roles | Resolved (G-001) - bootstrap input, not the authority |
 
 ### 5.2.4 Constraints and Obligations
 
@@ -480,7 +485,7 @@ The items below record unresolved design and implementation questions arising fr
 
 | # | Open item | Gap ref | Owner | Resolution gate |
 |---|---|---|---|---|
-| 1 | Select the authoritative source for role, unit, team, and permission claims. | DWS01-IAM-G-001 (Staging blocker) | Technical Lead | Before Build API access-boundary implementation |
+| 1 | Select the authoritative source for role, unit, team, and permission claims. | DWS01-IAM-G-001 - Resolved (ADR-DWS01-IAM-009) | Technical Lead | Closed: DWS platform records are authoritative |
 | 2 | Create the production permission matrix for routes, actions, dashboards, records, and administration controls. |  | Product Owner | Before UAT permission matrix gate |
 
 ## 5.3 Access Enforcement and Route Guarding
@@ -528,10 +533,10 @@ Access enforcement applies consistently to workspace routes, domain service rout
 | # | System | How concern applies | Key artefact | Conformance status |
 |---|---|---|---|---|
 | 1 | DWS.01 Client Prototype | Protects routes, filters navigation, and renders restricted pages based on active role and permission metadata. | ProtectedRoute and DwsRouteGuard | Specification conformant - prototype validation gate |
-| 2 | DWS.01 Application API | Enforces authentication, action permissions, service ownership, workflow permission, and admin controls. | Authorisation middleware | Gap - design decision outstanding (DWS01-IAM-G-003) |
+| 2 | DWS.01 Application API | Enforces authentication, action permissions, service ownership, workflow permission, and admin controls. | BFF authorization middleware (`requireAuth`, `requirePermission`) | Resolved (G-003) - service authorization enforced in the BFF |
 | 3 | Domain Services | Execute task, request, approval, escalation, and configuration commands only after authorisation. | Domain access policies | Specification conformant - API security gate |
 | 4 | Supabase PostgreSQL | Enforces record-level visibility for users, teams, units, dashboards, audit, and performance data. | RLS policies | Specification conformant - data policy gate |
-| 5 | Automation Jobs | Inherit service permissions and user context where automation acts on behalf of a user. | Automation access policy | Gap - design decision outstanding (DWS01-IAM-G-003) |
+| 5 | Automation Jobs | Inherit service permissions and user context where automation acts on behalf of a user. | Automation access policy | Resolved (G-003) - inherit BFF-enforced context for MVP |
 
 ### 5.3.4 Constraints and Obligations
 
@@ -557,7 +562,7 @@ The items below record unresolved design and implementation questions arising fr
 
 | # | Open item | Gap ref | Owner | Resolution gate |
 |---|---|---|---|---|
-| 1 | Select the internal service-auth model for BFF, domain services, audit services, automation, and integration adapters. | DWS01-IAM-G-003 | Solution Architect | Before integration-service design sign-off |
+| 1 | Select the internal service-auth model for BFF, domain services, audit services, automation, and integration adapters. | DWS01-IAM-G-003 - Resolved (ADR-DWS01-IAM-011) | Solution Architect | Closed for MVP: authorization enforced in the BFF; distributed model deferred |
 | 2 | Expand route and action permission tests across all protected routes and restricted pages. |  | QA Lead | Before UAT permission matrix gate |
 
 ## 5.4 Session Token and Claim Handling
@@ -613,9 +618,9 @@ Claim and session handling crosses identity provider, browser client, applicatio
 |---|---|---|---|---|
 | 1 | Microsoft Entra ID | Issues identity tokens and source claim material for authenticated users. | OIDC app registration | Specification conformant - identity configuration gate |
 | 2 | DWS.01 Client Prototype | Stores prototype session state and active role presentation state for UI rendering. | Browser session and role context | Specification conformant - prototype validation gate |
-| 3 | DWS.01 Application API | Validates tokens, establishes sessions, maps claims, and authorises API calls. | Token validation middleware | Gap - design decision outstanding (DWS01-IAM-G-002) |
-| 4 | Redis State Store | Maintains target session or cache state where the approved model requires it. | Session state keys | Gap - design decision outstanding (DWS01-IAM-G-004) |
-| 5 | Supabase PostgreSQL | Stores user, role, permission, access-review, and audit records. | Canonical IAM records | Gap - design decision outstanding (DWS01-IAM-G-004) |
+| 3 | DWS.01 Application API | Validates tokens, establishes httpOnly cookie sessions, maps claims, and authorises API calls. | BFF token validation + session (`server/src/auth`, `server/src/session`) | Resolved (G-002) - implemented |
+| 4 | Redis State Store | Maintains target session or cache state where the approved model requires it. | Session state keys | Resolved (G-004) - deferred; not used in MVP |
+| 5 | Supabase PostgreSQL | Stores user, role, permission, access-review, and audit records. | Canonical IAM records | Resolved (G-004) - canonical IAM and audit store |
 
 ### 5.4.4 Constraints and Obligations
 
@@ -641,8 +646,8 @@ The items below record unresolved design and implementation questions arising fr
 
 | # | Open item | Gap ref | Owner | Resolution gate |
 |---|---|---|---|---|
-| 1 | Decide the bearer-only, server-managed, or hybrid browser-to-BFF access model. | DWS01-IAM-G-002 (Staging blocker) | Technical Lead | Before Build authentication middleware implementation |
-| 2 | Decide identity, session, audit, and access-record data placement under hosting and residency policy. | DWS01-IAM-G-004 | Governance Lead | Before deployment architecture sign-off |
+| 1 | Decide the bearer-only, server-managed, or hybrid browser-to-BFF access model. | DWS01-IAM-G-002 - Resolved (ADR-DWS01-IAM-010) | Technical Lead | Closed: server-managed httpOnly cookie sessions |
+| 2 | Decide identity, session, audit, and access-record data placement under hosting and residency policy. | DWS01-IAM-G-004 - Resolved (ADR-DWS01-IAM-012) | Governance Lead | Closed: Supabase/Postgres canonical; Redis only if justified |
 
 ## 5.5 Audit Exceptions and Access Review
 
@@ -758,6 +763,10 @@ Architecture decisions governing this system are recorded in full in the LLAD Tr
 | ADR-DWS01-IAM-006 | Explicit access-denied handling | Accepted | Restricted access is rendered explicitly rather than hidden only through navigation filtering. |
 | ADR-DWS01-IAM-007 | IAM audit evidence | Accepted | Login, access decisions, permission changes, and exceptions produce non-deletable audit records. |
 | ADR-DWS01-IAM-008 | Governed permission exceptions | Accepted | Permission exceptions are workflow records with approval, expiry, owner, and review evidence. |
+| ADR-DWS01-IAM-009 | DWS is the authorization authority | Accepted | Entra ID authenticates users and supplies bootstrap group/app-role hints; DWS platform records are authoritative for app roles, permissions, scope, exceptions, and delegations. |
+| ADR-DWS01-IAM-010 | BFF httpOnly cookie sessions | Accepted | The BFF manages sessions via secure httpOnly cookies; the frontend holds no Entra tokens and reads context from `/api/session/me`. |
+| ADR-DWS01-IAM-011 | BFF-resident service authorization for MVP | Accepted | Service authorization is enforced inside the BFF for MVP; a distributed service-auth model is deferred until domain services are extracted. |
+| ADR-DWS01-IAM-012 | Postgres canonical, Redis deferred | Accepted | Supabase/Postgres holds canonical IAM and audit records; Redis is added only when distributed sessions, caching, or scale justify it. |
 
 ## 6.3 Non-Functional Requirements Summary
 
@@ -779,10 +788,10 @@ Open items are tracked by type so that unresolved architecture decisions remain 
 
 | # | Item | Type | Resolution gate |
 |---|---|---|---|
-| 1 | Select authority for role, unit, team, and permission claims. | Type 1 design decision | Before Build API access-boundary implementation |
-| 2 | Select bearer-only, server-managed, or hybrid browser-to-BFF session model. | Type 1 design decision | Before Build authentication middleware implementation |
-| 3 | Select internal service-auth model for BFF, services, jobs, and adapters. | Type 1 design decision | Before integration-service design sign-off |
-| 4 | Decide production data-residency and session-state placement policy. | Type 1 design decision | Before deployment architecture sign-off |
+| 1 | Select authority for role, unit, team, and permission claims. | Type 1 design decision | Resolved v1.1 (ADR-DWS01-IAM-009) |
+| 2 | Select bearer-only, server-managed, or hybrid browser-to-BFF session model. | Type 1 design decision | Resolved v1.1 (ADR-DWS01-IAM-010) |
+| 3 | Select internal service-auth model for BFF, services, jobs, and adapters. | Type 1 design decision | Resolved v1.1 (ADR-DWS01-IAM-011) |
+| 4 | Decide production data-residency and session-state placement policy. | Type 1 design decision | Resolved v1.1 (ADR-DWS01-IAM-012) |
 | 5 | Configure Entra application registrations and callback URLs. | Type 2 build/evidence | Before UAT environment readiness |
 | 6 | Produce access-review report pack and evidence fields. | Type 2 build/evidence | Before UAT access-review gate |
 
@@ -920,3 +929,43 @@ Architecture decisions governing this system are recorded in full in the LLAD Tr
 | Decision | Permission exceptions are workflow records with approval, expiry, owner, and review evidence. |
 | Rationale | Temporary access must remain visible, time-bound, and reviewable rather than becoming permanent unmanaged privilege. |
 | Consequences | Exception workflows, expiry checks, and review reports are required before UAT access-review sign-off. |
+
+## ADR-DWS01-IAM-009 - DWS is the application authorization authority
+
+| Field | Value |
+|---|---|
+| Status | Accepted |
+| Context | DWS01-IAM-G-001 required an authoritative source for role, unit, team, and permission claims. Options were Entra groups, Entra app roles, or DWS platform records. Entra group/role governance is owned by corporate IT and is coarser than DWS needs for unit/team scope, feature access, exceptions, and delegations. |
+| Decision | Entra ID is the identity provider; DWS is the application authorization authority. Entra authenticates the user and may supply bootstrap group/app-role mappings, but DWS stores and enforces app roles, permissions, unit/team scopes, feature access, exceptions, delegations, and audit rules in the platform database. |
+| Rationale | DWS access semantics are platform-specific and change faster than corporate directory governance. Owning the authorization model keeps least privilege, scope, and exception handling under platform control and review. |
+| Consequences | Canonical IAM tables and a server-side resolution step are required. Entra claims are treated as untrusted hints until mapped to DWS records. A just-in-time provisioning policy is required for first-time users. |
+
+## ADR-DWS01-IAM-010 - BFF-managed httpOnly cookie sessions
+
+| Field | Value |
+|---|---|
+| Status | Accepted |
+| Context | DWS01-IAM-G-002 required selecting bearer-only, server-managed, or hybrid browser-to-BFF access. Browser-held tokens increase XSS exposure and conflict with ADR-DWS01-IAM-002. |
+| Decision | Sessions are managed by the BFF using secure httpOnly cookies. The frontend holds no Entra tokens; it retrieves session context from `GET /api/session/me`. The authorization-code exchange (PKCE), token validation, and claim resolution happen server-side. |
+| Rationale | httpOnly cookies keep identity material out of JavaScript reach, centralise validation, and allow the client to remain a non-authoritative renderer. |
+| Consequences | The BFF must set `httpOnly`, `secure` (in production), and `sameSite` cookies, protect the auth flow with state and PKCE, and expose a session endpoint. CORS/proxy configuration is required for local development. |
+
+## ADR-DWS01-IAM-011 - BFF-resident service authorization for MVP
+
+| Field | Value |
+|---|---|
+| Status | Accepted |
+| Context | DWS01-IAM-G-003 required an internal service-auth model. For MVP there are no separately deployed domain services; the BFF is the single application boundary. |
+| Decision | For MVP, service authorization remains inside the BFF using session-derived identity and permission context (`requireAuth`, `requirePermission`). A distributed service-to-service trust model is deferred until domain services are extracted from the BFF. |
+| Rationale | A single enforcement point is simpler, auditable, and sufficient while the platform is a monolithic BFF. Premature service-mesh identity adds cost without benefit at this stage. |
+| Consequences | When domain services are extracted, a service-auth decision (e.g. signed service tokens or mTLS) must be revisited as a new ADR. |
+
+## ADR-DWS01-IAM-012 - Postgres canonical, Redis deferred
+
+| Field | Value |
+|---|---|
+| Status | Accepted |
+| Context | DWS01-IAM-G-004 required a data-residency and session-state placement policy for identity, session, audit, and access records. |
+| Decision | Supabase/Postgres holds canonical IAM and audit records. Redis is introduced only if distributed sessions, caching, or scale requirements justify it; the MVP uses BFF-managed session state without Redis. |
+| Rationale | Postgres already governs canonical platform records with RLS and audit. Avoiding Redis until needed reduces operational surface while keeping a clear scale-out path. |
+| Consequences | MVP session state is single-instance and not horizontally shared; introducing multiple BFF instances will require the Redis (or equivalent) decision to be activated. |

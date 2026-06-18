@@ -21,10 +21,22 @@ function MicrosoftIcon() {
   );
 }
 
+const ERROR_MESSAGES: Record<string, string> = {
+  entra: 'Microsoft sign-in was cancelled or failed. Please try again.',
+  state: 'Your sign-in session expired. Please try again.',
+  nonce: 'Your sign-in session could not be verified. Please try again.',
+  code: 'The sign-in response was incomplete. Please try again.',
+  exchange: 'We could not complete sign-in with Microsoft. Please try again.',
+  identity: 'Your account did not return a usable identity. Contact your administrator.',
+};
+
 export function LoginPage() {
   const { isAuthenticated, signInWithMicrosoft } = useAuth();
   const navigate = useNavigate();
   const [isSigningIn, setIsSigningIn] = useState(false);
+
+  const errorCode = new URLSearchParams(window.location.search).get('error');
+  const errorMessage = errorCode ? (ERROR_MESSAGES[errorCode] ?? 'Sign-in failed. Please try again.') : null;
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -34,12 +46,8 @@ export function LoginPage() {
 
   const handleSignIn = async () => {
     setIsSigningIn(true);
-    try {
-      await signInWithMicrosoft();
-      navigate('/home', { replace: true });
-    } finally {
-      setIsSigningIn(false);
-    }
+    // Full-page navigation to the BFF; control leaves the SPA here.
+    await signInWithMicrosoft('/home');
   };
 
   return (
@@ -97,6 +105,15 @@ export function LoginPage() {
             <p className="mt-2 text-sm text-gray-500">
               Use your DigitalQatalyst Microsoft account to enter DWS.01.
             </p>
+
+            {errorMessage && (
+              <div
+                role="alert"
+                className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+              >
+                {errorMessage}
+              </div>
+            )}
 
             <button
               type="button"
