@@ -42,6 +42,7 @@ import type { TrackerDefinition, TrackerHealth, TrackerHistoryEvent, TrackerPrio
 const currentUser = 'Bilal Waqar';
 const viewStorageKey = 'dws-active-tracker-saved-view';
 const settingsStorageKey = 'dws-active-tracker-settings';
+const trackerRecordStorageKey = 'dws.tracker.records';
 const closedStatuses = ['closed', 'completed', 'done', 'resolved', 'implemented', 'balanced'];
 const recordTypeOptions = ['Capacity / Workload', 'Backlog', 'Project Health', 'Governance', 'Risk / Issue', 'Decision', 'Action Log'];
 const recordHealthOptions = ['Green', 'Amber', 'Red', 'Healthy', 'Closed'];
@@ -49,6 +50,7 @@ const recordPriorityOptions: TrackerPriority[] = ['Low', 'Medium', 'High', 'Crit
 const recordStatusOptions = ['Created', 'Open', 'In Progress', 'Overloaded', 'Balanced', 'Reviewed', 'Closed', 'Escalated', 'Blocked'];
 const assigneeOptions = ['Maya Khan', 'Rohan Patel', 'Hina Adam', 'Sara Khan', 'Unassigned'];
 const teamSquadOptions = ['Squad Alpha', 'Platform Team', 'Governance', 'Delivery Ops', 'PMO'];
+const unitOptions = ['Workload Distribution', 'Squad Backlog', 'Project Health', 'Governance Follow-ups', 'Action Log', 'Risk / Issue', 'Decisions'];
 const tabs = ['Records', 'My Items', 'Overdue', 'At Risk', 'Recently Updated', 'About Tracker'] as const;
 
 type ActiveTab = typeof tabs[number];
@@ -91,6 +93,8 @@ type SettingsState = {
 
 type AddRecordDraft = {
   title: string;
+  unit: string;
+  type: string;
   owner: string;
   teamOrSquad: string;
   priority: TrackerPriority;
@@ -169,7 +173,7 @@ export function ActiveTrackerPage() {
   const savedFilters = normalizeRecordFilters(savedView?.filters);
   const [trackerSearch, setTrackerSearch] = useState('');
   const [recordSearch, setRecordSearch] = useState('');
-  const [records, setRecords] = useState<TrackerRecord[]>(() => tracker ? getRecordsForTracker(tracker.id) : []);
+  const [records, setRecords] = useState<TrackerRecord[]>(() => tracker ? loadTrackerRecords(tracker.id) : []);
   const [activeTab, setActiveTab] = useState<ActiveTab>(savedView?.activeTab || 'Records');
   const [filters, setFilters] = useState<FilterState>(savedFilters);
   const [metricFilter, setMetricFilter] = useState<MetricFilter>(savedView?.metricFilter || null);
@@ -184,7 +188,7 @@ export function ActiveTrackerPage() {
 
   useEffect(() => {
     if (!tracker) return;
-    setRecords(getRecordsForTracker(tracker.id));
+    setRecords(loadTrackerRecords(tracker.id));
     setPage(1);
     if (savedView && savedView.trackerSlug !== tracker.slug) {
       setActiveTab(savedView.activeTab || 'Records');
@@ -195,6 +199,11 @@ export function ActiveTrackerPage() {
       setPageSize(savedView.pageSize || settings.pageSize);
     }
   }, [tracker?.slug]);
+
+  useEffect(() => {
+    if (!tracker) return;
+    persistTrackerRecords(tracker.id, records);
+  }, [tracker?.id, records]);
 
   useEffect(() => setPage(1), [activeTab, filters, metricFilter, extraFilter, sort, pageSize, trackerSlug]);
 
@@ -270,8 +279,8 @@ export function ActiveTrackerPage() {
     const now = new Date();
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const opened = `${now.getDate()} ${monthNames[now.getMonth()]} ${now.getFullYear()} at ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-    const unit = tracker.id === 'workload-distribution' ? 'Workload Distribution' : tracker.name;
-    const type = tracker.id === 'workload-distribution' ? 'Capacity / Workload' : tracker.trackerType;
+    const unit = draft.unit || (tracker.id === 'workload-distribution' ? 'Workload Distribution' : tracker.name);
+    const type = draft.type || (tracker.id === 'workload-distribution' ? 'Capacity / Workload' : tracker.trackerType);
     const health = ragToHealth(draft.status, draft.rag);
     const tags = [tracker.id === 'workload-distribution' ? 'Workload' : unit, health];
     const workflowSlug = tracker.id === 'workload-distribution' ? 'workload-review' : 'tracker-workflow';
@@ -834,8 +843,8 @@ function RecordDetailRoute({
   };
 
   return (
-    <div className="flex h-[calc(100vh-64px)] gap-4 overflow-hidden px-6 lg:px-8">
-      <aside className="w-[360px] shrink-0">
+    <div className="fixed inset-0 z-[120] grid h-screen min-w-[1180px] grid-cols-[360px_minmax(520px,1fr)_300px] overflow-hidden bg-white text-primary">
+      <aside className="min-w-0 border-r border-border-default">
         <RecordListPanel
           tracker={tracker}
           records={records}
@@ -850,14 +859,14 @@ function RecordDetailRoute({
         />
       </aside>
 
-      <section className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-card border border-border-default bg-white shadow-sm">
-        <div className="shrink-0 border-b border-border-subtle bg-white px-5 pb-3 pt-5">
-          <div className="flex flex-wrap items-center justify-between gap-4">
+      <section className="flex min-w-0 flex-col overflow-hidden bg-white">
+        <div className="shrink-0 border-b border-border-default bg-white">
+          <div className="flex h-[54px] items-center justify-between gap-4 border-b border-border-subtle px-7">
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => guardedNavigate(onBack)}
-                className="grid h-11 w-11 place-items-center rounded-button border border-border-default bg-white text-primary hover:bg-navy-50"
+                className="grid h-8 w-8 place-items-center rounded-button bg-white text-primary hover:bg-navy-50"
                 aria-label="Back"
               >
                 <ArrowLeft size={16} strokeWidth={1.5} />
@@ -867,12 +876,12 @@ function RecordDetailRoute({
                 type="button"
                 onClick={() => prevRecordId && guardedNavigate(() => onSelect(prevRecordId))}
                 disabled={!prevRecordId}
-                className="grid h-10 w-10 place-items-center rounded-button border border-border-default bg-white text-secondary font-bold disabled:opacity-40 disabled:cursor-not-allowed"
+                className="grid h-8 w-8 place-items-center rounded-button bg-white text-primary font-bold disabled:cursor-not-allowed disabled:opacity-40 hover:bg-navy-50"
               >
                 ‹
               </button>
 
-              <span className="px-2 text-sm font-bold text-secondary">
+              <span className="px-3 text-sm font-bold text-primary">
                 {(recordIndex >= 0 ? recordIndex + 1 : 0)} / {records.length}
               </span>
 
@@ -880,7 +889,7 @@ function RecordDetailRoute({
                 type="button"
                 onClick={() => followingRecordId && guardedNavigate(() => onSelect(followingRecordId))}
                 disabled={!followingRecordId}
-                className="grid h-10 w-10 place-items-center rounded-button border border-border-default bg-white text-secondary font-bold disabled:opacity-40 disabled:cursor-not-allowed"
+                className="grid h-8 w-8 place-items-center rounded-button bg-white text-primary font-bold disabled:cursor-not-allowed disabled:opacity-40 hover:bg-navy-50"
               >
                 ›
               </button>
@@ -890,29 +899,31 @@ function RecordDetailRoute({
               <button
                 type="button"
                 onClick={() => guardedNavigate(onBack)}
-                className="rounded-button px-2 py-2 text-sm font-bold text-primary hover:bg-navy-50"
+                className="inline-flex items-center gap-1 rounded-button px-2 py-2 text-sm font-bold text-primary hover:bg-navy-50"
               >
+                <Database size={15} strokeWidth={1.5} />
                 List
               </button>
               <button
                 type="button"
-                onClick={() => guardedNavigate(onHub)}
-                className="grid h-10 w-10 place-items-center rounded-button border border-border-default bg-white text-primary font-bold hover:bg-navy-50"
+                onClick={() => guardedNavigate(onBack)}
+                className="grid h-8 w-8 place-items-center rounded-button bg-white text-primary hover:bg-navy-50"
+                aria-label="Close details"
               >
-                X
+                <X size={16} strokeWidth={1.5} />
               </button>
             </div>
           </div>
 
-          <div className="mt-4">
-            <h1 className="text-[28px] font-bold leading-tight text-primary">{draft.title}</h1>
-            <div className="mt-2 flex flex-wrap items-center gap-3">
-              <span className={`dq-badge ${healthBadgeClass(draft.health)}`}>{draft.health}</span>
-              <span className="rounded-full border border-border-subtle bg-surface px-3 py-1 text-xs font-bold text-primary">
+          <div className="px-7 pb-2 pt-5">
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-[30px] font-bold leading-tight text-primary">{draft.title}</h1>
+              <span className={`inline-flex rounded-button px-3 py-1 text-base font-bold ${healthBadgeClass(draft.health)}`}>{draft.health}</span>
+              <span className="text-sm font-semibold text-text-secondary">
                 {draft.status}
               </span>
             </div>
-            <div className="mt-2 flex items-center gap-3">
+            <div className="mt-3 flex items-center gap-3">
               <div className="h-4 w-1 rounded-full bg-secondary" />
               <div className="text-sm font-semibold text-text-secondary">
                 {draft.unit} · Created {draft.opened}
@@ -920,32 +931,32 @@ function RecordDetailRoute({
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-end gap-2 px-7 py-2">
             <div className="flex flex-wrap items-center gap-2">
               <DqButton
-                variant="orange"
+                variant="outline"
                 onClick={markComplete}
                 disabled={draft.status === 'Closed'}
-                className="h-11 px-5"
+                className="h-10 border-border-default px-4"
               >
                 Start Working
               </DqButton>
-              <DqButton variant="outline" onClick={() => setEscalateOpen(true)} className="h-11 px-5">
-                Escalate
+              <DqButton variant="outline" onClick={() => setEscalateOpen(true)} className="h-10 border-border-default px-4">
+                ↑ Escalate
               </DqButton>
-              <DqButton variant="outline" onClick={openNote} className="h-11 px-5">
+              <DqButton variant="outline" onClick={openNote} className="h-10 border-border-default px-4">
                 <MessageSquare size={16} strokeWidth={1.5} /> Add note
               </DqButton>
             </div>
 
             <div className="relative flex items-center gap-2">
-              <DqButton variant="outline" onClick={saveDraft} disabled={!dirty} className="h-11 px-5">
+              <DqButton variant="outline" onClick={saveDraft} disabled={!dirty} className="h-10 border-border-default px-4">
                 <Check size={16} strokeWidth={1.5} /> Save
               </DqButton>
               <DqIconButton
                 label="More record actions"
                 onClick={() => setMoreOpen((open) => !open)}
-                className="h-11 w-11"
+                className="h-10 w-10"
               >
                 <MoreHorizontal size={18} strokeWidth={1.5} />
               </DqIconButton>
@@ -961,7 +972,7 @@ function RecordDetailRoute({
                   <button onClick={markBlocked} className="w-full rounded-button px-3 py-2 text-left hover:bg-navy-50">
                     Mark Blocked
                   </button>
-                  <button onClick={deleteLocalRecord} className="w-full rounded-button px-3 py-2 text-left hover:bg-navy-50">
+                  <button onClick={deleteLocalRecord} className="w-full rounded-button px-3 py-2 text-left text-danger hover:bg-danger-surface">
                     Delete Local Record
                   </button>
                 </div>
@@ -969,8 +980,8 @@ function RecordDetailRoute({
             </div>
           </div>
 
-          <div className="mt-4 rounded-card border border-border-subtle bg-white p-4 shadow-sm">
-            <div className="flex items-center">
+          <div className="px-7 pb-4 pt-4">
+            <div className="flex items-start">
               {stages.map((stage, i) => {
                 const isActive = stageIndex === i;
                 const isBackDisabled = draft.status === 'Closed' && i < stageIndex;
@@ -980,27 +991,25 @@ function RecordDetailRoute({
                       type="button"
                       onClick={() => updateStageStatus(stage.status)}
                       disabled={isBackDisabled}
-                      className={`flex min-w-[84px] flex-col items-center gap-1 ${isBackDisabled ? 'cursor-not-allowed opacity-50' : ''}`}
+                      className={`flex min-w-[86px] flex-col items-center gap-3 ${isBackDisabled ? 'cursor-not-allowed opacity-50' : ''}`}
                     >
                       <span
-                        className={`grid h-10 w-10 place-items-center rounded-full text-sm font-bold ${
+                        className={`grid h-11 w-11 place-items-center rounded-full border text-base font-bold shadow-sm ${
                           isActive
-                            ? 'bg-secondary text-white'
-                            : i < stageIndex
-                              ? 'bg-surface text-text-muted border border-border-default'
-                              : 'bg-white text-text-muted border border-border-default'
+                            ? 'border-secondary bg-secondary text-white'
+                            : 'border-border-default bg-navy-50 text-primary'
                         }`}
                       >
                         {stage.number}
                       </span>
-                      <span className={`text-[11px] font-bold ${isActive ? 'text-secondary' : 'text-text-muted'}`}>
+                      <span className="text-sm font-semibold text-primary">
                         {stage.label}
                       </span>
                     </button>
                     {i < stages.length - 1 && (
-                      <div
-                        className={`mx-3 h-0.5 flex-1 ${i < stageIndex ? 'bg-secondary' : 'bg-border-subtle'}`}
-                      />
+                      <div className="flex h-11 flex-1 items-center px-3">
+                        <div className={`h-0.5 w-full ${i < stageIndex ? 'bg-secondary' : 'bg-border-default'}`} />
+                      </div>
                     )}
                   </Fragment>
                 );
@@ -1008,12 +1017,10 @@ function RecordDetailRoute({
             </div>
           </div>
 
-          <div className="mt-4">
-            <RecordDetailTabs activeTab={activeTab} onTab={setActiveTab} />
-          </div>
+          <RecordDetailTabs activeTab={activeTab} onTab={setActiveTab} />
         </div>
 
-        <div className="flex-1 min-h-0 overflow-y-auto space-y-4 bg-surface p-5">
+        <div className="min-h-0 flex-1 overflow-y-auto bg-white p-5">
           {activeTab === 'Overview' && (
             <RecordDetailsForm
               draft={draft}
@@ -1049,7 +1056,7 @@ function RecordDetailRoute({
         </div>
       </section>
 
-      <aside className="w-[300px] shrink-0 overflow-y-auto rounded-card border border-border-default bg-white shadow-sm">
+      <aside className="min-w-0 overflow-y-auto border-l border-border-default bg-white pt-[320px]">
         <RecordDetailRightRail
           record={draft}
           onAddTag={addTag}
@@ -1158,34 +1165,42 @@ function RecordListPanel({
   };
 
   return (
-    <aside className="flex h-full flex-col rounded-card border border-border-default bg-white p-4 shadow-sm">
-      <div className="shrink-0">
-        <h2 className="text-lg font-bold text-primary">Tracker Hub</h2>
-        <p className="mt-1 text-xs font-semibold text-text-muted">{dateLabel} · {timeLabel}</p>
-        <DqButton variant="orange" onClick={onNewTracker} className="mt-3 h-10 w-full px-4">
-          <Plus size={16} strokeWidth={1.5} /> New Tracker
-        </DqButton>
-        <p className="mt-3 text-xs font-bold text-text-secondary">{records.length} Trackers</p>
-        <div className="relative mt-2">
-          <Search size={16} strokeWidth={1.5} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
-          <input
-            value={search}
-            onChange={(event) => onSearch(event.target.value)}
-            placeholder="Search list..."
-            className="dq-input pl-9"
-          />
+    <aside className="flex h-full flex-col bg-white">
+      <div className="shrink-0 border-b border-border-default px-6 py-5">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-[26px] font-bold leading-tight text-primary">Tracker Hub</h2>
+            <p className="mt-1 text-sm font-medium text-primary/80">{dateLabel} · {timeLabel}</p>
+          </div>
+          <DqButton variant="navy" onClick={onNewTracker} className="h-11 shrink-0 px-4">
+            <Plus size={16} strokeWidth={1.5} /> New Tracker
+          </DqButton>
         </div>
       </div>
 
-      <div className="mt-4 flex-1 min-h-0 space-y-1 overflow-y-auto pr-1">
+      <div className="shrink-0 border-b border-border-default px-6 py-3">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-base font-bold text-primary">{records.length} Trackers</p>
+          <div className="relative w-[170px]">
+            <input
+              value={search}
+              onChange={(event) => onSearch(event.target.value)}
+              placeholder="Search list..."
+              className="h-10 w-full rounded-input border border-border-default bg-white px-3 text-sm font-medium text-primary outline-none placeholder:text-text-muted focus:border-primary"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto">
         {records.length === 0 && (
-          <div className="rounded-card border border-border-subtle p-4 text-sm font-semibold text-text-secondary">
+          <div className="m-5 rounded-card border border-border-subtle p-4 text-sm font-semibold text-text-secondary">
             No tracker records found.
             <div className="mt-1 text-xs">Create a new tracker record or clear your search.</div>
           </div>
         )}
         {records.length > 0 && filtered.length === 0 && (
-          <div className="rounded-card border border-border-subtle p-4 text-sm font-semibold text-text-secondary">
+          <div className="m-5 rounded-card border border-border-subtle p-4 text-sm font-semibold text-text-secondary">
             No matching tracker records.
             <div className="mt-1 text-xs">Try adjusting your search.</div>
           </div>
@@ -1196,29 +1211,38 @@ function RecordListPanel({
             <button
               key={record.id}
               onClick={() => onSelect(record.id)}
-              className={`w-full rounded-r-lg border-l-[3px] px-3 py-3 text-left transition ${active ? 'border-secondary bg-orange-50 text-primary' : 'border-transparent hover:bg-navy-50'}`}
+              className={`w-full border-l-[4px] px-5 py-4 text-left transition ${active ? 'border-secondary bg-orange-50 text-primary' : 'border-transparent hover:bg-navy-50'}`}
             >
-              <div className="truncate text-sm font-bold text-primary">{record.title}</div>
-              <div className="mt-1 truncate text-xs font-semibold text-text-secondary">
-                {record.unit} · {record.status} · {record.health}
-              </div>
-              <div className={`mt-1 text-xs font-semibold ${record.isOverdue ? 'text-danger' : 'text-text-muted'}`}>
-                {dueLabel(record)}
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-bold text-primary">{record.title}</div>
+                  <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2 text-xs font-semibold text-text-secondary">
+                    <span className="truncate">{record.unit}</span>
+                    <span>·</span>
+                    <span>{record.status}</span>
+                    <span className={`rounded-button px-2 py-0.5 text-[11px] font-bold ${record.health === 'Amber' ? 'bg-warning-surface text-secondary' : record.health === 'Red' ? 'bg-danger-surface text-danger-text' : record.health === 'Closed' ? 'bg-navy-50 text-text-muted' : 'bg-success-surface text-success-text'}`}>
+                      {record.health}
+                    </span>
+                  </div>
+                </div>
+                <div className={`shrink-0 text-xs font-semibold ${record.isOverdue ? 'text-danger' : 'text-text-muted'}`}>
+                  {dueLabel(record)}
+                </div>
               </div>
             </button>
           );
         })}
       </div>
 
-      <div className="mt-3 shrink-0 border-t border-border-subtle pt-3">
-        <div className="flex items-center justify-between gap-2 text-xs font-semibold text-text-muted">
-          <span>{start}–{end} of {total}</span>
+      <div className="shrink-0 border-t border-border-default px-5 py-3">
+        <div className="flex items-center justify-between gap-2 text-sm font-medium text-text-muted">
+          <span>{start}-{end} of {total}</span>
           <div className="flex gap-1">
             <button
               type="button"
               disabled={currentPage <= 1}
               onClick={() => onPageChange(currentPage - 1)}
-              className="rounded-button border border-border-default px-2 py-1 font-bold text-primary disabled:opacity-40"
+              className="h-9 rounded-button border border-border-default px-3 font-bold text-primary disabled:opacity-40"
             >
               Previous
             </button>
@@ -1226,7 +1250,7 @@ function RecordListPanel({
               type="button"
               disabled={currentPage >= totalPages}
               onClick={() => onPageChange(currentPage + 1)}
-              className="rounded-button border border-border-default px-2 py-1 font-bold text-primary disabled:opacity-40"
+              className="h-9 rounded-button border border-border-default px-3 font-bold text-primary disabled:opacity-40"
             >
               Next
             </button>
@@ -1240,9 +1264,9 @@ function RecordListPanel({
 function RecordDetailTabs({ activeTab, onTab }: { activeTab: DetailTab; onTab: (tab: DetailTab) => void }) {
   const detailTabs: DetailTab[] = ['Overview', 'Activity', 'Comments', 'Evidence', 'History'];
   return (
-    <div className="dq-tabs flex overflow-x-auto px-3" role="tablist" aria-label="Tracker record detail tabs">
+    <div className="dq-tabs flex overflow-x-auto px-5" role="tablist" aria-label="Tracker record detail tabs">
       {detailTabs.map((tab) => (
-        <button key={tab} role="tab" aria-selected={activeTab === tab} onClick={() => onTab(tab)} className={`dq-tab whitespace-nowrap ${activeTab === tab ? 'dq-tab-active text-secondary' : ''}`}>
+        <button key={tab} role="tab" aria-selected={activeTab === tab} onClick={() => onTab(tab)} className={`dq-tab min-h-11 whitespace-nowrap ${activeTab === tab ? 'dq-tab-active text-secondary' : ''}`}>
           {tab}
         </button>
       ))}
@@ -1257,32 +1281,63 @@ function RecordDetailsForm({ draft, latestUpdate, onUpdate, onLatestUpdate }: { 
   };
 
   return (
-    <>
-      <section className="dq-card">
-        <h2 className="dq-card-title">DETAILS</h2>
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
-          <DetailField label="Tracker name *" value={draft.title} onChange={(title) => onUpdate({ title })} />
-          <DetailField label="Record ID" value={draft.id} readOnly monospace onChange={() => undefined} />
-          <DetailField label="Unit *" value={draft.unit} onChange={(unit) => onUpdate({ unit })} />
-          <DetailSelect label="Team / Squad" value={draft.teamOrSquad} options={teamSquadOptions} onChange={(teamOrSquad) => onUpdate({ teamOrSquad })} />
-          <DetailSelect label="Type *" value={draft.type} options={recordTypeOptions} onChange={(type) => onUpdate({ type })} />
-          <DetailSelect label="Priority" value={draft.priority} options={recordPriorityOptions} onChange={(priority) => onUpdate({ priority: priority as TrackerPriority })} />
-          <DetailSelect label="Health *" value={draft.health} options={recordHealthOptions} onChange={(health) => syncHealth(health as TrackerRecord['health'])} />
-          <DetailSelect label="Status" value={draft.status} options={recordStatusOptions} onChange={(status) => onUpdate({ status })} />
-          <DetailSelect label="Assigned to" value={draft.owner || 'Unassigned'} options={assigneeOptions} onChange={(owner) => onUpdate({ owner: owner === 'Unassigned' ? '' : owner })} />
-          <DetailField label="Last Updated" value={draft.lastUpdated} readOnly onChange={() => undefined} />
-          <DetailField label="Opened *" value={draft.opened} readOnly onChange={() => undefined} />
-          <DetailField label="Review due" value={draft.dueDate} onChange={(dueDate) => onUpdate({ dueDate, isOverdue: dueDate === 'Today' })} />
+    <div className="space-y-4">
+      <section className="overflow-hidden rounded-card border border-border-default bg-white">
+        <h2 className="border-b border-border-subtle px-5 py-3 text-sm font-bold uppercase tracking-wide text-primary">DETAILS</h2>
+        <div className="grid gap-x-8 gap-y-2 px-5 py-3 lg:grid-cols-2">
+          <div className="space-y-2">
+            <DetailTextRow label="Tracker name *" value={draft.title} onChange={(title) => onUpdate({ title })} />
+            <DetailTextRow label="Unit *" value={draft.unit} onChange={(unit) => onUpdate({ unit })} />
+            <DetailSelectRow label="Type *" value={draft.type} options={recordTypeOptions} onChange={(type) => onUpdate({ type })} />
+            <DetailSelectRow label="Health *" value={draft.health} options={recordHealthOptions} onChange={(health) => syncHealth(health as TrackerRecord['health'])} />
+            <DetailSelectRow label="Assigned to" value={draft.owner || 'Unassigned'} options={assigneeOptions} onChange={(owner) => onUpdate({ owner: owner === 'Unassigned' ? '' : owner })} />
+            <DetailTextRow label="Opened *" value={draft.opened} readOnly onChange={() => undefined} />
+            <DetailTextRow label="Review due" value={draft.dueDate} onChange={(dueDate) => onUpdate({ dueDate, isOverdue: dueDate === 'Today' })} />
+          </div>
+          <div className="space-y-2">
+            <DetailTextRow label="Record ID" value={draft.id} readOnly monospace onChange={() => undefined} />
+            <DetailSelectRow label="Team / Squad" value={draft.teamOrSquad} options={teamSquadOptions} onChange={(teamOrSquad) => onUpdate({ teamOrSquad })} />
+            <DetailSelectRow label="Priority" value={draft.priority} options={recordPriorityOptions} onChange={(priority) => onUpdate({ priority: priority as TrackerPriority })} />
+            <DetailSelectRow label="Status" value={draft.status} options={recordStatusOptions} onChange={(status) => onUpdate({ status })} />
+            <DetailTextRow label="Last Updated" value={draft.lastUpdated} readOnly onChange={() => undefined} />
+          </div>
         </div>
       </section>
       <DetailTextarea title="DESCRIPTION" value={draft.description} onChange={(description) => onUpdate({ description })} />
       {latestUpdate && (
-        <section className="dq-card">
-          <h2 className="dq-card-title">LATEST UPDATE</h2>
-          <textarea value={latestUpdate} onChange={(event) => onLatestUpdate(event.target.value)} rows={3} className="dq-textarea mt-4" />
+        <section className="overflow-hidden rounded-card border border-border-default bg-white">
+          <h2 className="border-b border-border-subtle px-5 py-3 text-sm font-bold uppercase tracking-wide text-primary">LATEST UPDATE</h2>
+          <div className="p-5">
+            <textarea value={latestUpdate} onChange={(event) => onLatestUpdate(event.target.value)} rows={3} className="dq-textarea" />
+          </div>
         </section>
       )}
-    </>
+    </div>
+  );
+}
+
+function DetailTextRow({ label, value, readOnly, monospace, onChange }: { label: string; value: string; readOnly?: boolean; monospace?: boolean; onChange: (value: string) => void }) {
+  return (
+    <label className="grid min-h-8 grid-cols-[132px_minmax(0,1fr)] items-center gap-3 text-sm">
+      <span className="font-medium text-text-secondary">{label}</span>
+      <input
+        value={value}
+        readOnly={readOnly}
+        onChange={(event) => onChange(event.target.value)}
+        className={`h-8 rounded-input border border-transparent bg-transparent px-3 font-semibold text-primary outline-none transition hover:border-border-subtle focus:border-border-default ${readOnly ? 'text-primary' : 'bg-white'} ${monospace ? 'font-mono text-xs font-bold' : ''}`}
+      />
+    </label>
+  );
+}
+
+function DetailSelectRow({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (value: string) => void }) {
+  return (
+    <label className="grid min-h-8 grid-cols-[132px_minmax(0,1fr)] items-center gap-3 text-sm">
+      <span className="font-medium text-text-secondary">{label}</span>
+      <select value={value} onChange={(event) => onChange(event.target.value)} className="h-9 rounded-input border border-border-default bg-white px-3 font-semibold text-primary outline-none focus:border-primary">
+        {options.map((option) => <option key={option} value={option}>{option}</option>)}
+      </select>
+    </label>
   );
 }
 
@@ -1313,21 +1368,23 @@ function DetailSelect({ label, value, options, onChange }: { label: string; valu
 
 function DetailTextarea({ title, value, onChange }: { title: string; value: string; onChange: (value: string) => void }) {
   return (
-    <section className="dq-card">
-      <h2 className="dq-card-title">{title}</h2>
-      <textarea value={value} onChange={(event) => onChange(event.target.value)} rows={5} className="dq-textarea mt-4" />
+    <section className="overflow-hidden rounded-card border border-border-default bg-white">
+      <h2 className="border-b border-border-subtle px-5 py-3 text-sm font-bold uppercase tracking-wide text-primary">{title}</h2>
+      <div className="p-5">
+        <textarea value={value} onChange={(event) => onChange(event.target.value)} rows={4} className="dq-textarea resize-none" />
+      </div>
     </section>
   );
 }
 
 function CommentsPanel({ comments, comment, onComment, onPost, inputRef }: { comments: TrackerRecord['comments']; comment: string; onComment: (value: string) => void; onPost: () => void; inputRef?: RefObject<HTMLTextAreaElement> }) {
   return (
-    <section className="dq-card">
+    <section className="overflow-hidden rounded-card border border-border-default bg-white">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="dq-card-title">Comments</h2>
+        <h2 className="px-5 py-3 text-sm font-bold uppercase tracking-wide text-primary">Comments</h2>
         <span className="text-xs font-semibold text-text-muted">{comments.length} comments</span>
       </div>
-      <div className="mt-4 space-y-3">
+      <div className="space-y-3 border-t border-border-subtle px-5 py-4">
         {comments.map((entry) => (
           <div key={entry.id} className="rounded-button border border-border-subtle bg-surface px-3 py-2 text-sm text-primary">
             <div className="font-bold">{entry.author}</div>
@@ -1341,43 +1398,48 @@ function CommentsPanel({ comments, comment, onComment, onPost, inputRef }: { com
             <span className="mt-1 block text-xs font-normal">Add a note or comment to start the conversation.</span>
           </p>
         )}
+        <textarea ref={inputRef} value={comment} onChange={(event) => onComment(event.target.value)} rows={3} placeholder="Add comment..." className="dq-textarea mt-2" />
+        <DqButton variant="navy" onClick={onPost} className="mt-3"><MessageSquare size={15} strokeWidth={1.5} /> Post</DqButton>
       </div>
-      <textarea ref={inputRef} value={comment} onChange={(event) => onComment(event.target.value)} rows={3} placeholder="Add comment..." className="dq-textarea mt-4" />
-      <DqButton variant="navy" onClick={onPost} className="mt-3"><MessageSquare size={15} strokeWidth={1.5} /> Post</DqButton>
     </section>
   );
 }
 
 function EvidencePanel({ evidence, showLinkFields, linkTitle, linkUrl, onShowLinkFields, onLinkTitle, onLinkUrl, onAddLink, onUpload }: { evidence: TrackerRecord['evidence']; showLinkFields: boolean; linkTitle: string; linkUrl: string; onShowLinkFields: () => void; onLinkTitle: (value: string) => void; onLinkUrl: (value: string) => void; onAddLink: () => void; onUpload: () => void }) {
   return (
-    <section className="dq-card">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="dq-card-title">Evidence / Links</h2>
+    <section className="overflow-hidden rounded-card border border-border-default bg-white">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
+        <h2 className="text-sm font-bold uppercase tracking-wide text-primary">Evidence / Links</h2>
         <div className="flex gap-2">
           <DqButton variant="outline" onClick={onShowLinkFields}><LinkIcon size={15} strokeWidth={1.5} /> Add Link</DqButton>
           <DqButton variant="outline" onClick={onUpload}><Upload size={15} strokeWidth={1.5} /> Upload Evidence</DqButton>
         </div>
       </div>
-      {showLinkFields && (
-        <div className="mt-4 grid gap-2 rounded-card border border-border-subtle bg-surface p-3 md:grid-cols-[1fr_1fr_auto]">
-          <input value={linkTitle} onChange={(event) => onLinkTitle(event.target.value)} placeholder="Evidence title" className="dq-input" />
-          <input value={linkUrl} onChange={(event) => onLinkUrl(event.target.value)} placeholder="Evidence link" className="dq-input" />
-          <DqButton variant="navy" onClick={onAddLink}>Save Link</DqButton>
+      <div className="border-t border-border-subtle px-5 py-4">
+        <div className="mb-4 rounded-card border border-dashed border-border-default bg-surface px-4 py-5 text-center text-sm font-semibold text-text-secondary">
+          Upload evidence placeholder
         </div>
-      )}
-      <div className="mt-4 space-y-2">
-        {evidence.map((entry) => (
-          <div key={entry.id} className="flex flex-wrap items-center justify-between gap-3 rounded-button border border-border-subtle bg-surface px-3 py-2 text-sm font-semibold text-primary">
-            <span>{entry.title} · {entry.type}</span>
-            <span className="text-xs text-text-muted">{entry.addedBy} · {entry.addedAt}</span>
+        {showLinkFields && (
+          <div className="mb-4 grid gap-2 rounded-card border border-border-subtle bg-surface p-3 md:grid-cols-[1fr_1fr_auto]">
+            <input value={linkTitle} onChange={(event) => onLinkTitle(event.target.value)} placeholder="Evidence title" className="dq-input" />
+            <input value={linkUrl} onChange={(event) => onLinkUrl(event.target.value)} placeholder="Evidence link" className="dq-input" />
+            <DqButton variant="navy" onClick={onAddLink}>Save Link</DqButton>
           </div>
-        ))}
-        {evidence.length === 0 && (
-          <p className="text-sm font-semibold text-text-secondary">
-            No evidence added yet.
-            <span className="mt-1 block text-xs font-normal">Upload evidence or add a link to support this record.</span>
-          </p>
         )}
+        <div className="space-y-2">
+          {evidence.map((entry) => (
+            <div key={entry.id} className="flex flex-wrap items-center justify-between gap-3 rounded-button border border-border-subtle bg-surface px-3 py-2 text-sm font-semibold text-primary">
+              <span>{entry.title} · {entry.type}</span>
+              <span className="text-xs text-text-muted">{entry.addedBy} · {entry.addedAt}</span>
+            </div>
+          ))}
+          {evidence.length === 0 && (
+            <p className="text-sm font-semibold text-text-secondary">
+              No evidence added yet.
+              <span className="mt-1 block text-xs font-normal">Upload evidence or add a link to support this record.</span>
+            </p>
+          )}
+        </div>
       </div>
     </section>
   );
@@ -1385,9 +1447,9 @@ function EvidencePanel({ evidence, showLinkFields, linkTitle, linkUrl, onShowLin
 
 function ActivityTimeline({ activity, title = 'Activity History' }: { activity: TrackerRecord['activity']; title?: string }) {
   return (
-    <section className="dq-card">
-      <h2 className="dq-card-title">{title}</h2>
-      <div className="mt-4 space-y-4">
+    <section className="overflow-hidden rounded-card border border-border-default bg-white">
+      <h2 className="border-b border-border-subtle px-5 py-3 text-sm font-bold uppercase tracking-wide text-primary">{title}</h2>
+      <div className="space-y-4 px-5 py-4">
         {activity.map((entry) => (
           <div key={entry.id} className="border-l-2 border-secondary pl-4 text-sm text-primary">
             <div className="font-bold">{entry.actor}</div>
@@ -1403,9 +1465,9 @@ function ActivityTimeline({ activity, title = 'Activity History' }: { activity: 
 
 function HistoryTimeline({ events }: { events: TrackerHistoryEvent[] }) {
   return (
-    <section className="dq-card">
-      <h2 className="dq-card-title">History</h2>
-      <div className="mt-4 space-y-4">
+    <section className="overflow-hidden rounded-card border border-border-default bg-white">
+      <h2 className="border-b border-border-subtle px-5 py-3 text-sm font-bold uppercase tracking-wide text-primary">History</h2>
+      <div className="space-y-4 px-5 py-4">
         {events.map((entry) => (
           <div key={entry.id} className="border-l-2 border-border-default pl-4 text-sm text-primary">
             <div className="flex flex-wrap items-center gap-2">
@@ -1440,6 +1502,7 @@ function RecordDetailRightRail({
   onLinkedEntityOpened: () => void;
 }) {
   const [tagInput, setTagInput] = useState('');
+  const [tagInputOpen, setTagInputOpen] = useState(false);
   const overdueCount = record.isOverdue || record.dueDate === 'Today' ? 1 : 0;
   const blockedCount = record.isBlocked || record.status === 'Blocked' ? 1 : 0;
 
@@ -1447,15 +1510,17 @@ function RecordDetailRightRail({
     if (!tagInput.trim()) return;
     onAddTag(tagInput.trim());
     setTagInput('');
+    setTagInputOpen(false);
   };
 
   return (
-    <div className="space-y-4 p-4">
-      <section className="rounded-card border border-border-subtle p-4">
-        <h3 className="text-xs font-bold uppercase tracking-wide text-text-muted">TAGS</h3>
-        <div className="mt-3 flex flex-wrap gap-2">
+    <div className="space-y-2 p-3">
+      <section className="overflow-hidden rounded-card border border-border-default bg-white shadow-sm">
+        <h3 className="border-b border-border-subtle px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">TAGS</h3>
+        <div className="p-3">
+        <div className="flex flex-wrap gap-2">
           {(record.tags || []).map((tag) => (
-            <span key={tag} className="group inline-flex items-center gap-1 rounded-full border border-border-subtle bg-surface px-2 py-1 text-xs font-bold text-primary">
+            <span key={tag} className={`group inline-flex items-center gap-1 rounded-button border px-3 py-1 text-xs font-bold ${tag === 'Amber' ? 'border-warning text-secondary' : tag === 'Escalated' || tag === 'Blocked' ? 'border-danger text-danger-text' : 'border-info bg-info-surface text-info-text'}`}>
               {tag}
               <button type="button" onClick={() => onRemoveTag(tag)} className="text-text-muted opacity-0 group-hover:opacity-100 hover:text-danger" aria-label={`Remove ${tag}`}>
                 <X size={12} />
@@ -1464,54 +1529,54 @@ function RecordDetailRightRail({
           ))}
           <button
             type="button"
-            onClick={() => {
-              const value = window.prompt('Add tag');
-              if (value) onAddTag(value);
-            }}
-            className="rounded-full border border-dashed border-border-default px-2 py-1 text-xs font-bold text-secondary"
+            onClick={() => setTagInputOpen((open) => !open)}
+            className="grid h-8 w-8 place-items-center rounded-full border border-dashed border-border-default text-xs font-bold text-secondary"
           >
             +
           </button>
         </div>
-        <div className="mt-2 flex gap-2">
-          <input value={tagInput} onChange={(e) => setTagInput(e.target.value)} placeholder="Add tag" className="dq-input h-8 text-xs" onKeyDown={(e) => e.key === 'Enter' && addTag()} />
-          <DqButton variant="outline" onClick={addTag} className="h-8 px-2 text-xs">Add</DqButton>
+        {tagInputOpen && (
+          <div className="mt-2 flex gap-2">
+            <input value={tagInput} onChange={(e) => setTagInput(e.target.value)} placeholder="Add tag" className="dq-input h-8 text-xs" onKeyDown={(e) => e.key === 'Enter' && addTag()} />
+            <DqButton variant="outline" onClick={addTag} className="h-8 px-2 text-xs">Add</DqButton>
+          </div>
+        )}
         </div>
       </section>
 
-      <section className="rounded-card border border-border-subtle p-4">
-        <h3 className="text-xs font-bold uppercase tracking-wide text-text-muted">CUSTOM FIELDS</h3>
-        <dl className="mt-3 space-y-2 text-sm">
+      <section className="overflow-hidden rounded-card border border-border-default bg-white shadow-sm">
+        <h3 className="border-b border-border-subtle px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">CUSTOM FIELDS</h3>
+        <dl className="space-y-2 px-4 py-3 text-sm">
           <div className="flex justify-between gap-3"><dt className="text-text-muted">Tracker ID</dt><dd className="font-mono font-bold text-primary">TR-00005</dd></div>
           <div className="flex justify-between gap-3"><dt className="text-text-muted">Workspace</dt><dd className="font-semibold text-primary">{record.workspace}</dd></div>
         </dl>
       </section>
 
-      <section className="rounded-card border border-border-subtle p-4">
-        <h3 className="text-xs font-bold uppercase tracking-wide text-text-muted">LINKED ENTITIES</h3>
-        <dl className="mt-3 space-y-2 text-sm">
+      <section className="overflow-hidden rounded-card border border-border-default bg-white shadow-sm">
+        <h3 className="border-b border-border-subtle px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">LINKED ENTITIES</h3>
+        <dl className="space-y-1 px-4 py-2 text-sm">
           {[
             ['Owner', record.ownerSlug],
             ['Team', record.teamSlug],
             ['Workflow', record.workflowSlug],
           ].map(([label, value]) => (
-            <button key={label} type="button" onClick={onLinkedEntityOpened} className="flex w-full justify-between gap-3 rounded-button px-1 py-1 text-left hover:bg-navy-50">
+            <button key={label} type="button" onClick={onLinkedEntityOpened} className="flex w-full justify-between gap-3 rounded-button px-1 py-0.5 text-left hover:bg-navy-50">
               <dt className="text-text-muted">{label}</dt>
-              <dd className="font-semibold text-info-text">{value}</dd>
+              <dd className="rounded-button border border-border-subtle bg-surface px-3 py-0.5 font-semibold text-primary">{value}</dd>
             </button>
           ))}
         </dl>
       </section>
 
-      <section className="rounded-card border border-border-subtle p-4">
-        <h3 className="text-xs font-bold uppercase tracking-wide text-text-muted">MAINTENANCE STATE</h3>
-        <dl className="mt-3 space-y-2 text-sm">
+      <section className="overflow-hidden rounded-card border border-border-default bg-white shadow-sm">
+        <h3 className="border-b border-border-subtle px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">MAINTENANCE STATE</h3>
+        <dl className="space-y-1.5 px-4 py-2 text-sm">
           <div className="flex items-center justify-between gap-3">
             <dt className="flex items-center gap-2 text-text-muted"><span className="h-2 w-2 rounded-full bg-success" />Saved</dt>
             <dd className="font-mono font-bold text-primary">{record.savedCount}</dd>
           </div>
-          <div className="flex items-center justify-between gap-3">
-            <dt className="flex items-center gap-2 text-text-muted"><span className="h-2 w-2 rounded-full bg-warning" />Overdue</dt>
+          <div className="flex items-center justify-between gap-3 rounded-button bg-danger-surface/60 px-2 py-1">
+            <dt className="flex items-center gap-2 text-danger-text"><span className="h-2 w-2 rounded-full bg-warning" />Overdue</dt>
             <dd className="font-mono font-bold text-primary">{overdueCount}</dd>
           </div>
           <div className="flex items-center justify-between gap-3">
@@ -2089,7 +2154,21 @@ function RecordDrawer({ tracker, record, focus, onClose, onSave }: { tracker: Tr
 }
 
 function AddRecordModal({ tracker, open, onClose, onAdd }: { tracker: TrackerDefinition; open: boolean; onClose: () => void; onAdd: (draft: AddRecordDraft) => void }) {
-  const emptyDraft: AddRecordDraft = { title: '', owner: currentUser, teamOrSquad: 'DQ Ops', priority: 'Medium', status: tracker.defaultStatuses[0] || 'In Progress', dueDate: 'Today', rag: 'Amber', description: '', nextAction: 'Add first update' };
+  const defaultUnit = tracker.id === 'workload-distribution' ? 'Workload Distribution' : tracker.name;
+  const defaultType = tracker.id === 'workload-distribution' ? 'Capacity / Workload' : tracker.trackerType;
+  const emptyDraft: AddRecordDraft = {
+    title: '',
+    unit: defaultUnit,
+    type: defaultType,
+    owner: 'Maya Khan',
+    teamOrSquad: 'Squad Alpha',
+    priority: 'Medium',
+    status: tracker.defaultStatuses[0] || 'In Progress',
+    dueDate: 'Today',
+    rag: 'Amber',
+    description: '',
+    nextAction: 'Add first update',
+  };
   const [draft, setDraft] = useState<AddRecordDraft>(emptyDraft);
   const [errors, setErrors] = useState<Partial<Record<keyof AddRecordDraft, string>>>({});
   const [dirty, setDirty] = useState(false);
@@ -2109,7 +2188,7 @@ function AddRecordModal({ tracker, open, onClose, onAdd }: { tracker: TrackerDef
   };
   const submit = () => {
     const nextErrors: Partial<Record<keyof AddRecordDraft, string>> = {};
-    (['title', 'owner', 'status', 'dueDate', 'rag'] as const).forEach((key) => {
+    (['title', 'unit', 'type', 'owner', 'status', 'dueDate', 'rag'] as const).forEach((key) => {
       if (!String(draft[key]).trim()) nextErrors[key] = 'Required';
     });
     setErrors(nextErrors);
@@ -2137,15 +2216,17 @@ function AddRecordModal({ tracker, open, onClose, onAdd }: { tracker: TrackerDef
           <div>
             <section className="dq-card grid gap-3">
               <ModalField label="Title" value={draft.title} error={errors.title} onChange={(value) => update({ title: value })} />
-              <ModalField label="Owner" value={draft.owner} error={errors.owner} onChange={(value) => update({ owner: value })} />
-              <ModalField label="Team / Squad" value={draft.teamOrSquad} onChange={(value) => update({ teamOrSquad: value })} />
+              <ModalSelect label="Tracker type" value={draft.type} options={recordTypeOptions} error={errors.type} onChange={(value) => update({ type: value })} />
+              <ModalSelect label="Unit" value={draft.unit} options={unitOptions} error={errors.unit} onChange={(value) => update({ unit: value })} />
+              <ModalSelect label="Team / Squad" value={draft.teamOrSquad} options={teamSquadOptions} onChange={(value) => update({ teamOrSquad: value })} />
+              <ModalSelect label="Owner" value={draft.owner || 'Unassigned'} options={assigneeOptions} error={errors.owner} onChange={(value) => update({ owner: value === 'Unassigned' ? '' : value })} />
               <ModalSelect label="Priority" value={draft.priority} options={['Low', 'Medium', 'High', 'Critical']} onChange={(value) => update({ priority: value as TrackerPriority })} />
-              <ModalSelect label="Status" value={draft.status} options={tracker.defaultStatuses} error={errors.status} onChange={(value) => update({ status: value })} />
-              <ModalField label="Due Date" value={draft.dueDate} error={errors.dueDate} onChange={(value) => update({ dueDate: value })} />
-              <ModalSelect label="RAG" value={draft.rag} options={['Green', 'Amber', 'Red']} error={errors.rag} onChange={(value) => update({ rag: value as TrackerHealth })} />
+              <ModalSelect label="Status" value={draft.status} options={recordStatusOptions} error={errors.status} onChange={(value) => update({ status: value })} />
+              <ModalSelect label="Health / RAG" value={draft.rag} options={['Green', 'Amber', 'Red']} error={errors.rag} onChange={(value) => update({ rag: value as TrackerHealth })} />
+              <ModalField label="Review due" value={draft.dueDate} error={errors.dueDate} onChange={(value) => update({ dueDate: value })} />
               <ModalField label="Next Action" value={draft.nextAction} onChange={(value) => update({ nextAction: value })} />
               <label className="block">
-                <span className="dq-field-label">Description / Context</span>
+                <span className="dq-field-label">Description</span>
                 <textarea value={draft.description} onChange={(event) => update({ description: event.target.value })} rows={4} className="dq-textarea" />
               </label>
             </section>
@@ -2572,6 +2653,29 @@ function readJson<T>(key: string): T | null {
     return raw ? JSON.parse(raw) as T : null;
   } catch {
     return null;
+  }
+}
+
+function loadTrackerRecords(trackerId: string) {
+  if (typeof window === 'undefined') return getRecordsForTracker(trackerId);
+  try {
+    const raw = window.localStorage.getItem(trackerRecordStorageKey);
+    if (!raw) return getRecordsForTracker(trackerId);
+    const stored = JSON.parse(raw) as Record<string, TrackerRecord[]>;
+    return Array.isArray(stored[trackerId]) ? stored[trackerId] : getRecordsForTracker(trackerId);
+  } catch {
+    return getRecordsForTracker(trackerId);
+  }
+}
+
+function persistTrackerRecords(trackerId: string, records: TrackerRecord[]) {
+  if (typeof window === 'undefined') return;
+  try {
+    const raw = window.localStorage.getItem(trackerRecordStorageKey);
+    const stored = raw ? JSON.parse(raw) as Record<string, TrackerRecord[]> : {};
+    window.localStorage.setItem(trackerRecordStorageKey, JSON.stringify({ ...stored, [trackerId]: records }));
+  } catch {
+    // Prototype-only persistence should never block record maintenance.
   }
 }
 
