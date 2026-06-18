@@ -11,8 +11,6 @@ import {
   Users
 } from 'lucide-react';
 
-export const HOME_USER_NAME = 'Stephane';
-
 export type SetupCardStatus = 'completed' | 'in-progress' | 'not-started';
 
 export interface SetupJourneyCard {

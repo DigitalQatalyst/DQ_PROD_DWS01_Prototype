@@ -1,4 +1,4 @@
-import React from "react";
+import React, { type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowRight,
@@ -9,7 +9,7 @@ import {
   HeartHandshake,
 } from "lucide-react";
 
-const footerFeatures = [
+const defaultFooterFeatures = [
   {
     icon: Shield,
     title: "Enterprise Ready",
@@ -32,8 +32,45 @@ const footerFeatures = [
   },
 ];
 
-export function LandingCtaSection() {
+export interface LandingCtaCta {
+  label: string;
+  onClick: () => void;
+  icon?: ReactNode;
+}
+
+export interface LandingCtaSectionProps {
+  title?: ReactNode;
+  subtitle?: string;
+  primaryCta?: LandingCtaCta;
+  secondaryCta?: LandingCtaCta;
+  showFooterFeatures?: boolean;
+  footerFeatures?: typeof defaultFooterFeatures;
+}
+
+export function LandingCtaSection({
+  title = (
+    <>
+      Your work, your way. All in <span className="text-dq-orange">one place.</span>
+    </>
+  ),
+  subtitle = "Continue on DWS.01 and experience a workspace designed around how you actually work — every day.",
+  primaryCta,
+  secondaryCta,
+  showFooterFeatures = true,
+  footerFeatures = defaultFooterFeatures,
+}: LandingCtaSectionProps) {
   const navigate = useNavigate();
+
+  const resolvedPrimaryCta = primaryCta ?? {
+    label: "Get Started",
+    onClick: () => navigate("/onboarding"),
+  };
+
+  const resolvedSecondaryCta = secondaryCta ?? {
+    label: "Open Workspace",
+    onClick: () => navigate("/workspace"),
+    icon: <Headphones size={14} />,
+  };
 
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -43,48 +80,46 @@ export function LandingCtaSection() {
           style={{ background: "var(--mesh-cta-orange)" }}
         >
           <h2 className="text-[32px] font-semibold leading-tight tracking-tight text-white sm:text-[36px]">
-            Your work, your way. All in{" "}
-            <span className="text-dq-orange">one place.</span>
+            {title}
           </h2>
-          <p className="mx-auto mt-4 max-w-lg text-base leading-7 text-white/70">
-            Continue on DWS.01 and experience a workspace designed around how
-            you actually work — every day.
-          </p>
+          <p className="mx-auto mt-4 max-w-lg text-base leading-7 text-white/70">{subtitle}</p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <button
               type="button"
-              onClick={() => navigate("/onboarding")}
+              onClick={resolvedPrimaryCta.onClick}
               className="group relative inline-flex h-12 items-center justify-center gap-2 overflow-hidden rounded-full bg-dq-orange px-7 text-sm font-semibold text-white transition hover:bg-[#e04020] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dq-orange focus-visible:ring-offset-2"
               style={{ boxShadow: "var(--glow-orange-md)" }}
             >
-              Get Started
+              {resolvedPrimaryCta.label}
               <ArrowRight size={16} className="transition group-hover:translate-x-0.5" />
             </button>
             <button
               type="button"
-              onClick={() => navigate("/workspace")}
+              onClick={resolvedSecondaryCta.onClick}
               className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 px-7 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dq-orange focus-visible:ring-offset-2"
             >
-              Open Workspace
-              <Headphones size={14} />
+              {resolvedSecondaryCta.label}
+              {resolvedSecondaryCta.icon}
             </button>
           </div>
         </div>
 
-        <div className="mt-14 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {footerFeatures.map((feature) => {
-            const Icon = feature.icon;
-            return (
-              <div key={feature.title} className="text-center lg:text-left">
-                <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-navy-50 text-dq-navy lg:mx-0">
-                  <Icon size={18} />
+        {showFooterFeatures && (
+          <div className="mt-14 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {footerFeatures.map((feature) => {
+              const Icon = feature.icon;
+              return (
+                <div key={feature.title} className="text-center lg:text-left">
+                  <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-navy-50 text-dq-navy lg:mx-0">
+                    <Icon size={18} />
+                  </div>
+                  <h3 className="text-sm font-semibold text-dq-navy">{feature.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-gray-500">{feature.description}</p>
                 </div>
-                <h3 className="text-sm font-semibold text-dq-navy">{feature.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-gray-500">{feature.description}</p>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </section>
   );

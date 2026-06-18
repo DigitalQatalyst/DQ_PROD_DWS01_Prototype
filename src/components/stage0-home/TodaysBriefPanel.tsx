@@ -10,20 +10,21 @@ export function TodaysBriefPanel() {
   const canOpenRequestStatus = ['associate', 'hra', 'admin', 'support'].includes(activePersona.id);
 
   return (
-    <section className="mt-4 rounded-card border border-navy-100 bg-white p-5 shadow-sm lg:p-6">
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.45fr)_1px_minmax(280px,0.9fr)_minmax(220px,0.65fr)] lg:items-center">
+    <article className="animate-fade-in-up rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:border-dq-orange hover:shadow-dq-hover lg:p-8">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.45fr)_1px_minmax(280px,0.9fr)_minmax(220px,0.65fr)] lg:items-center">
         <div className="flex gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange-50 text-secondary">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-secondary">
             <Sparkles size={21} strokeWidth={1.7} />
           </div>
           <div className="min-w-0">
-            <h2 className="text-[17px] font-bold text-primary">Today&apos;s Brief</h2>
+            <h3 className="text-lg font-semibold text-dq-navy">Today&apos;s Brief</h3>
             <p className="mt-2 max-w-[560px] text-sm leading-6 text-text-secondary">{todaysBrief.summary}</p>
-            <div className="mt-4 flex flex-wrap gap-5">
+            <div className="mt-4 flex flex-wrap gap-3">
               <button
                 type="button"
                 onClick={() => navigate(canOpenRequestStatus ? '/requests/REQ-2401/status' : '/workspace/my-requests')}
-                className="inline-flex items-center gap-2 text-sm font-bold text-secondary hover:underline"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-dq-navy px-5 text-sm font-semibold text-white transition hover:bg-dq-navy/90"
+                style={{ boxShadow: 'var(--glow-navy-md)' }}
               >
                 Open recommended item
                 <ChevronRight size={15} strokeWidth={1.8} />
@@ -31,7 +32,7 @@ export function TodaysBriefPanel() {
               <button
                 type="button"
                 onClick={() => navigate('/workspace')}
-                className="inline-flex items-center gap-2 text-sm font-bold text-info-text hover:underline"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-[#c5cde8] bg-white px-5 text-sm font-semibold text-dq-navy transition hover:border-[#a0aacc] hover:bg-surface"
               >
                 View full brief
                 <ChevronRight size={15} strokeWidth={1.8} />
@@ -40,7 +41,7 @@ export function TodaysBriefPanel() {
           </div>
         </div>
         <div className="hidden h-full w-px bg-border-subtle lg:block" />
-        <div className="rounded-xl bg-white px-0 py-1 lg:px-2">
+        <div className="rounded-xl bg-surface px-4 py-3 lg:px-5">
           <p className="text-xs font-bold uppercase tracking-wider text-info-text">Recommended next step</p>
           <p className="mt-2 text-sm font-medium leading-6 text-primary">{todaysBrief.recommendedNextStep}</p>
         </div>
@@ -55,6 +56,6 @@ export function TodaysBriefPanel() {
           </p>
         </div>
       </div>
-    </section>
+    </article>
   );
 }
