@@ -813,37 +813,19 @@ function RecordDetailRoute({
     return 'dq-badge-gray dq-badge-orange';
   };
 
-  const addTag = (tag: string) => {
-    const value = tag.trim();
-    if (!value) return;
-    const nextTags = Array.from(new Set([...(draft.tags || []), value]));
-    const updated: TrackerRecord = {
-      ...draft,
-      tags: nextTags,
-      activity: [{ id: `activity-${Date.now()}-tag-add`, actor: currentUser, action: `Added tag ${value}`, timestamp: 'Now' }, ...draft.activity],
-      history: [{ id: `history-${Date.now()}-tag-add`, eventType: 'Tag added', actor: currentUser, timestamp: 'Now', newValue: value }, ...draft.history],
-    };
-    onSave(updated);
-    setDraft(updated);
-    setDirty(false);
-  };
-
-  const removeTag = (tag: string) => {
-    const value = tag.trim();
-    const nextTags = (draft.tags || []).filter((t) => t !== value);
-    const updated: TrackerRecord = {
-      ...draft,
-      tags: nextTags,
-      activity: [{ id: `activity-${Date.now()}-tag-remove`, actor: currentUser, action: `Removed tag ${value}`, timestamp: 'Now' }, ...draft.activity],
-      history: [{ id: `history-${Date.now()}-tag-remove`, eventType: 'Tag removed', actor: currentUser, timestamp: 'Now', oldValue: value }, ...draft.history],
-    };
-    onSave(updated);
-    setDraft(updated);
-    setDirty(false);
-  };
-
   return (
-    <div className="fixed inset-0 z-[120] grid h-screen min-w-[1180px] grid-cols-[360px_minmax(520px,1fr)_300px] overflow-hidden bg-white text-primary">
+    <div className="flex h-[calc(100vh-64px)] min-w-0 flex-col overflow-hidden px-4 py-4 text-primary lg:px-6">
+      <nav className="mb-3 flex shrink-0 flex-wrap items-center gap-2 text-sm font-semibold text-text-secondary" aria-label="Breadcrumb">
+        <span>Tracker</span>
+        <span>/</span>
+        <button type="button" onClick={onHub} className="text-secondary hover:text-primary">Tracker Hub</button>
+        <span>/</span>
+        <button type="button" onClick={onBack} className="text-secondary hover:text-primary">{tracker.name}</button>
+        <span>/</span>
+        <span className="font-mono text-xs font-bold text-primary">{draft.id}</span>
+      </nav>
+
+      <div className="grid min-h-0 flex-1 grid-cols-[320px_minmax(0,1fr)] overflow-hidden rounded-card border border-border-default bg-white shadow-sm">
       <aside className="min-w-0 border-r border-border-default">
         <RecordListPanel
           tracker={tracker}
@@ -1055,15 +1037,7 @@ function RecordDetailRoute({
           {activeTab === 'History' && <HistoryTimeline events={draft.history} />}
         </div>
       </section>
-
-      <aside className="min-w-0 overflow-y-auto border-l border-border-default bg-white pt-[320px]">
-        <RecordDetailRightRail
-          record={draft}
-          onAddTag={addTag}
-          onRemoveTag={removeTag}
-          onLinkedEntityOpened={() => toast.success('Linked entity opened')}
-        />
-      </aside>
+      </div>
 
       <AddRecordModal
         tracker={tracker}
@@ -1296,9 +1270,12 @@ function RecordDetailsForm({ draft, latestUpdate, onUpdate, onLatestUpdate }: { 
           </div>
           <div className="space-y-2">
             <DetailTextRow label="Record ID" value={draft.id} readOnly monospace onChange={() => undefined} />
+            <DetailTextRow label="Tracker ID" value="TR-00005" readOnly monospace onChange={() => undefined} />
+            <DetailTextRow label="Workspace" value={draft.workspace} readOnly onChange={() => undefined} />
             <DetailSelectRow label="Team / Squad" value={draft.teamOrSquad} options={teamSquadOptions} onChange={(teamOrSquad) => onUpdate({ teamOrSquad })} />
             <DetailSelectRow label="Priority" value={draft.priority} options={recordPriorityOptions} onChange={(priority) => onUpdate({ priority: priority as TrackerPriority })} />
             <DetailSelectRow label="Status" value={draft.status} options={recordStatusOptions} onChange={(status) => onUpdate({ status })} />
+            <DetailTextRow label="Workflow" value={draft.workflowSlug} readOnly onChange={() => undefined} />
             <DetailTextRow label="Last Updated" value={draft.lastUpdated} readOnly onChange={() => undefined} />
           </div>
         </div>
@@ -1487,105 +1464,6 @@ function HistoryTimeline({ events }: { events: TrackerHistoryEvent[] }) {
         {events.length === 0 && <p className="text-sm font-semibold text-text-secondary">No history events yet.</p>}
       </div>
     </section>
-  );
-}
-
-function RecordDetailRightRail({
-  record,
-  onAddTag,
-  onRemoveTag,
-  onLinkedEntityOpened,
-}: {
-  record: TrackerRecord;
-  onAddTag: (tag: string) => void;
-  onRemoveTag: (tag: string) => void;
-  onLinkedEntityOpened: () => void;
-}) {
-  const [tagInput, setTagInput] = useState('');
-  const [tagInputOpen, setTagInputOpen] = useState(false);
-  const overdueCount = record.isOverdue || record.dueDate === 'Today' ? 1 : 0;
-  const blockedCount = record.isBlocked || record.status === 'Blocked' ? 1 : 0;
-
-  const addTag = () => {
-    if (!tagInput.trim()) return;
-    onAddTag(tagInput.trim());
-    setTagInput('');
-    setTagInputOpen(false);
-  };
-
-  return (
-    <div className="space-y-2 p-3">
-      <section className="overflow-hidden rounded-card border border-border-default bg-white shadow-sm">
-        <h3 className="border-b border-border-subtle px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">TAGS</h3>
-        <div className="p-3">
-        <div className="flex flex-wrap gap-2">
-          {(record.tags || []).map((tag) => (
-            <span key={tag} className={`group inline-flex items-center gap-1 rounded-button border px-3 py-1 text-xs font-bold ${tag === 'Amber' ? 'border-warning text-secondary' : tag === 'Escalated' || tag === 'Blocked' ? 'border-danger text-danger-text' : 'border-info bg-info-surface text-info-text'}`}>
-              {tag}
-              <button type="button" onClick={() => onRemoveTag(tag)} className="text-text-muted opacity-0 group-hover:opacity-100 hover:text-danger" aria-label={`Remove ${tag}`}>
-                <X size={12} />
-              </button>
-            </span>
-          ))}
-          <button
-            type="button"
-            onClick={() => setTagInputOpen((open) => !open)}
-            className="grid h-8 w-8 place-items-center rounded-full border border-dashed border-border-default text-xs font-bold text-secondary"
-          >
-            +
-          </button>
-        </div>
-        {tagInputOpen && (
-          <div className="mt-2 flex gap-2">
-            <input value={tagInput} onChange={(e) => setTagInput(e.target.value)} placeholder="Add tag" className="dq-input h-8 text-xs" onKeyDown={(e) => e.key === 'Enter' && addTag()} />
-            <DqButton variant="outline" onClick={addTag} className="h-8 px-2 text-xs">Add</DqButton>
-          </div>
-        )}
-        </div>
-      </section>
-
-      <section className="overflow-hidden rounded-card border border-border-default bg-white shadow-sm">
-        <h3 className="border-b border-border-subtle px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">CUSTOM FIELDS</h3>
-        <dl className="space-y-2 px-4 py-3 text-sm">
-          <div className="flex justify-between gap-3"><dt className="text-text-muted">Tracker ID</dt><dd className="font-mono font-bold text-primary">TR-00005</dd></div>
-          <div className="flex justify-between gap-3"><dt className="text-text-muted">Workspace</dt><dd className="font-semibold text-primary">{record.workspace}</dd></div>
-        </dl>
-      </section>
-
-      <section className="overflow-hidden rounded-card border border-border-default bg-white shadow-sm">
-        <h3 className="border-b border-border-subtle px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">LINKED ENTITIES</h3>
-        <dl className="space-y-1 px-4 py-2 text-sm">
-          {[
-            ['Owner', record.ownerSlug],
-            ['Team', record.teamSlug],
-            ['Workflow', record.workflowSlug],
-          ].map(([label, value]) => (
-            <button key={label} type="button" onClick={onLinkedEntityOpened} className="flex w-full justify-between gap-3 rounded-button px-1 py-0.5 text-left hover:bg-navy-50">
-              <dt className="text-text-muted">{label}</dt>
-              <dd className="rounded-button border border-border-subtle bg-surface px-3 py-0.5 font-semibold text-primary">{value}</dd>
-            </button>
-          ))}
-        </dl>
-      </section>
-
-      <section className="overflow-hidden rounded-card border border-border-default bg-white shadow-sm">
-        <h3 className="border-b border-border-subtle px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">MAINTENANCE STATE</h3>
-        <dl className="space-y-1.5 px-4 py-2 text-sm">
-          <div className="flex items-center justify-between gap-3">
-            <dt className="flex items-center gap-2 text-text-muted"><span className="h-2 w-2 rounded-full bg-success" />Saved</dt>
-            <dd className="font-mono font-bold text-primary">{record.savedCount}</dd>
-          </div>
-          <div className="flex items-center justify-between gap-3 rounded-button bg-danger-surface/60 px-2 py-1">
-            <dt className="flex items-center gap-2 text-danger-text"><span className="h-2 w-2 rounded-full bg-warning" />Overdue</dt>
-            <dd className="font-mono font-bold text-primary">{overdueCount}</dd>
-          </div>
-          <div className="flex items-center justify-between gap-3">
-            <dt className="flex items-center gap-2 text-text-muted"><span className="h-2 w-2 rounded-full bg-danger" />Blocked</dt>
-            <dd className="font-mono font-bold text-primary">{blockedCount}</dd>
-          </div>
-        </dl>
-      </section>
-    </div>
   );
 }
 

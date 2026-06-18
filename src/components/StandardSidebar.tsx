@@ -22,6 +22,7 @@ function routePath(route: string) {
 
 function matchesNavRoute(pathname: string, route: string) {
   const base = routePath(route);
+  if (pathname.startsWith('/tracker/active-tracker') && base === '/tracker/tracker-hub') return true;
   return pathname === base || pathname.startsWith(`${base}/`);
 }
 
