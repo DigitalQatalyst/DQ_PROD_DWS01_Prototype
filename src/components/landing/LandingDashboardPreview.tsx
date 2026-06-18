@@ -9,6 +9,18 @@ import {
   Users,
   Wrench,
 } from "lucide-react";
+import { useWorkspaceRole } from "../../context/WorkspaceRoleContext";
+
+function getTimeGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+function getFirstName(displayName: string) {
+  return displayName.trim().split(/\s+/)[0] || "there";
+}
 
 const quickAccess = [
   { label: "My Work", icon: Briefcase, bg: "bg-orange-100", color: "text-secondary" },
@@ -37,6 +49,10 @@ const statusStyles = {
 };
 
 export function LandingDashboardPreview() {
+  const { activeSegment } = useWorkspaceRole();
+  const firstName = getFirstName(activeSegment.profileName);
+  const greeting = getTimeGreeting();
+
   return (
     <div className="relative">
       <div className="absolute -left-3 top-16 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-border-subtle bg-white shadow-lg">
@@ -46,7 +62,9 @@ export function LandingDashboardPreview() {
 
       <div className="rounded-[20px] border border-border-subtle bg-white p-5 shadow-xl lg:p-6">
         <div className="mb-4">
-          <h3 className="text-lg font-bold text-primary">Good morning, Stephane 👋</h3>
+          <h3 className="text-lg font-bold text-primary">
+            {greeting}, {firstName} 👋
+          </h3>
           <p className="mt-1 text-sm text-text-muted">Here&apos;s what&apos;s happening in your workspace today.</p>
         </div>
 
