@@ -21,6 +21,10 @@ declare module 'express-session' {
   }
 }
 
+// Exposed so /healthz can report whether sessions are durable. In serverless an
+// in-memory store means every request can hit a fresh instance with no session.
+export let sessionStoreKind: 'postgres' | 'memory' = 'memory';
+
 export function createSessionMiddleware(): RequestHandler {
   // Serverless (Vercel) runs each request in a stateless, ephemeral instance, so
   // the default in-memory store would lose sessions between invocations. Back
@@ -38,10 +42,16 @@ export function createSessionMiddleware(): RequestHandler {
       createTableIfMissing: true,
       pruneSessionInterval: 60 * 15,
     });
-  } else if (config.isProduction) {
+    // Surface store-level failures (e.g. missing table / no CREATE privilege /
+    // pgbouncer transaction-mode incompatibility) in the Vercel function logs.
+    store.on('error', (err) => console.error('[session-store] error:', err));
+    sessionStoreKind = 'postgres';
+    console.log('[session] store=postgres table=user_sessions');
+  } else {
+    sessionStoreKind = 'memory';
     console.warn(
-      '[session] No DATABASE_URL set — falling back to the in-memory store. ' +
-        'Sessions will NOT persist across serverless invocations or restarts. ' +
+      '[session] store=memory (no DATABASE_URL). Sessions will NOT persist ' +
+        'across serverless invocations or restarts — login will appear to fail. ' +
         'Set DATABASE_URL for a durable session store.',
     );
   }

@@ -2,7 +2,7 @@ import express, { type Express } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import { config } from './config.js';
-import { createSessionMiddleware } from './session/session.js';
+import { createSessionMiddleware, sessionStoreKind } from './session/session.js';
 import { authRouter } from './auth/routes.js';
 import { sessionRouter } from './session/routes.js';
 
@@ -35,12 +35,18 @@ export function createApp(): Express {
 
   app.use(createSessionMiddleware());
 
-  app.get('/healthz', (_req, res) => {
+  app.get('/healthz', (req, res) => {
     res.json({
       ok: true,
       entraConfigured: Boolean(config.entra.clientId),
       devMock: config.auth.devMockEnabled,
       database: config.database.enabled ? 'postgres' : 'in-memory-seed',
+      // Durable sessions require a postgres store in serverless; 'memory' means
+      // logins will not survive between requests.
+      sessionStore: sessionStoreKind,
+      frontendOrigin: config.frontendOrigin,
+      // Whether THIS request carried the session cookie (proves cookie round-trip).
+      sessionCookiePresent: (req.headers.cookie ?? '').includes(`${config.session.cookieName}=`),
     });
   });
 

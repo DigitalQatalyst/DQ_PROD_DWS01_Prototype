@@ -117,6 +117,7 @@ authRouter.get('/callback', async (req: Request, res: Response) => {
     // Prevent session fixation: issue a fresh session for the authenticated user.
     await regenerateSession(req);
     req.session.user = context;
+    console.log('[auth] session established (callback)', JSON.stringify({ sid: req.sessionID, email: context.email }));
 
     await recordAudit({
       eventType: 'login_success',
@@ -177,6 +178,7 @@ async function completeMockLogin(req: Request, res: Response): Promise<void> {
   const redirectTo = safeRelativePath(req.query.returnTo);
   await regenerateSession(req);
   req.session.user = context;
+  console.log('[auth] session established (mock)', JSON.stringify({ sid: req.sessionID, email: context.email }));
   await recordAudit({
     eventType: 'login_success',
     actorEmail: context.email,
