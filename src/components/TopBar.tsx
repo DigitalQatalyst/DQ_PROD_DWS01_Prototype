@@ -3,7 +3,7 @@ import { ProductIdentity } from "./ProductIdentity";
 import { DiscoverySearchCommand } from "./DiscoverySearchCommand";
 import { NotificationBell } from "./NotificationBell";
 import { RoleSelector } from "./RoleSelector";
-import { UserIdentity } from "./UserIdentity";
+import { UserMenu } from "./UserMenu";
 import { ViewingModeSwitch } from "./ViewingModeSwitch";
 import { Bot, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -43,7 +43,7 @@ export function TopBar() {
         </button>
         <ViewingModeSwitch />
 
-        <UserIdentity />
+        <UserMenu />
       </div>
     </header>
   );

@@ -1,9 +1,14 @@
 import React from 'react';
 import { AIDiscoverySearch } from './AIDiscoverySearch';
-import { useWorkspaceRole } from '../../context/WorkspaceRoleContext';
+import { useAuth } from '../../context/AuthContext';
 
-function getFirstName(displayName: string) {
-  return displayName.trim().split(/\s+/)[0] || 'there';
+function getFirstName(displayName?: string | null, email?: string | null) {
+  // Ignore parenthetical suffixes like "(Dev Mock)" before taking the first word.
+  const cleaned = (displayName ?? '').replace(/\(.*?\)/g, '').trim();
+  const first = cleaned.split(/\s+/).filter(Boolean)[0];
+  if (first) return first;
+  if (email) return email.split('@')[0];
+  return 'there';
 }
 
 function getTimeGreeting() {
@@ -18,8 +23,8 @@ interface HomeHeroProps {
 }
 
 export function HomeHero({ isNewJoiner }: HomeHeroProps) {
-  const { activeSegment } = useWorkspaceRole();
-  const firstName = getFirstName(activeSegment.profileName);
+  const { user } = useAuth();
+  const firstName = getFirstName(user?.name, user?.email);
   const greeting = getTimeGreeting();
 
   const headline = isNewJoiner
