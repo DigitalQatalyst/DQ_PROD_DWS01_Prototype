@@ -4,13 +4,9 @@ import { ArrowLeft, Save, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useServiceLifecycle } from '../context/ServiceLifecycleContext';
 import { MarketplaceDetailHeader } from '../components/marketplace/MarketplaceDetailHeader';
-import { DynamicRequiredFields } from '../components/DynamicRequiredFields';
-import { UrgencySelector } from '../components/UrgencySelector';
 import { ExpectedOutcomeField } from '../components/ExpectedOutcomeField';
-import { RoutingPreviewCard } from '../components/RoutingPreviewCard';
 import { ReviewSubmitSummary } from '../components/ReviewSubmitSummary';
 import { ConfirmationCard } from '../components/ConfirmationCard';
-import { EvidenceUploadStub } from '../components/EvidenceUploadStub';
 import { ServiceEmptyState } from '../components/ServiceEmptyState';
 import { RequestWorkflowContextRail } from '../components/RequestWorkflowContextRail';
 import {
@@ -18,12 +14,17 @@ import {
   resolveMarketplaceStage,
 } from '../utils/marketplaceBreadcrumbs';
 
+const WORKFLOW_STEPS = [
+  { id: 1, label: 'Basic Form' },
+  { id: 2, label: 'Confirmation of Details' },
+];
+
 export function RequestWorkflowPage() {
   const { serviceId } = useParams<{ serviceId: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const stage = resolveMarketplaceStage(searchParams.get('from'), 'deploy');
-  const { getServiceById, getServiceDetailByServiceId, submitRequest } = useServiceLifecycle();
+  const { getServiceById, getServiceDetailByServiceId, submitRequest, saveDraft } = useServiceLifecycle();
 
   const [loading, setLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState(1);
@@ -32,9 +33,7 @@ export function RequestWorkflowPage() {
 
   const [formData, setFormData] = useState({
     title: '',
-    urgency: 'Normal',
     expectedOutcome: '',
-    dynamicFields: {} as Record<string, string>
   });
 
   const service = serviceId ? getServiceById(serviceId) : undefined;
@@ -76,40 +75,25 @@ export function RequestWorkflowPage() {
     );
   }
 
-  const hasSpecificInputs = detail.requiredInputs && detail.requiredInputs.length > 0;
-
-  const steps = [
-    { id: 1, label: 'Core Details' },
-    ...(hasSpecificInputs ? [{ id: 2, label: 'Specific Information' }] : []),
-    { id: hasSpecificInputs ? 3 : 2, label: 'Routing & Review' }
-  ];
-
-  const totalSteps = steps.length;
+  const totalSteps = WORKFLOW_STEPS.length;
   const isLastStep = currentStep === totalSteps;
 
   const handleFieldChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleDynamicFieldChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      dynamicFields: { ...prev.dynamicFields, [field]: value }
-    }));
-  };
-
   const validateCurrentStep = () => {
     if (currentStep === 1) {
       return formData.title.trim() !== '' && formData.expectedOutcome.trim() !== '';
     }
-    if (currentStep === 2 && hasSpecificInputs) {
-      const nonEvidenceInputs = detail.requiredInputs.filter(
-        input => !['evidence', 'Evidence', 'Screenshot/evidence', 'Supporting evidence'].includes(input)
-      );
-      return nonEvidenceInputs.every(input => !!formData.dynamicFields[input]?.trim());
-    }
     return true;
   };
+
+  const buildRequestPayload = () => ({
+    title: formData.title.trim(),
+    service: service.title,
+    expectedOutcome: formData.expectedOutcome.trim(),
+  });
 
   const handleNext = () => {
     setShowValidation(true);
@@ -132,16 +116,14 @@ export function RequestWorkflowPage() {
   };
 
   const handleSaveDraft = () => {
-    const draftId = `REQ-${Math.floor(2000 + Math.random() * 1000)}`;
-    toast.success(`Draft saved (${draftId})`);
+    if (!serviceId) return;
+    const draft = saveDraft(serviceId, buildRequestPayload());
+    toast.success(`Draft saved (${draft.id})`);
   };
 
   const handleSubmit = () => {
     if (!serviceId) return;
-    const newRequest = submitRequest(serviceId, {
-      urgency: formData.urgency as 'Low' | 'Normal' | 'High' | 'Critical',
-      expectedOutcome: formData.expectedOutcome,
-    });
+    const newRequest = submitRequest(serviceId, buildRequestPayload());
     setSubmittedId(newRequest.id);
     window.scrollTo(0, 0);
   };
@@ -197,48 +179,21 @@ export function RequestWorkflowPage() {
                     )}
                   </div>
 
-                  <UrgencySelector
-                    value={formData.urgency}
-                    onChange={(val) => handleFieldChange('urgency', val)}
-                  />
-
                   <ExpectedOutcomeField
                     value={formData.expectedOutcome}
                     onChange={(val) => handleFieldChange('expectedOutcome', val)}
-                    showValidation={showValidation}
-                  />
-
-                  <EvidenceUploadStub />
-                </div>
-              )}
-
-              {currentStep === 2 && hasSpecificInputs && (
-                <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-                  <DynamicRequiredFields
-                    requiredInputs={detail.requiredInputs.filter(
-                      input =>
-                        !['evidence', 'Evidence', 'Screenshot/evidence', 'Supporting evidence'].includes(
-                          input
-                        )
-                    )}
-                    values={formData.dynamicFields}
-                    onChange={handleDynamicFieldChange}
                     showValidation={showValidation}
                   />
                 </div>
               )}
 
               {isLastStep && (
-                <div className="animate-in fade-in slide-in-from-bottom-4 space-y-8 duration-300">
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
                   <ReviewSubmitSummary
+                    serviceName={service.title}
                     title={formData.title}
-                    urgency={formData.urgency}
                     expectedOutcome={formData.expectedOutcome}
-                    dynamicFields={formData.dynamicFields}
-                    requiredInputs={detail.requiredInputs}
                   />
-
-                  <RoutingPreviewCard detail={detail} urgency={formData.urgency} />
                 </div>
               )}
             </div>
@@ -290,7 +245,7 @@ export function RequestWorkflowPage() {
           <div className="lg:col-span-4">
             <RequestWorkflowContextRail
               detail={detail}
-              steps={steps}
+              steps={WORKFLOW_STEPS}
               currentStep={currentStep}
               stage={stage}
             />

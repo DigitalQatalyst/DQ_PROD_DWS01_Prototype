@@ -58,11 +58,34 @@ const ServiceLifecycleContext = createContext<ServiceLifecycleContextType | unde
 
 let nextRequestNum = 2412; // After the last fixture request
 
+function mergeRequestsWithLocalStorage(): ServiceRequestRecord[] {
+  try {
+    const stored = JSON.parse(
+      localStorage.getItem('local_my_requests') || '[]'
+    ) as ServiceRequestRecord[];
+
+    if (!Array.isArray(stored) || stored.length === 0) {
+      return mockRequests;
+    }
+
+    const storedIds = new Set(stored.map((request) => request.id));
+    const maxNum = [...stored, ...mockRequests].reduce((max, request) => {
+      const match = request.id.match(/^REQ-(\d+)$/);
+      return match ? Math.max(max, Number(match[1])) : max;
+    }, nextRequestNum - 1);
+    nextRequestNum = maxNum + 1;
+
+    return [...stored, ...mockRequests.filter((request) => !storedIds.has(request.id))];
+  } catch {
+    return mockRequests;
+  }
+}
+
 export function ServiceLifecycleProvider({ children }: { children: React.ReactNode }) {
   const [services] = useState<Service[]>(mockServices);
   const [categories] = useState<ServiceCategory[]>(mockCategories);
   const [details] = useState<ServiceDetail[]>(mockDetails);
-  const [requests, setRequests] = useState<ServiceRequestRecord[]>(mockRequests);
+  const [requests, setRequests] = useState<ServiceRequestRecord[]>(mergeRequestsWithLocalStorage);
   const [approvals, setApprovals] = useState<ServiceApproval[]>(mockApprovals);
   const [queueItems] = useState<ServiceQueueItem[]>(mockQueueItems);
   const [signals] = useState<ExecutiveSignal[]>(mockSignals);
@@ -108,6 +131,7 @@ export function ServiceLifecycleProvider({ children }: { children: React.ReactNo
         id: requestId,
         serviceId,
         service: service?.title ?? 'Unknown Service',
+        title: formData.title ?? '',
         category: service?.category ?? 'Unknown',
         requester: 'Associate',
         status: service?.approval === 'Not Required' ? 'In Fulfilment' : 'Pending Approval',
@@ -167,6 +191,7 @@ export function ServiceLifecycleProvider({ children }: { children: React.ReactNo
         id: requestId,
         serviceId,
         service: service?.title ?? 'Unknown Service',
+        title: formData.title ?? '',
         category: service?.category ?? 'Unknown',
         requester: 'Associate',
         status: 'Draft',

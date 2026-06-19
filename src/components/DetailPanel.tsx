@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
 import type { Task, RequestRecord, Approval, WorkflowItem, KnowledgeAsset, AuditEvent, KpiSet } from '../types/platform';
 import { StatusPill } from './StatusPill';
@@ -8,6 +9,7 @@ import { MonoId } from './MonoId';
 import { EvidenceList } from './EvidenceList';
 import { Timeline } from './Timeline';
 import { toast } from 'sonner';
+import { myRequestsHref } from '../utils/localMyRequests';
 interface DetailPanelProps {
   entity: Task | RequestRecord | Approval | WorkflowItem | KnowledgeAsset | AuditEvent | KpiSet | null;
   type: 'task' | 'request' | 'approval' | 'workflow' | 'knowledge' | 'audit' | 'kpi' | null;
@@ -18,6 +20,7 @@ export function DetailPanel({
   type,
   onClose
 }: DetailPanelProps) {
+  const navigate = useNavigate();
   // Close on escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -162,7 +165,7 @@ export function DetailPanel({
 
       <div className="pt-6 border-t border-border-subtle flex gap-3">
         <button onClick={() => {
-        toast.success('Request status opened in prototype mode');
+        navigate(myRequestsHref(request.id));
         onClose();
       }} className="flex-1 bg-primary text-white py-2 rounded-button font-medium hover:bg-navy-800 transition-colors">
           View Request Status

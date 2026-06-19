@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   CalendarDays,
   CheckCircle2,
@@ -26,6 +26,10 @@ import { WorkItemLinkedKnowledgeCard } from '../components/WorkItemLinkedKnowled
 import { useViewingMode } from '../context/ViewingModeContext';
 import { useWorkspaceRole } from '../context/WorkspaceRoleContext';
 import type { WorkspaceRole } from '../config/segments';
+import {
+  formatLocalStorageRequest,
+  workspaceTabForStatus,
+} from '../utils/localMyRequests';
 
 type WorkspaceRoute = 'my-work' | 'my-requests' | 'working-sessions' | 'activity';
 type ViewMode = 'Table' | 'Card' | 'List' | 'Calendar';
@@ -561,6 +565,8 @@ function WorkspacePageShell({ route }: { route: WorkspaceRoute }) {
   const { mode } = useViewingMode();
   const { activeRole, activeSegment } = useWorkspaceRole();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const highlightId = searchParams.get('highlight');
   const meta = routeMeta[route];
   
   const loadRecords = () => {
@@ -568,36 +574,9 @@ function WorkspacePageShell({ route }: { route: WorkspaceRoute }) {
     if (route === 'my-requests') {
       try {
         const localRequests = JSON.parse(localStorage.getItem('local_my_requests') || '[]');
-        console.log("WorkspaceSectionPages loaded local requests:", localRequests.length);
-        if (localRequests.length > 0) {
-          toast.success(`Loaded ${localRequests.length} local requests.`);
-        }
-        const mappedLocalRequests = localRequests.map((r: any) => {
-          const rawDate = r.lastUpdate || r.lastUpdated || r.submittedAt || '';
-          let formattedDate = rawDate;
-          if (rawDate && rawDate.includes('T')) {
-            try {
-              const d = new Date(rawDate);
-              formattedDate = `Today, ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-            } catch (e) {
-              formattedDate = 'Just now';
-            }
-          } else if (!rawDate) {
-            formattedDate = 'Just now';
-          }
-          
-          return {
-            ...r,
-            title: r.title || r.service || 'Unknown Request',
-            type: r.type || 'Request',
-            dueDate: r.dueDate || 'Pending',
-            source: r.source || r.category || 'Unknown',
-            lastUpdate: formattedDate,
-            owner: r.owner || 'Unassigned',
-            status: r.status || 'Submitted',
-            priority: r.priority || r.urgency || 'Normal',
-          };
-        });
+        const mappedLocalRequests = localRequests.map((r: Record<string, unknown>) =>
+          formatLocalStorageRequest(r)
+        );
         return [...mappedLocalRequests, ...defaultRecords];
       } catch (e) {
         console.error("Error parsing local requests in WorkspaceSectionPages", e);
@@ -637,6 +616,15 @@ function WorkspacePageShell({ route }: { route: WorkspaceRoute }) {
     window.addEventListener('local_requests_updated', handleStorageChange);
     return () => window.removeEventListener('local_requests_updated', handleStorageChange);
   }, [activeRole, mode, route, meta.tabs]);
+
+  React.useEffect(() => {
+    if (!highlightId || route !== 'my-requests' || records.length === 0) return;
+    const match = records.find((record) => record.id === highlightId);
+    if (!match) return;
+    setActiveTab(workspaceTabForStatus(match.status));
+    setDrawerRecord(match);
+    setSearchParams({}, { replace: true });
+  }, [highlightId, records, route, setSearchParams]);
 
   const filters = useMemo(() => ['All', ...Array.from(new Set(records.flatMap((record) => [record.status, record.priority, record.category]))).slice(0, 7)], [records]);
   const visibleRecords = records.filter((record) => {
@@ -785,7 +773,20 @@ function tabMatch(route: WorkspaceRoute, tab: string, record: WorkspaceRecord) {
     if (tab === 'Blockers') return record.type === 'Blocker' || record.status === 'Blocked';
     if (tab === 'Updates') return record.type === 'Update' || record.status === 'Needs Update';
   }
-  if (route === 'my-requests') return tab === record.status || (tab === 'In Fulfilment' && record.status === 'In Fulfilment');
+  if (route === 'my-requests') {
+    if (tab === 'All') return true;
+    if (tab === 'Drafts') return record.status === 'Draft';
+    if (tab === 'Submitted') {
+      return ['Submitted', 'Pending Approval', 'In Review', 'New', 'Routed'].includes(record.status);
+    }
+    if (tab === 'Awaiting Input') {
+      return ['Awaiting Input', 'Pending Info', 'Returned for Information'].includes(record.status);
+    }
+    if (tab === 'In Fulfilment') return record.status === 'In Fulfilment';
+    if (tab === 'Completed') return ['Completed', 'Closed'].includes(record.status);
+    if (tab === 'Rejected') return record.status === 'Rejected';
+    return tab === record.status;
+  }
   if (route === 'working-sessions') {
     if (tab === 'My Follow-ups') return record.status === 'Action Required';
     if (tab === 'Decisions') return record.status === 'Decision Captured';

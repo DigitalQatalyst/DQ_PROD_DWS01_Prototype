@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Clock, User, Copy, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useServiceLifecycle } from '../context/ServiceLifecycleContext';
@@ -18,9 +18,11 @@ import {
   buildRequestStatusTrail,
   resolveMarketplaceStage,
 } from '../utils/marketplaceBreadcrumbs';
+import { myRequestsHref } from '../utils/localMyRequests';
 
 export function RequestStatusPage() {
   const { requestId } = useParams<{ requestId: string }>();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const stage = resolveMarketplaceStage(searchParams.get('from'), 'deploy');
   const { getRequestById, updateRequestStatus } = useServiceLifecycle();
@@ -36,7 +38,7 @@ export function RequestStatusPage() {
   }, [requestId]);
 
   const handleBackToMyRequests = () => {
-    toast.info('My Requests opened in prototype state');
+    navigate(myRequestsHref(requestId));
   };
 
   const handleInfoSubmit = (_response: string) => {

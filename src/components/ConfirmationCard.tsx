@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, ArrowRight, User, ListTree, Clock, Activity } from 'lucide-react';
 import type { ServiceDetail } from '../types/serviceLifecycle';
+import { myRequestsHref } from '../utils/localMyRequests';
 
 interface ConfirmationCardProps {
   requestId: string;
@@ -79,7 +80,7 @@ export function ConfirmationCard({ requestId, detail, isApprovalRequired }: Conf
 
           <div className="flex flex-col sm:flex-row gap-3">
             <button
-              onClick={() => navigate(`/requests/${requestId}/status`)}
+              onClick={() => navigate(myRequestsHref(requestId))}
               className="flex-1 py-2.5 px-4 bg-secondary text-white font-semibold text-sm rounded-button hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
             >
               View Request Status

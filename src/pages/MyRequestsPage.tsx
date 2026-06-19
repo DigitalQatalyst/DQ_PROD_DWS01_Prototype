@@ -10,9 +10,13 @@ import { OwnerBadge } from '../components/OwnerBadge';
 import { getRequests } from '../services/platform.service';
 import type { RequestRecord } from '../types/platform';
 import { usePersona } from '../context/PersonaContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Plus } from 'lucide-react';
+import {
+  formatLocalStorageRequest,
+  myRequestsTabForStatus,
+} from '../utils/localMyRequests';
 export function MyRequestsPage() {
   const [activeTab, setActiveTab] = useState('Submitted');
   const [search, setSearch] = useState('');
@@ -24,6 +28,8 @@ export function MyRequestsPage() {
     activePersona
   } = usePersona();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const highlightId = searchParams.get('highlight');
   const tabs = ['Submitted', 'Drafts', 'Pending Info', 'In Review', 'Closed'];
   useEffect(() => {
     const fetchRequests = () => {
@@ -35,17 +41,9 @@ export function MyRequestsPage() {
         
         try {
           const localRequests = JSON.parse(localStorage.getItem('local_my_requests') || '[]');
-          const formattedLocalRequests = localRequests.map((r: any) => ({
-            ...r,
-            title: r.title || r.service || 'Unknown Request',
-            type: r.type || 'Request',
-            dueDate: r.dueDate || 'Pending',
-            priority: r.priority || r.urgency || 'Normal',
-            status: r.status || 'Submitted',
-            slaState: r.sla === 'At Risk' ? 'At Risk' : r.sla === 'Breached' ? 'Breached' : 'On Track',
-            requesterUserId: 'USR-001',
-            ownerUserId: 'USR-002' // default fallback
-          }));
+          const formattedLocalRequests = localRequests.map((r: Record<string, unknown>) =>
+            formatLocalStorageRequest(r)
+          );
           console.log("Loaded local requests:", formattedLocalRequests.length);
           setRequests([...formattedLocalRequests, ...visible]);
         } catch (e) {
@@ -60,6 +58,16 @@ export function MyRequestsPage() {
     window.addEventListener('local_requests_updated', fetchRequests);
     return () => window.removeEventListener('local_requests_updated', fetchRequests);
   }, [activePersona]);
+
+  useEffect(() => {
+    if (!highlightId || requests.length === 0) return;
+    const match = requests.find((request) => request.id === highlightId);
+    if (!match) return;
+    setActiveTab(myRequestsTabForStatus(match.status));
+    setSelectedRequest(match);
+    setSearchParams({}, { replace: true });
+  }, [highlightId, requests, setSearchParams]);
+
   const filteredRequests = requests.filter((r) => {
     if (activeTab === 'Submitted') return r.status !== 'Draft' && r.status !== 'Closed';
     if (activeTab === 'Drafts') return r.status === 'Draft';

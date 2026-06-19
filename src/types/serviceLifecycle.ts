@@ -103,6 +103,7 @@ export interface ServiceRequestRecord {
   id: string;
   serviceId: string;
   service: string;
+  title?: string;
   category: string;
   requester: string;
   status: ServiceRequestStatus;

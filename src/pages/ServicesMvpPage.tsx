@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode, RefObject } from 'react';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft,
   Bookmark,
@@ -26,6 +26,10 @@ import { toast } from 'sonner';
 import { DqButton, DqIconButton } from '../components/DqButton';
 
 type ServiceRequestStatus =
+  | 'Draft'
+  | 'Submitted'
+  | 'Pending Approval'
+  | 'In Fulfilment'
   | 'New'
   | 'In Review'
   | 'Triaged'
@@ -101,9 +105,65 @@ export type ServiceQueueView =
 
 const currentUser = 'Amina Hassan';
 const savedViewStorageKey = 'dws-service-hub-saved-view';
+const serviceHubStorageKey = 'local_my_requests';
+
+function formatHubDate(value?: string): string {
+  if (!value) return 'Today';
+  if (!value.includes('T')) return value;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'Today';
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function mapUrgencyToPriority(urgency?: string): ServiceRequest['priority'] {
+  const map: Record<string, ServiceRequest['priority']> = {
+    Low: 'Low',
+    Normal: 'Medium',
+    Medium: 'Medium',
+    High: 'High',
+    Critical: 'Critical',
+  };
+  return map[urgency ?? 'Normal'] ?? 'Medium';
+}
+
+function mapStoredToServiceRequest(record: Record<string, unknown>): ServiceRequest {
+  const status = (record.status as ServiceRequestStatus) || 'Submitted';
+  const submittedOn = formatHubDate(record.submittedAt as string);
+
+  return {
+    id: record.id as string,
+    title: (record.title as string) || (record.service as string) || 'Unknown Request',
+    requester: (record.requester as string) || currentUser,
+    owner: (record.owner as string) || 'Unassigned',
+    queue: (record.queue as string) || 'Central Support Queue',
+    service: record.service as string,
+    category: record.category as string,
+    status,
+    priority: mapUrgencyToPriority((record.priority as string) || (record.urgency as string)),
+    sla: 'On Track',
+    updated: submittedOn,
+    submittedOn,
+    nextAction: status === 'Draft' ? 'Complete and submit draft' : 'Awaiting fulfilment update',
+    description: (record.expectedOutcome as string) || '',
+    fulfilmentOwner: record.owner as string,
+    ownerTeam: record.category as string,
+    createdAt: submittedOn,
+    requestedFor: currentUser,
+  };
+}
+
+function loadStoredMyServiceRequests(): ServiceRequest[] {
+  try {
+    const raw = JSON.parse(localStorage.getItem(serviceHubStorageKey) || '[]');
+    if (!Array.isArray(raw)) return [];
+    return raw.map((record) => mapStoredToServiceRequest(record as Record<string, unknown>));
+  } catch {
+    return [];
+  }
+}
 
 // Requester-facing requests submitted by the logged-in user. These power the Service Hub tabs.
-const myServiceRequests: ServiceRequest[] = [
+const seedMyServiceRequests: ServiceRequest[] = [
   {
     id: 'REQ-2024-0587',
     title: 'Access to Finance Dashboard',
@@ -655,7 +715,15 @@ const serviceRequests: ServiceRequest[] = [
   },
 ];
 
-const allRequests: ServiceRequest[] = [...myServiceRequests, ...serviceRequests];
+function mergeMyServiceRequests(): ServiceRequest[] {
+  const stored = loadStoredMyServiceRequests();
+  const seedIds = new Set(seedMyServiceRequests.map((request) => request.id));
+  return [...stored.filter((request) => !seedIds.has(request.id)), ...seedMyServiceRequests];
+}
+
+function getAllRequests(): ServiceRequest[] {
+  return [...mergeMyServiceRequests(), ...serviceRequests];
+}
 
 const queueMeta: Record<ServiceQueueView, { overline: string; title: string; description: string }> = {
   'central-support-queue': {
@@ -802,14 +870,24 @@ function monthLabel(value?: string): string | null {
 
 export function ServicesHubPage({ view }: { view?: ServiceHubView }) {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const highlightId = searchParams.get('highlight');
   const initialTab: HubTab = view === 'pending-actions' ? 'Pending Actions' : 'My Requests';
 
+  const [myServiceRequests, setMyServiceRequests] = useState<ServiceRequest[]>(() => mergeMyServiceRequests());
   const [activeTab, setActiveTab] = useState<HubTab>(initialTab);
   const [filters, setFilters] = useState<HubFilters>(defaultFilters);
   const [sort, setSort] = useState<HubSort>(defaultSort);
   const [page, setPage] = useState(1);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [showRightRail, setShowRightRail] = useState(true);
+
+  useEffect(() => {
+    const refresh = () => setMyServiceRequests(mergeMyServiceRequests());
+    refresh();
+    window.addEventListener('local_requests_updated', refresh);
+    return () => window.removeEventListener('local_requests_updated', refresh);
+  }, []);
 
   useEffect(() => {
     setActiveTab(view === 'pending-actions' ? 'Pending Actions' : 'My Requests');
@@ -819,20 +897,20 @@ export function ServicesHubPage({ view }: { view?: ServiceHubView }) {
     setPage(1);
   }, [activeTab, filters]);
 
-  const categoryOptions = useMemo(() => buildOptions(myServiceRequests.map((item) => item.category)), []);
-  const ownerOptions = useMemo(() => buildOptions(myServiceRequests.map((item) => item.owner)), []);
-  const statusOptions = useMemo(() => buildOptions(myServiceRequests.map((item) => item.status)), []);
-  const slaOptions = useMemo(() => buildOptions(myServiceRequests.map((item) => item.sla)), []);
-  const priorityOptions = useMemo(() => buildOptions(myServiceRequests.map((item) => item.priority)), []);
+  const categoryOptions = useMemo(() => buildOptions(myServiceRequests.map((item) => item.category)), [myServiceRequests]);
+  const ownerOptions = useMemo(() => buildOptions(myServiceRequests.map((item) => item.owner)), [myServiceRequests]);
+  const statusOptions = useMemo(() => buildOptions(myServiceRequests.map((item) => item.status)), [myServiceRequests]);
+  const slaOptions = useMemo(() => buildOptions(myServiceRequests.map((item) => item.sla)), [myServiceRequests]);
+  const priorityOptions = useMemo(() => buildOptions(myServiceRequests.map((item) => item.priority)), [myServiceRequests]);
   const dateRangeOptions = useMemo(() => {
     const labels = myServiceRequests
       .map((item) => monthLabel(item.submittedOn))
       .filter((value): value is string => Boolean(value))
       .sort((a, b) => parseRequestDate(`01 ${b}`) - parseRequestDate(`01 ${a}`));
     return ['All dates', ...Array.from(new Set(labels))];
-  }, []);
+  }, [myServiceRequests]);
 
-  const tabRequests = useMemo(() => requestsForTab(activeTab), [activeTab]);
+  const tabRequests = useMemo(() => requestsForTab(activeTab, myServiceRequests), [activeTab, myServiceRequests]);
   const columns = useMemo(() => columnsForTab(activeTab), [activeTab]);
 
   const filteredRequests = useMemo(() => {
@@ -889,14 +967,14 @@ export function ServicesHubPage({ view }: { view?: ServiceHubView }) {
 
   const summary = {
     total: myServiceRequests.length,
-    open: myServiceRequests.filter((item) => !['Completed', 'Closed'].includes(item.status)).length,
+    open: myServiceRequests.filter((item) => !['Completed', 'Closed', 'Draft'].includes(item.status)).length,
     awaiting: myServiceRequests.filter((item) => item.status === 'Awaiting Info').length,
     completed: myServiceRequests.filter((item) => ['Completed', 'Closed'].includes(item.status)).length,
   };
 
   const recentlyUpdated = useMemo(
     () => [...myServiceRequests].sort((a, b) => parseRequestDate(b.updated) - parseRequestDate(a.updated)).slice(0, 3),
-    [],
+    [myServiceRequests],
   );
 
   const updateFilter = (key: keyof HubFilters, value: string) => setFilters((current) => ({ ...current, [key]: value }));
@@ -905,6 +983,15 @@ export function ServicesHubPage({ view }: { view?: ServiceHubView }) {
     setSort(defaultSort);
   };
   const openRequest = (request: ServiceRequest) => navigate(`/services/requests/${request.id}`);
+
+  useEffect(() => {
+    if (!highlightId || myServiceRequests.length === 0) return;
+    const match = myServiceRequests.find((request) => request.id === highlightId);
+    if (!match) return;
+    setActiveTab('My Requests');
+    openRequest(match);
+    setSearchParams({}, { replace: true });
+  }, [highlightId, myServiceRequests, navigate, setSearchParams]);
   const onSort = (key: string) =>
     setSort((current) => ({ key, direction: current.key === key && current.direction === 'asc' ? 'desc' : 'asc' }));
 
@@ -1247,19 +1334,19 @@ function HubSettingsModal({ open, showRightRail, onToggleRightRail, onClose }: {
   );
 }
 
-function requestsForTab(tab: HubTab): ServiceRequest[] {
+function requestsForTab(tab: HubTab, requests: ServiceRequest[]): ServiceRequest[] {
   switch (tab) {
     case 'Pending Actions':
-      return myServiceRequests.filter((request) => Boolean(request.pendingAction));
+      return requests.filter((request) => Boolean(request.pendingAction));
     case 'Recently Updated':
-      return [...myServiceRequests].sort((a, b) => parseRequestDate(b.updated) - parseRequestDate(a.updated));
+      return [...requests].sort((a, b) => parseRequestDate(b.updated) - parseRequestDate(a.updated));
     case 'Awaiting Information':
-      return myServiceRequests.filter((request) => request.status === 'Awaiting Info');
+      return requests.filter((request) => request.status === 'Awaiting Info');
     case 'Closed / Completed':
-      return myServiceRequests.filter((request) => ['Completed', 'Closed'].includes(request.status));
+      return requests.filter((request) => ['Completed', 'Closed'].includes(request.status));
     case 'My Requests':
     default:
-      return myServiceRequests;
+      return requests;
   }
 }
 
@@ -2298,7 +2385,8 @@ function isClosedStatus(status: ServiceRequestStatus) {
 export function ServiceRequestDetailPage() {
   const { requestId } = useParams();
   const navigate = useNavigate();
-  const request = allRequests.find((item) => item.id === requestId);
+  const request = getAllRequests().find((item) => item.id === requestId);
+  const myRequests = mergeMyServiceRequests();
 
   if (!request) {
     return (
@@ -2320,8 +2408,8 @@ export function ServiceRequestDetailPage() {
     );
   }
 
-  const context: RequestContext = myServiceRequests.some((item) => item.id === request.id) ? 'requester' : 'operational';
-  const list = context === 'requester' ? myServiceRequests : serviceRequests;
+  const context: RequestContext = myRequests.some((item) => item.id === request.id) ? 'requester' : 'operational';
+  const list = context === 'requester' ? myRequests : serviceRequests;
 
   return <RequestDetailView key={request.id} request={request} list={list} context={context} />;
 }
