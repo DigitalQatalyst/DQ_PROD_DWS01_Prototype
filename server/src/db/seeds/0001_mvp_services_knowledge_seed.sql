@@ -156,8 +156,8 @@ on conflict (service_category_id, service_name) do update set
   published_at = excluded.published_at;
 
 insert into service_required_inputs (service_id, label, description, input_type, is_required, sort_order)
-select service_id, label, description, input_type, is_required, sort_order
-from service_definitions
+select sd.service_id, input.label, input.description, input.input_type, input.is_required, input.sort_order
+from service_definitions sd
 cross join (
   values
     ('Request description', 'Describe what you need and the desired outcome.', 'textarea', true, 10),
@@ -166,7 +166,7 @@ cross join (
     ('Department or team', 'Department or team impacted by the request.', 'text', true, 40),
     ('Supporting attachment', 'Optional supporting file or evidence link.', 'file', false, 50)
 ) as input(label, description, input_type, is_required, sort_order)
-where status = 'Published'
+where sd.status = 'Published'
 on conflict (service_id, label) do update set
   description = excluded.description,
   input_type = excluded.input_type,

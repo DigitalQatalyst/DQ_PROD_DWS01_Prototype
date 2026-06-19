@@ -12,6 +12,7 @@ import {
   Wrench,
 } from 'lucide-react';
 import type { Service, ServiceDetail } from '../types/serviceLifecycle';
+import { formatServiceSla } from './formatServiceSla';
 import type {
   ApprovalStep,
   GovernanceMetric,
@@ -74,38 +75,50 @@ export function buildServiceOverviewRows(
 
 export function buildServiceAppliesTo(detail: ServiceDetail, service: Service): string[] {
   const items = [
+    service.domain,
+    service.submarketplace,
     service.category,
-    ...detail.whenToUse.slice(0, 3),
-  ];
+    ...detail.whenToUse.slice(0, 2),
+  ].filter(Boolean) as string[];
 
   return [...new Set(items)].slice(0, 4);
 }
 
-export function buildServiceKeyReminders(detail: ServiceDetail): KeyReminder[] {
+export function buildServiceKeyReminders(
+  detail: ServiceDetail,
+  service?: Service,
+): KeyReminder[] {
   const reminders: KeyReminder[] = [];
+  const approvalLabel =
+    service?.approvalLabel ??
+    (detail.approval === 'Required'
+      ? 'Governance / Owner approval'
+      : detail.approval === 'Conditional'
+        ? 'Manager approval'
+        : 'Self-serve (no approval)');
 
   if (detail.requiredInputs[0]) {
     reminders.push({
       icon: ClipboardList,
-      title: 'Required inputs must be complete',
-      description: `Include ${detail.requiredInputs.slice(0, 3).join(', ')} before submission.`,
+      title: 'Complete all required inputs',
+      description: detail.requiredInputs.join(' · '),
     });
   }
 
   if (detail.approval !== 'Not Required') {
     reminders.push({
       icon: Shield,
-      title: `${detail.approval} approval applies`,
+      title: approvalLabel,
       description:
         detail.approvalDetail ||
-        'Approval may be required depending on role, access scope, or unit policy.',
+        'Your request may be reviewed before fulfilment begins.',
     });
   }
 
   reminders.push({
     icon: ListChecks,
-    title: 'SLA clock starts on submit',
-    description: `Target fulfilment within ${detail.sla}. Escalation: ${detail.escalationTrigger}`,
+    title: `Target response: ${formatServiceSla(detail.sla)}`,
+    description: 'The SLA clock starts when you submit a complete request.',
   });
 
   return reminders.slice(0, 3);
@@ -129,7 +142,7 @@ export function buildServiceGovernanceMetrics(
     {
       icon: ClipboardList,
       label: 'Response SLA',
-      value: detail.sla,
+      value: formatServiceSla(detail.sla),
     },
     {
       icon: Shield,
@@ -251,7 +264,8 @@ export function buildServiceSupportingMaterials(service: Service): SupportingMat
 }
 
 export function getServiceComplianceLabel(service: Service): string {
-  if (service.approval === 'Required') return 'Approval required';
-  if (service.approval === 'Conditional') return 'Conditional';
-  return 'Open request';
+  if (service.approvalLabel) return service.approvalLabel;
+  if (service.approval === 'Required') return 'Governance / Owner approval';
+  if (service.approval === 'Conditional') return 'Manager approval';
+  return 'Self-serve (no approval)';
 }

@@ -5,6 +5,7 @@ import { config } from './config.js';
 import { createSessionMiddleware } from './session/session.js';
 import { authRouter } from './auth/routes.js';
 import { sessionRouter } from './session/routes.js';
+import { discoveryRouter } from './discovery/routes.js';
 
 /**
  * Builds the BFF Express app without binding a port. This is the unit of
@@ -46,6 +47,7 @@ export function createApp(): Express {
 
   app.use('/auth', authRouter);
   app.use('/api/session', sessionRouter);
+  app.use('/api/discovery', discoveryRouter);
 
   return app;
 }

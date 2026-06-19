@@ -6,7 +6,7 @@ export interface MarketplaceCatalogCardProps {
   metaLabel: string;
   title: string;
   description: string;
-  footerId: string;
+  footerId?: string;
   badge?: React.ReactNode;
   highlighted?: boolean;
   disabled?: boolean;
@@ -65,14 +65,16 @@ export function MarketplaceCatalogCard({
         {description}
       </p>
 
-      <div className="mt-4 flex items-center justify-between border-t border-border-subtle pt-3 font-mono text-[10px] uppercase tracking-[0.16em] text-text-disabled">
-        <span className="truncate pr-3">{footerId}</span>
-        {!disabled && (
-          <span className="shrink-0 text-secondary opacity-0 transition-opacity group-hover:opacity-100">
-            View
-          </span>
-        )}
-      </div>
+      {footerId && (
+        <div className="mt-4 flex items-center justify-between border-t border-border-subtle pt-3 font-mono text-[10px] uppercase tracking-[0.16em] text-text-disabled">
+          <span className="truncate pr-3">{footerId}</span>
+          {!disabled && (
+            <span className="shrink-0 text-secondary opacity-0 transition-opacity group-hover:opacity-100">
+              View
+            </span>
+          )}
+        </div>
+      )}
     </button>
   );
 }

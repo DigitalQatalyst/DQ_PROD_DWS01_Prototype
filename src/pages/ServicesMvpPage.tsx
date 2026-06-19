@@ -1001,19 +1001,25 @@ export function ServicesHubPage({ view }: { view?: ServiceHubView }) {
     toast.success('Service view saved');
   };
 
+  const pageTitle = view === 'my-requests' ? 'My Requests' : 'Service Hub';
+
   return (
-    <div className="w-full px-6 py-6 pb-12 lg:px-8">
-      <nav aria-label="Breadcrumb" className="mb-3 flex flex-wrap items-center gap-2 text-sm text-text-muted">
+    <div className="min-h-[calc(100vh-125px)] w-full bg-[#f7f7fd] px-6 py-6 pb-12 lg:px-8">
+      <nav aria-label="Breadcrumb" className="mb-3 flex flex-wrap items-center gap-2 text-[13px] text-text-muted">
         <Link className="font-semibold text-primary hover:text-secondary" to="/services">Services</Link>
         <span aria-hidden="true">/</span>
         <span className="font-semibold text-text-secondary">Service Hub</span>
       </nav>
 
-      <header className="mb-4 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+      <header className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div className="min-w-0">
-          <div className="dq-overline mb-2">SERVICE HUB</div>
-          <h1 className="dq-page-title">Service Hub</h1>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-primary">
+          <div className="mb-2 font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-secondary">
+            Service Hub
+          </div>
+          <h1 className="text-[28px] font-bold leading-tight tracking-tight text-primary sm:text-[32px]">
+            {pageTitle}
+          </h1>
+          <p className="mt-2 max-w-3xl text-[14px] leading-relaxed text-text-secondary">
             Track your submitted requests, review pending actions, and follow service request progress across DWS.
           </p>
         </div>
@@ -1026,9 +1032,9 @@ export function ServicesHubPage({ view }: { view?: ServiceHubView }) {
 
       <div className={`grid gap-6 ${showRightRail ? '2xl:grid-cols-[minmax(0,1fr)_360px]' : 'grid-cols-1'}`}>
         <main className="min-w-0 space-y-4">
-          <section className="overflow-hidden rounded-card border border-border-default bg-white shadow-sm">
+          <section className="overflow-hidden rounded-xl border border-border-default bg-white shadow-sm">
             <div className="px-5 pt-5">
-              <h2 className="text-lg font-semibold text-primary">My Service Requests</h2>
+              <h2 className="text-sm font-semibold text-primary">My service requests</h2>
             </div>
             <HubTabs activeTab={activeTab} onChange={setActiveTab} />
             <HubFilterBar
@@ -1168,7 +1174,7 @@ function HubTable({
         <thead>
           <tr className="border-b border-border-subtle bg-surface">
             {columns.map((column) => (
-              <th key={column.key} className={`px-4 py-3 text-xs font-semibold uppercase text-[#454560] ${column.align === 'center' ? 'text-center' : ''}`} style={column.width ? { width: column.width } : undefined}>
+              <th key={column.key} className={`px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-text-muted ${column.align === 'center' ? 'text-center' : ''}`} style={column.width ? { width: column.width } : undefined}>
                 {column.sortable ? (
                   <button onClick={() => onSort(column.key)} className="inline-flex items-center gap-1 hover:text-primary">
                     {column.label} <span className="text-[11px]">{sort.key === column.key ? (sort.direction === 'asc' ? '↑' : '↓') : '↕'}</span>
@@ -1184,7 +1190,7 @@ function HubTable({
           {requests.map((request) => (
             <tr key={`${request.id}-${columns[0].key}`} onClick={() => onOpen(request)} className="cursor-pointer transition hover:bg-navy-50">
               {columns.map((column) => (
-                <td key={column.key} className={`px-4 py-3.5 text-sm ${column.align === 'center' ? 'text-center' : ''}`}>
+                <td key={column.key} className={`px-4 py-3.5 text-[13px] text-text-secondary ${column.align === 'center' ? 'text-center' : ''}`}>
                   {column.render(request)}
                 </td>
               ))}
@@ -1269,8 +1275,8 @@ function HubRightRail({
         <div className="space-y-4">
           {recent.map((request) => (
             <button key={request.id} onClick={() => onOpen(request)} className="block w-full rounded-button text-left hover:bg-navy-50">
-              <div className="text-sm font-bold text-info-text">{request.title}</div>
-              <div className="mt-1 text-sm font-medium text-primary">{request.id} · {request.updated}</div>
+              <div className="text-[13px] font-bold text-primary">{request.title}</div>
+              <div className="mt-1 text-[13px] text-text-muted">{request.id} · {request.updated}</div>
             </button>
           ))}
         </div>
@@ -1350,10 +1356,14 @@ function requestsForTab(tab: HubTab, requests: ServiceRequest[]): ServiceRequest
   }
 }
 
-const requestTitleCell = (request: ServiceRequest) => <span className="font-medium text-primary">{request.title}</span>;
-const requestIdCell = (request: ServiceRequest) => <span className="font-bold text-info-text">{request.id}</span>;
+const requestTitleCell = (request: ServiceRequest) => (
+  <span className="text-[13px] font-bold text-primary">{request.title}</span>
+);
+const requestIdCell = (request: ServiceRequest) => (
+  <span className="text-[13px] font-medium text-text-muted">{request.id}</span>
+);
 const openActionCell = () => (
-  <span className="whitespace-nowrap font-bold text-info-text">Open request →</span>
+  <span className="whitespace-nowrap text-[13px] font-semibold text-secondary">Open request →</span>
 );
 
 function columnsForTab(tab: HubTab): HubColumn[] {
@@ -1362,7 +1372,7 @@ function columnsForTab(tab: HubTab): HubColumn[] {
       { key: 'action', label: 'Action', width: '200px', render: (r) => <span className="font-semibold text-primary">{r.pendingAction}</span> },
       { key: 'id', label: 'Request ID', width: '150px', sortable: true, render: requestIdCell, sortValue: (r) => r.id },
       { key: 'title', label: 'Request Title', width: '220px', render: requestTitleCell },
-      { key: 'service', label: 'Service', width: '160px', render: (r) => <span className="font-medium text-primary">{r.service}</span> },
+      { key: 'service', label: 'Service', width: '160px', render: (r) => <span className="text-[13px] font-medium text-text-secondary">{r.service}</span> },
       { key: 'dueDate', label: 'Due Date', width: '120px', sortable: true, render: (r) => <span className="text-primary">{r.dueDate ?? '—'}</span>, sortValue: (r) => parseRequestDate(r.dueDate) },
       { key: 'priority', label: 'Priority', width: '110px', render: (r) => <PriorityBadge priority={r.priority} /> },
       { key: 'status', label: 'Status', width: '130px', render: (r) => <StatusBadge label={r.status} /> },
@@ -1395,7 +1405,7 @@ function columnsForTab(tab: HubTab): HubColumn[] {
     return [
       { key: 'id', label: 'Request ID', width: '150px', sortable: true, render: requestIdCell, sortValue: (r) => r.id },
       { key: 'title', label: 'Request Title', width: '220px', render: requestTitleCell },
-      { key: 'service', label: 'Service', width: '170px', render: (r) => <span className="font-medium text-primary">{r.service}</span> },
+      { key: 'service', label: 'Service', width: '170px', render: (r) => <span className="text-[13px] font-medium text-text-secondary">{r.service}</span> },
       { key: 'closedOn', label: 'Closed On', width: '130px', sortable: true, render: (r) => <span className="text-primary">{r.closedOn ?? '—'}</span>, sortValue: (r) => parseRequestDate(r.closedOn) },
       { key: 'closureStatus', label: 'Closure Status', width: '140px', render: (r) => <StatusBadge label={r.closureStatus ?? r.sla} /> },
       { key: 'rating', label: 'Rating', width: '120px', render: (r) => <Rating value={r.rating} /> },
@@ -1405,7 +1415,7 @@ function columnsForTab(tab: HubTab): HubColumn[] {
   return [
     { key: 'id', label: 'Request ID', width: '150px', sortable: true, render: requestIdCell, sortValue: (r) => r.id },
     { key: 'title', label: 'Request Title', width: '200px', sortable: true, render: requestTitleCell, sortValue: (r) => r.title },
-    { key: 'service', label: 'Service', width: '160px', render: (r) => <span className="font-medium text-primary">{r.service}</span> },
+    { key: 'service', label: 'Service', width: '160px', render: (r) => <span className="text-[13px] font-medium text-text-secondary">{r.service}</span> },
     { key: 'status', label: 'Status', width: '120px', sortable: true, render: (r) => <StatusBadge label={r.status} />, sortValue: (r) => r.status },
     { key: 'sla', label: 'SLA', width: '110px', render: (r) => <StatusBadge label={r.sla} /> },
     { key: 'priority', label: 'Priority', width: '110px', sortable: true, render: (r) => <PriorityBadge priority={r.priority} />, sortValue: (r) => priorityRank(r.priority) },
@@ -1425,8 +1435,8 @@ function priorityRank(priority: ServiceRequest['priority']) {
 }
 
 function PriorityBadge({ priority }: { priority: ServiceRequest['priority'] }) {
-  const tone = priority === 'Critical' || priority === 'High' ? 'text-danger' : priority === 'Medium' ? 'text-warning' : 'text-success';
-  return <span className={`text-sm font-bold ${tone}`}>{priority}</span>;
+  const tone = priority === 'Critical' || priority === 'High' ? 'text-danger-text' : priority === 'Medium' ? 'text-warning-text' : 'text-success-text';
+  return <span className={`text-[13px] font-semibold ${tone}`}>{priority}</span>;
 }
 
 function Rating({ value }: { value?: number }) {
@@ -2634,43 +2644,47 @@ function RequestDetailView({ request, list, context }: { request: ServiceRequest
               </div>
             </div>
 
-            <div className="px-7 pb-2 pt-5">
-              <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-[30px] font-bold leading-tight text-primary">{draft.title}</h1>
-                <StatusBadge label={draft.status} />
-                <StatusBadge label={draft.sla} />
-                <span className="text-sm font-semibold text-text-secondary">{draft.priority} Priority</span>
-              </div>
-              <div className="mt-3 flex items-center gap-3">
-                <div className="h-4 w-1 rounded-full bg-secondary" />
-                <div className="text-sm font-semibold text-text-secondary">
-                  {draft.service || draft.category || 'Service request'} · Created {draft.createdAt || draft.submittedOn || draft.updated}
+            <div className="px-7 pb-4 pt-5">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <h1 className="text-[30px] font-bold leading-tight text-primary">{draft.title}</h1>
+                    <StatusBadge label={draft.status} />
+                    <StatusBadge label={draft.sla} />
+                    <span className="text-sm font-semibold text-text-secondary">{draft.priority} Priority</span>
+                  </div>
+                  <div className="mt-3 flex items-center gap-3">
+                    <div className="h-4 w-1 rounded-full bg-secondary" />
+                    <div className="text-sm font-semibold text-text-secondary">
+                      {draft.service || draft.category || 'Service request'} · Created {draft.createdAt || draft.submittedOn || draft.updated}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 self-start">
+                  <RequestHeaderActions
+                    context={context}
+                    draft={draft}
+                    dirty={dirty}
+                    onProvideInformation={provideInformation}
+                    onAddComment={focusComment}
+                    onSave={save}
+                    onReopen={reopen}
+                    onStartWorking={() => applyStatus('In Progress', 'Started working on request')}
+                    onRequestInformation={() => applyStatus('Awaiting Info', 'Information requested')}
+                    onEscalate={() => applyStatus('Escalated', 'Request escalated')}
+                    onAddNote={focusComment}
+                    onMarkReady={() => applyStatus('Ready for Closure', 'Marked ready for closure')}
+                    onClose={() => applyStatus('Closed', 'Request closed')}
+                    onToast={(label) => toast.success(`${label} captured for ${draft.id}`)}
+                    moreOpen={moreOpen}
+                    onToggleMore={() => setMoreOpen((open) => !open)}
+                  />
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-end gap-2 px-7 py-2">
-              <RequestHeaderActions
-                context={context}
-                draft={draft}
-                dirty={dirty}
-                onProvideInformation={provideInformation}
-                onAddComment={focusComment}
-                onSave={save}
-                onReopen={reopen}
-                onStartWorking={() => applyStatus('In Progress', 'Started working on request')}
-                onRequestInformation={() => applyStatus('Awaiting Info', 'Information requested')}
-                onEscalate={() => applyStatus('Escalated', 'Request escalated')}
-                onAddNote={focusComment}
-                onMarkReady={() => applyStatus('Ready for Closure', 'Marked ready for closure')}
-                onClose={() => applyStatus('Closed', 'Request closed')}
-                onToast={(label) => toast.success(`${label} captured for ${draft.id}`)}
-                moreOpen={moreOpen}
-                onToggleMore={() => setMoreOpen((open) => !open)}
-              />
-            </div>
-
-            <div className="px-7 pb-4 pt-4">
+            <div className="px-7 pb-4 pt-2">
               <div className="flex items-start">
                 {lifecycleStages.map((label, i) => {
                   const isActive = stageIndex === i;
@@ -3413,7 +3427,11 @@ function badgeTone(label: string): string {
 }
 
 function StatusBadge({ label }: { label: string }) {
-  return <span className={`rounded-pill px-2.5 py-1 text-xs font-bold ${badgeTone(label)}`}>{label}</span>;
+  return (
+    <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${badgeTone(label)}`}>
+      {label}
+    </span>
+  );
 }
 
 function SlaBadge({ label }: { label: ServiceSlaStatus }) {

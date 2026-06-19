@@ -44,10 +44,21 @@ export type SignalStatus = 'success' | 'warning' | 'danger' | 'info';
 // ─── Service Category ─────────────────────────────────────────────────
 
 export interface ServiceCategory {
-  id: ServiceCategoryId;
+  id: ServiceCategoryId | string;
+  slug?: string;
   name: string;
   description: string;
   ownerType: string;
+}
+
+export interface CatalogFilterDefinition {
+  key: string;
+  label: string;
+  filterType: 'single' | 'multi';
+  isShared: boolean;
+  submarketplaceSlug: string | null;
+  sortOrder: number;
+  options: { value: string; label: string }[];
 }
 
 // ─── Service ──────────────────────────────────────────────────────────
@@ -56,16 +67,24 @@ export interface Service {
   id: string;
   title: string;
   category: string;
-  categoryId: ServiceCategoryId;
+  categoryId: ServiceCategoryId | string;
+  /** Service domain (listing category) when sourced from discovery catalog */
+  domain?: string;
+  submarketplace?: string;
+  submarketplaceSlug?: string;
+  slug?: string;
   description: string;
   owner: string;
   sla: string;
   approval: ApprovalRequirement;
+  approvalLabel?: string;
   approvalDetail: string;
   risk: ServiceRisk;
   requiredInputs: string[];
   /** Short purpose statement shown on card and hero */
   purpose: string;
+  primaryActionLabel?: string;
+  facets?: Record<string, string>;
 }
 
 // ─── Service Detail ───────────────────────────────────────────────────

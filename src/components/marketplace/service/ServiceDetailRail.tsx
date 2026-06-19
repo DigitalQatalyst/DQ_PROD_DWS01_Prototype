@@ -1,19 +1,9 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import {
-  Calendar,
-  ClipboardList,
-  Clock,
-  FileText,
-  Flag,
-  ListTree,
-  RefreshCcw,
-  Route,
-  ShieldAlert,
-  User,
-} from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Clock, Layers, Route, Shield, User } from 'lucide-react';
 import type { Service, ServiceDetail } from '../../../types/serviceLifecycle';
 import { getServiceComplianceLabel } from '../../../utils/serviceDetailContent';
+import { formatServiceSla } from '../../../utils/formatServiceSla';
+import { MY_REQUESTS_PATH } from '../../../utils/localMyRequests';
 import {
   RailActionButton,
   RailMetaRow,
@@ -23,83 +13,62 @@ import {
 interface ServiceDetailRailProps {
   service: Service;
   detail: ServiceDetail;
+  discoveryCatalog?: boolean;
 }
 
-export function ServiceDetailRail({ service, detail }: ServiceDetailRailProps) {
+export function ServiceDetailRail({
+  service,
+  detail,
+  discoveryCatalog = false,
+}: ServiceDetailRailProps) {
   const navigate = useNavigate();
-  const [toast, setToast] = useState<string | null>(null);
-
-  const showToast = (message: string) => {
-    setToast(message);
-    setTimeout(() => setToast(null), 3000);
-  };
+  const [searchParams] = useSearchParams();
+  const stage = searchParams.get('from') || 'deploy';
+  const approvalLabel = getServiceComplianceLabel(service);
 
   return (
-    <>
-      <aside className="sticky top-24 w-full space-y-5">
-        <RailSection title="Use in Work">
-          <div className="space-y-2">
-            <RailActionButton onClick={() => showToast('Required inputs preview opened.')}>
-              <FileText size={14} className="shrink-0 text-gray-500" />
-              Preview Required Inputs
-            </RailActionButton>
-            <RailActionButton onClick={() => navigate('/requests/status')}>
-              <Route size={14} className="shrink-0 text-gray-500" />
-              Track Request Status
-            </RailActionButton>
-            <RailActionButton onClick={() => showToast('Fulfilment path opened.')}>
-              <ClipboardList size={14} className="shrink-0 text-gray-500" />
-              View Fulfilment Path
-            </RailActionButton>
-          </div>
-        </RailSection>
-
-        <RailSection title="Governance Actions">
-          <div className="space-y-0.5">
-            <button
-              type="button"
-              onClick={() => showToast('Service update request submitted to the service owner.')}
-              className="flex w-full items-center gap-2 rounded-md px-1.5 py-1.5 text-left text-xs font-medium text-gray-700 transition hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dq-orange focus-visible:ring-offset-2"
-            >
-              <RefreshCcw size={13} className="shrink-0 text-gray-400" />
-              Request Service Update
-            </button>
-            <button
-              type="button"
-              onClick={() => showToast('Routing issue flagged for service owner review.')}
-              className="flex w-full items-center gap-2 rounded-md px-1.5 py-1.5 text-left text-xs font-medium text-error transition hover:bg-error/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dq-orange focus-visible:ring-offset-2"
-            >
-              <Flag size={13} className="shrink-0" />
-              Report Incorrect Routing
-            </button>
-          </div>
-        </RailSection>
-
-        <RailSection title="Governance & Details">
-          <div className="space-y-3">
-            <RailMetaRow icon={<User size={13} />} label="Owner" value={detail.owner} />
-            <RailMetaRow icon={<ListTree size={13} />} label="Fulfilment queue" value={detail.queue} />
-            <RailMetaRow icon={<Clock size={13} />} label="Response SLA" value={detail.sla} />
-            <RailMetaRow icon={<Calendar size={13} />} label="Approval" value={detail.approval} />
-            <RailMetaRow
-              icon={<ShieldAlert size={13} />}
-              label="Escalation"
-              value={detail.escalationTrigger}
-            />
-            <RailMetaRow
-              icon={<ClipboardList size={13} />}
-              label="Compliance"
-              value={getServiceComplianceLabel(service)}
-            />
-          </div>
-        </RailSection>
-      </aside>
-
-      {toast && (
-        <div className="fixed bottom-6 right-6 z-[500] max-w-sm rounded-lg border border-gray-200 bg-white p-3 text-xs font-medium text-dq-navy shadow-dq-hover">
-          {toast}
+    <aside className="sticky top-24 w-full space-y-4">
+      <RailSection title="Quick actions">
+        <div className="space-y-2">
+          <RailActionButton
+            onClick={() =>
+              navigate(`/requests/start/${service.id}?from=${stage}`)
+            }
+          >
+            <Route size={14} className="shrink-0 text-text-muted" />
+            {service.primaryActionLabel ?? 'Request Service'}
+          </RailActionButton>
+          <RailActionButton onClick={() => navigate(MY_REQUESTS_PATH)}>
+            <Clock size={14} className="shrink-0 text-text-muted" />
+            Track request status
+          </RailActionButton>
         </div>
-      )}
-    </>
+      </RailSection>
+
+      <RailSection title="Service details">
+        <div className="space-y-3">
+          {service.domain && (
+            <RailMetaRow icon={<Layers size={13} />} label="Domain" value={service.domain} />
+          )}
+          {service.submarketplace && (
+            <RailMetaRow
+              icon={<Layers size={13} />}
+              label="Submarketplace"
+              value={service.submarketplace}
+            />
+          )}
+          <RailMetaRow icon={<User size={13} />} label="Owner" value={detail.owner} />
+          <RailMetaRow icon={<Clock size={13} />} label="Response SLA" value={formatServiceSla(detail.sla)} />
+          <RailMetaRow icon={<Shield size={13} />} label="Approval" value={approvalLabel} />
+          {!discoveryCatalog && (
+            <RailMetaRow
+              icon={<Route size={13} />}
+              label="Fulfilment queue"
+              value={detail.queue}
+            />
+          )}
+        </div>
+      </RailSection>
+    </aside>
   );
 }

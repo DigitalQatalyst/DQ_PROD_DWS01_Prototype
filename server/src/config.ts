@@ -72,6 +72,10 @@ export const config = {
       return config.database.url !== '';
     },
   },
+
+  discovery: {
+    tenantId: (process.env.DWS_TENANT_ID ?? 'a0000000-0000-4000-8000-000000000001').trim(),
+  },
 };
 
 export type AppConfig = typeof config;

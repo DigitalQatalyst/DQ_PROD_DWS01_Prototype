@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import type {
   Service,
   ServiceDetail,
@@ -11,7 +11,9 @@ import type {
   ApprovalDecisionState,
   CategoryDemand,
   ServiceOwnerPerformance,
+  CatalogFilterDefinition,
 } from '../types/serviceLifecycle';
+import { fetchDiscoveryCatalog } from '../api/discovery';
 import {
   services as mockServices,
   serviceDetails as mockDetails,
@@ -37,6 +39,9 @@ interface ServiceLifecycleContextType {
   signals: ExecutiveSignal[];
   categoryDemand: CategoryDemand[];
   serviceOwnerPerformance: ServiceOwnerPerformance[];
+  catalogSource: 'mock' | 'supabase';
+  catalogLoading: boolean;
+  catalogFilters: CatalogFilterDefinition[];
 
   // Lookups
   getServiceById: (id: string) => Service | undefined;
@@ -82,15 +87,44 @@ function mergeRequestsWithLocalStorage(): ServiceRequestRecord[] {
 }
 
 export function ServiceLifecycleProvider({ children }: { children: React.ReactNode }) {
-  const [services] = useState<Service[]>(mockServices);
-  const [categories] = useState<ServiceCategory[]>(mockCategories);
-  const [details] = useState<ServiceDetail[]>(mockDetails);
+  const [services, setServices] = useState<Service[]>(mockServices);
+  const [categories, setCategories] = useState<ServiceCategory[]>(mockCategories);
+  const [details, setDetails] = useState<ServiceDetail[]>(mockDetails);
+  const [catalogSource, setCatalogSource] = useState<'mock' | 'supabase'>('mock');
+  const [catalogLoading, setCatalogLoading] = useState(true);
+  const [catalogFilters, setCatalogFilters] = useState<CatalogFilterDefinition[]>([]);
   const [requests, setRequests] = useState<ServiceRequestRecord[]>(mergeRequestsWithLocalStorage);
   const [approvals, setApprovals] = useState<ServiceApproval[]>(mockApprovals);
   const [queueItems] = useState<ServiceQueueItem[]>(mockQueueItems);
   const [signals] = useState<ExecutiveSignal[]>(mockSignals);
   const [categoryDemand] = useState<CategoryDemand[]>(mockCategoryDemand);
   const [serviceOwnerPerformance] = useState<ServiceOwnerPerformance[]>(mockServiceOwnerPerformance);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadCatalog() {
+      const catalog = await fetchDiscoveryCatalog();
+      if (cancelled) return;
+
+      if (catalog?.services?.length) {
+        setServices(catalog.services);
+        setCategories(catalog.categories);
+        setDetails(catalog.serviceDetails);
+        setCatalogFilters(catalog.filters ?? []);
+        setCatalogSource('supabase');
+      } else {
+        setCatalogSource('mock');
+        setCatalogFilters([]);
+      }
+      setCatalogLoading(false);
+    }
+
+    void loadCatalog();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // ── Lookups ──────────────────────────────────────────────────────
 
@@ -294,6 +328,9 @@ export function ServiceLifecycleProvider({ children }: { children: React.ReactNo
     signals,
     categoryDemand,
     serviceOwnerPerformance,
+    catalogSource,
+    catalogLoading,
+    catalogFilters,
     getServiceById,
     getServiceDetailByServiceId,
     getRequestById,

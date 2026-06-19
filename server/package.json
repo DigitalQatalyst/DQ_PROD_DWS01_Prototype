@@ -10,8 +10,11 @@
     "typecheck": "tsc --noEmit",
     "db:schema": "tsx src/db/apply-schema.ts",
     "db:migrate": "tsx src/db/migrate.ts",
+    "db:migrate:supabase": "tsx src/db/migrate-supabase.ts",
+    "db:validate:supabase": "tsx src/db/validate-supabase.ts",
     "db:seed": "tsx src/db/seed.ts",
-    "db:validate:mvp": "tsx src/db/validate-mvp.ts"
+    "db:validate:mvp": "tsx src/db/validate-mvp.ts",
+    "db:teardown": "tsx src/db/teardown-mvp.ts"
   },
   "dependencies": {
     "@azure/msal-node": "^2.16.2",

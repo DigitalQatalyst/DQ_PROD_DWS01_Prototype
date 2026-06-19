@@ -24,7 +24,8 @@ export function RequestWorkflowPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const stage = resolveMarketplaceStage(searchParams.get('from'), 'deploy');
-  const { getServiceById, getServiceDetailByServiceId, submitRequest, saveDraft } = useServiceLifecycle();
+  const { getServiceById, getServiceDetailByServiceId, submitRequest, saveDraft, catalogLoading } =
+    useServiceLifecycle();
 
   const [loading, setLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState(1);
@@ -40,10 +41,14 @@ export function RequestWorkflowPage() {
   const detail = serviceId ? getServiceDetailByServiceId(serviceId) : undefined;
 
   useEffect(() => {
+    if (catalogLoading) {
+      setLoading(true);
+      return;
+    }
     setLoading(true);
     const timer = setTimeout(() => setLoading(false), 500);
     return () => clearTimeout(timer);
-  }, [serviceId]);
+  }, [serviceId, catalogLoading]);
 
   if (loading) {
     return (

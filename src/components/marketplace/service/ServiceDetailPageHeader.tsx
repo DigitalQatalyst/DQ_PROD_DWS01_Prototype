@@ -1,11 +1,12 @@
-import { Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import type { Service } from '../../../types/serviceLifecycle';
+import { Clock, Layers, Shield, User } from 'lucide-react';
+import type { Service, ServiceDetail } from '../../../types/serviceLifecycle';
+import { getServiceComplianceLabel } from '../../../utils/serviceDetailContent';
+import { formatServiceSla } from '../../../utils/formatServiceSla';
 import {
   MarketplaceEyebrowTrail,
   type MarketplaceBreadcrumbItem,
 } from '../MarketplaceEyebrowTrail';
-import { getServiceComplianceLabel } from '../../../utils/serviceDetailContent';
 import { MarketplaceDetailHeaderActions } from '../shared/MarketplaceDetailHeaderActions';
 
 interface ServiceDetailPageHeaderProps {
@@ -20,37 +21,45 @@ export function ServiceDetailPageHeader({
   startRequestHref,
 }: ServiceDetailPageHeaderProps) {
   const navigate = useNavigate();
-  const complianceLabel = getServiceComplianceLabel(service);
+  const approvalLabel = getServiceComplianceLabel(service);
+  const slaLabel = formatServiceSla(service.sla);
 
   return (
-    <header className="mb-6">
+    <header className="mb-8">
       <MarketplaceEyebrowTrail items={breadcrumbItems} variant="compact" />
 
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 flex-1">
-          <h1 className="text-[30px] font-bold leading-tight tracking-[-0.02em] text-dq-navy md:text-[36px]">
+          <h1 className="text-[28px] font-bold leading-tight tracking-tight text-primary sm:text-[32px]">
             {service.title}
           </h1>
-          <p className="mt-3 max-w-3xl text-sm leading-relaxed text-gray-500 md:text-base">
+          <p className="mt-2 max-w-3xl text-[14px] leading-relaxed text-text-secondary">
             {service.description}
           </p>
 
           <div className="mt-4 flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-dq-navy">
-              {service.category}
+            {service.domain && (
+              <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-text-secondary ring-1 ring-border-default">
+                {service.domain}
+              </span>
+            )}
+            {service.submarketplace && service.submarketplace !== service.domain && (
+              <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-text-secondary ring-1 ring-border-default">
+                {service.submarketplace}
+              </span>
+            )}
+            <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-text-secondary ring-1 ring-border-default">
+              {slaLabel}
             </span>
-            <span className="rounded-full bg-gray-100 px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-dq-navy">
-              SLA {service.sla}
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-dq-navy">
-              <Lock size={12} />
-              {complianceLabel}
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs font-medium text-text-secondary ring-1 ring-border-default">
+              <Shield size={12} />
+              {approvalLabel}
             </span>
           </div>
         </div>
 
         <MarketplaceDetailHeaderActions
-          primaryLabel="Start Request"
+          primaryLabel={service.primaryActionLabel ?? 'Request Service'}
           primaryIcon="arrow"
           onPrimaryClick={() => navigate(startRequestHref)}
           saveLabel="service"

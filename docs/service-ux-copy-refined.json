@@ -1,0 +1,1688 @@
+{
+  "_meta": {
+    "version": "1.0",
+    "rules": "Preserve slug/keys/IDs. User-facing fields only. No delivery teams or internal marketplace names in display copy.",
+    "field_mapping": {
+      "service_name": "listing_attributes.service_name (internal catalog label)",
+      "display_name": "listings.title",
+      "short_description": "listings.summary",
+      "purpose": "service_details.purpose",
+      "when_to_use": "service_details.when_to_use",
+      "when_not_to_use": "service_details.when_not_to_use",
+      "required_inputs": "service_details.required_inputs",
+      "primary_action_label": "listing_attributes.primary_action_label (constant: Request Service for all Drive services)"
+    }
+  },
+  "services": [
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000001",
+      "slug": "strategic-planning-support",
+      "service_name": "Strategic Planning Support",
+      "display_name": "Strategic planning help",
+      "short_description": "Align your initiative with company strategy and get expert guidance.",
+      "purpose": "Work with specialists to shape goals, scope, and outcomes for a programme or initiative.",
+      "when_to_use": [
+        "You are starting a new initiative and need direction",
+        "You want help turning ideas into a clear plan"
+      ],
+      "when_not_to_use": [
+        "You only need a document template",
+        "The plan is already approved"
+      ],
+      "required_inputs": [
+        "Initiative name",
+        "What you need help with",
+        "Target date for decisions"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000002",
+      "slug": "enterprise-architecture-review",
+      "service_name": "Enterprise Architecture Review",
+      "display_name": "Architecture review",
+      "short_description": "Independent review of architecture for a major programme or change.",
+      "purpose": "Have your architecture assessed before you commit to a large programme or platform change.",
+      "when_to_use": [
+        "You are launching a major programme or platform change",
+        "You need sign-off on an architecture decision"
+      ],
+      "when_not_to_use": [
+        "The change is small and already covered by existing standards",
+        "You only need an informal discussion with your lead"
+      ],
+      "required_inputs": [
+        "Programme or change summary",
+        "Architecture documents or links",
+        "Review deadline"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000003",
+      "slug": "platform-architecture-review",
+      "service_name": "Platform Architecture Review",
+      "display_name": "Platform design review",
+      "short_description": "Review shared platform designs before multiple teams depend on them.",
+      "purpose": "Get expert feedback on platform architecture and technical direction.",
+      "when_to_use": [
+        "You are designing or changing a shared platform",
+        "More than one team will rely on the outcome"
+      ],
+      "when_not_to_use": [
+        "The design was already reviewed and approved",
+        "Only one application is affected with no shared impact"
+      ],
+      "required_inputs": [
+        "Platform or system name",
+        "Design documents or diagrams",
+        "Review deadline"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000004",
+      "slug": "governance-policy-exception",
+      "service_name": "Governance / Policy Exception",
+      "display_name": "Policy exception",
+      "short_description": "Request approval to depart from a standard policy or control.",
+      "purpose": "Ask for a documented, time-bound exception when meeting a standard requirement is not possible.",
+      "when_to_use": [
+        "You cannot comply with a policy or control in your situation",
+        "You need a formal waiver with a clear reason"
+      ],
+      "when_not_to_use": [
+        "You can meet the requirement using existing approved options",
+        "You have not checked the relevant policy yet"
+      ],
+      "required_inputs": [
+        "Policy or rule reference",
+        "Why an exception is needed",
+        "How you will reduce risk",
+        "How long the exception is needed"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000005",
+      "slug": "risk-compliance-assessment",
+      "service_name": "Risk & Compliance Assessment",
+      "display_name": "Risk and compliance check",
+      "short_description": "Formal assessment of risk and compliance for a change or engagement.",
+      "purpose": "Understand regulatory, security, and compliance exposure before you proceed.",
+      "when_to_use": [
+        "You are launching something with legal or security implications",
+        "A stakeholder asked for a formal risk view"
+      ],
+      "when_not_to_use": [
+        "A recent assessment already covers this scope",
+        "You only need general policy guidance"
+      ],
+      "required_inputs": [
+        "What is being assessed",
+        "Known risks or concerns",
+        "Required completion date"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000006",
+      "slug": "benefits-realisation-review",
+      "service_name": "Benefits Realisation Review",
+      "display_name": "Benefits progress review",
+      "short_description": "Check whether expected benefits from an initiative are on track.",
+      "purpose": "Review benefits tracking and evidence for an active initiative or stage gate.",
+      "when_to_use": [
+        "You need to confirm benefits are being delivered",
+        "A milestone requires benefits evidence"
+      ],
+      "when_not_to_use": [
+        "The initiative has not started yet",
+        "Benefits were never defined in the business case"
+      ],
+      "required_inputs": [
+        "Initiative name",
+        "Benefits or KPIs to review",
+        "Review period or milestone"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000007",
+      "slug": "innovation-intake",
+      "service_name": "Innovation Intake",
+      "display_name": "Submit an idea",
+      "short_description": "Share a new idea for feedback and prioritisation.",
+      "purpose": "Put forward an innovation idea and get guidance on next steps.",
+      "when_to_use": [
+        "You have a new product, process, or improvement idea",
+        "You want feedback before investing further"
+      ],
+      "when_not_to_use": [
+        "The idea is already funded and in delivery",
+        "You need automation built — use Process automation instead"
+      ],
+      "required_inputs": [
+        "Idea summary",
+        "Problem it solves",
+        "Expected impact"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000008",
+      "slug": "ai-enablement-request",
+      "service_name": "AI Enablement Request",
+      "display_name": "AI support for your team",
+      "short_description": "Get help adopting AI for a specific use case.",
+      "purpose": "Request guidance and enablement to use AI safely and effectively for a defined need.",
+      "when_to_use": [
+        "You want to use AI for a clear business problem",
+        "You need help choosing approach, tools, or data"
+      ],
+      "when_not_to_use": [
+        "You only need general awareness training",
+        "Your use case relies on unapproved data"
+      ],
+      "required_inputs": [
+        "Use case description",
+        "Data involved",
+        "Target outcomes",
+        "Timeline"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000009",
+      "slug": "process-automation-build",
+      "service_name": "Process Automation Build",
+      "display_name": "Automate a process",
+      "short_description": "Design and build automation for a repeatable business process.",
+      "purpose": "Replace manual steps with an automated workflow or bot for a stable, repeatable process.",
+      "when_to_use": [
+        "The process is well understood and happens often",
+        "You have documented steps and owners"
+      ],
+      "when_not_to_use": [
+        "The process is still changing",
+        "You need a one-off manual task completed"
+      ],
+      "required_inputs": [
+        "Process name and steps",
+        "Systems involved",
+        "Expected volume",
+        "Target go-live date"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000010",
+      "slug": "knowledge-engineering-request",
+      "service_name": "Knowledge Engineering Request",
+      "display_name": "Build a knowledge base",
+      "short_description": "Create searchable, structured knowledge for your team.",
+      "purpose": "Design and build a knowledge base or retrieval system so people can find answers quickly.",
+      "when_to_use": [
+        "Important knowledge is scattered or hard to find",
+        "Your team needs a maintained knowledge hub"
+      ],
+      "when_not_to_use": [
+        "You only need one article published",
+        "Source content is not approved yet"
+      ],
+      "required_inputs": [
+        "Topic or domain",
+        "Source materials",
+        "Who will use it",
+        "What success looks like"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000011",
+      "slug": "decision-intelligence-analytics-request",
+      "service_name": "Decision Intelligence / Analytics Request",
+      "display_name": "Analytics for decisions",
+      "short_description": "Dashboards, insights, or models to support a business decision.",
+      "purpose": "Get analytics or decision-support built for a specific question or choice.",
+      "when_to_use": [
+        "You need data to make a defined decision",
+        "Relevant data exists or can be identified"
+      ],
+      "when_not_to_use": [
+        "You need a one-off report with no ongoing need",
+        "Required data is not approved for use"
+      ],
+      "required_inputs": [
+        "Decision or question",
+        "Available data",
+        "Who needs the insight",
+        "Required date"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000012",
+      "slug": "continuous-improvement-initiative",
+      "service_name": "Continuous Improvement Initiative",
+      "display_name": "Improvement programme support",
+      "short_description": "Expert help to start or run a continuous improvement effort.",
+      "purpose": "Get advisory support to improve how a team or process performs over time.",
+      "when_to_use": [
+        "You want structured improvement with sponsor support",
+        "You have a defined area to improve"
+      ],
+      "when_not_to_use": [
+        "You need a single incident fixed",
+        "No one is assigned to lead the improvement"
+      ],
+      "required_inputs": [
+        "Area to improve",
+        "Current problems",
+        "Sponsor name",
+        "Target start date"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000013",
+      "slug": "pay-slip-download-request",
+      "service_name": "Pay Slip (download / request)",
+      "display_name": "Pay slip",
+      "short_description": "Get a copy of your pay slip when you cannot download it yourself.",
+      "purpose": "Receive a pay slip by email or request when the self-service portal is unavailable.",
+      "when_to_use": [
+        "You need a slip for a bank, visa, or third party",
+        "You cannot access the HR portal"
+      ],
+      "when_not_to_use": [
+        "You can download your slip from the HR portal"
+      ],
+      "required_inputs": [
+        "Pay period (month and year)",
+        "Reason",
+        "How you want it sent"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000014",
+      "slug": "salary-certificate-employment-letter",
+      "service_name": "Salary Certificate / Employment Letter",
+      "display_name": "Salary or employment letter",
+      "short_description": "Official letter confirming your employment or salary.",
+      "purpose": "Request a formal letter for banks, landlords, or authorities that need proof of employment or pay.",
+      "when_to_use": [
+        "A third party needs proof of employment or salary on letterhead",
+        "You need an official certificate"
+      ],
+      "when_not_to_use": [
+        "Simple employment confirmation is enough — use Employment verification letter"
+      ],
+      "required_inputs": [
+        "Purpose of the letter",
+        "Addressee (if known)",
+        "Required date",
+        "Any specific wording"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000015",
+      "slug": "change-bank-account-for-payroll",
+      "service_name": "Change Bank Account for Payroll",
+      "display_name": "Update payroll bank account",
+      "short_description": "Change the bank account where your salary is paid.",
+      "purpose": "Update payroll with new bank details so your salary goes to the correct account.",
+      "when_to_use": [
+        "You opened a new account for salary",
+        "Your bank details changed"
+      ],
+      "when_not_to_use": [
+        "You only need expense reimbursement to a different account"
+      ],
+      "required_inputs": [
+        "New bank name and account details",
+        "Effective date",
+        "Proof of account if requested"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000016",
+      "slug": "leave-request",
+      "service_name": "Leave Request (annual / sick / unpaid)",
+      "display_name": "Book leave",
+      "short_description": "Request annual, sick, or unpaid time off.",
+      "purpose": "Submit leave and notify your manager through the official process.",
+      "when_to_use": [
+        "You need time off and want it recorded",
+        "You are reporting sick leave"
+      ],
+      "when_not_to_use": [
+        "Leave was already entered for you by HR"
+      ],
+      "required_inputs": [
+        "Leave type",
+        "Start and end dates",
+        "Cover or handover plan"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000017",
+      "slug": "leave-balance-query",
+      "service_name": "Leave Balance Query",
+      "display_name": "Check leave balance",
+      "short_description": "Find out how much leave you have left.",
+      "purpose": "Get your current leave balance when the portal is unclear or unavailable.",
+      "when_to_use": [
+        "You are planning time off",
+        "The balance shown online looks wrong"
+      ],
+      "when_not_to_use": [
+        "Your balance is visible and correct in the HR portal"
+      ],
+      "required_inputs": [
+        "Leave type (if specific)",
+        "Year or period"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000018",
+      "slug": "work-from-home-remote-work-request",
+      "service_name": "Work-From-Home / Remote Work Request",
+      "display_name": "Remote work request",
+      "short_description": "Request approval to work from home or remotely.",
+      "purpose": "Ask for approved remote or hybrid working for a defined period.",
+      "when_to_use": [
+        "You need to work away from the office for specific dates",
+        "Your role allows remote work with approval"
+      ],
+      "when_not_to_use": [
+        "You need a permanent arrangement change — speak to your manager first"
+      ],
+      "required_inputs": [
+        "Dates or pattern",
+        "Reason",
+        "Work location",
+        "Manager name"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000019",
+      "slug": "timesheet-attendance-correction",
+      "service_name": "Timesheet / Attendance Correction",
+      "display_name": "Fix timesheet or attendance",
+      "short_description": "Correct a wrong or missing attendance record.",
+      "purpose": "Update your timesheet or attendance when hours were recorded incorrectly.",
+      "when_to_use": [
+        "Hours were logged wrong",
+        "A clock-in or clock-out is missing"
+      ],
+      "when_not_to_use": [
+        "You need to change approved leave — use Book leave"
+      ],
+      "required_inputs": [
+        "Date(s) affected",
+        "Correct hours or status",
+        "Reason"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000020",
+      "slug": "overtime-request",
+      "service_name": "Overtime Request",
+      "display_name": "Overtime approval",
+      "short_description": "Request approval for overtime hours.",
+      "purpose": "Get overtime recorded and approved for work outside your normal schedule.",
+      "when_to_use": [
+        "You worked or will work extra hours",
+        "Your manager supports the claim"
+      ],
+      "when_not_to_use": [
+        "Overtime is not allowed for your role without prior approval"
+      ],
+      "required_inputs": [
+        "Date(s) and hours",
+        "Reason or project",
+        "Manager approval if already given"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000021",
+      "slug": "hiring-requisition",
+      "service_name": "Hiring Requisition (raise a new role)",
+      "display_name": "Open a new role",
+      "short_description": "Start recruitment for an approved new position.",
+      "purpose": "Raise a requisition so recruitment can begin for a new hire.",
+      "when_to_use": [
+        "Headcount is approved and the role is defined",
+        "You need to start hiring"
+      ],
+      "when_not_to_use": [
+        "You are moving someone internally — use Internal transfer",
+        "Headcount is not approved yet"
+      ],
+      "required_inputs": [
+        "Role title and level",
+        "Department and location",
+        "Job description",
+        "Target start date"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000022",
+      "slug": "new-joiner-onboarding",
+      "service_name": "New Joiner Onboarding",
+      "display_name": "Onboard a new joiner",
+      "short_description": "Set up access, equipment, and day-one readiness for a new hire.",
+      "purpose": "Coordinate onboarding so a new team member is ready to start.",
+      "when_to_use": [
+        "A new hire has a confirmed start date",
+        "You are the hiring manager or coordinator"
+      ],
+      "when_not_to_use": [
+        "The role requisition is not approved — open a new role first"
+      ],
+      "required_inputs": [
+        "New joiner name and start date",
+        "Role and department",
+        "Equipment and access needs"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000023",
+      "slug": "employment-verification-letter",
+      "service_name": "Employment Verification Letter",
+      "display_name": "Employment verification",
+      "short_description": "Confirm your employment status for a third party.",
+      "purpose": "Request a letter confirming you work here, without salary details.",
+      "when_to_use": [
+        "A verifier needs employment confirmation only",
+        "Salary details are not required"
+      ],
+      "when_not_to_use": [
+        "You need salary on the letter — use Salary or employment letter"
+      ],
+      "required_inputs": [
+        "Purpose",
+        "Addressee",
+        "Required date"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000024",
+      "slug": "role-transition-internal-transfer",
+      "service_name": "Role Transition / Internal Transfer",
+      "display_name": "Internal transfer",
+      "short_description": "Move to a new role or team within the company.",
+      "purpose": "Process an internal role change, promotion, or transfer.",
+      "when_to_use": [
+        "Your role, team, or manager is changing internally",
+        "Both managers agree in principle"
+      ],
+      "when_not_to_use": [
+        "You are leaving the company — use Resignation and offboarding"
+      ],
+      "required_inputs": [
+        "Current and new role",
+        "Effective date",
+        "Current and new manager",
+        "Reason"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000025",
+      "slug": "offboarding-resignation",
+      "service_name": "Offboarding / Resignation",
+      "display_name": "Resignation and offboarding",
+      "short_description": "Start the process when you or a team member is leaving.",
+      "purpose": "Coordinate HR, access, and equipment steps when someone leaves.",
+      "when_to_use": [
+        "Someone has resigned or is being offboarded",
+        "You need leaver steps coordinated"
+      ],
+      "when_not_to_use": [
+        "You only need system access removed — use Remove leaver access"
+      ],
+      "required_inputs": [
+        "Person leaving and last day",
+        "Reason if resignation",
+        "Manager name",
+        "Equipment to return"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000026",
+      "slug": "hr-case-grievance",
+      "service_name": "HR Case / Grievance",
+      "display_name": "HR support case",
+      "short_description": "Confidential help with a workplace or people matter.",
+      "purpose": "Raise a sensitive HR matter for specialist, confidential support.",
+      "when_to_use": [
+        "You need HR help with a people issue",
+        "The matter cannot be resolved with your manager alone"
+      ],
+      "when_not_to_use": [
+        "You only need a policy explained — check help articles or ask HR informally"
+      ],
+      "required_inputs": [
+        "Nature of the issue (high level)",
+        "People involved",
+        "What outcome you need",
+        "Whether you spoke to your manager"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000027",
+      "slug": "learning-training-enrolment",
+      "service_name": "Learning / Training Enrolment",
+      "display_name": "Enrol in training",
+      "short_description": "Sign up for a course or learning programme.",
+      "purpose": "Enrol yourself or a team member in approved training.",
+      "when_to_use": [
+        "You have a course or programme to join",
+        "Training is required for your role"
+      ],
+      "when_not_to_use": [
+        "You need a new course created — describe that in your request"
+      ],
+      "required_inputs": [
+        "Course or programme name",
+        "Participant name(s)",
+        "Preferred dates",
+        "Business reason"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000028",
+      "slug": "request-new-tool-software",
+      "service_name": "Request New Tool / Software",
+      "display_name": "New software or tool",
+      "short_description": "Request a new application or subscription for your work.",
+      "purpose": "Ask for software or a tool that is not in the standard catalogue.",
+      "when_to_use": [
+        "You need an app that is not already available",
+        "Your team needs a new subscription"
+      ],
+      "when_not_to_use": [
+        "The tool is already available — request access instead"
+      ],
+      "required_inputs": [
+        "Tool or product name",
+        "Vendor if known",
+        "Why you need it",
+        "Start date"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000029",
+      "slug": "request-tool-privileges-elevated-access",
+      "service_name": "Request Tool Privileges / Elevated Access",
+      "display_name": "Extra system access",
+      "short_description": "Request higher permissions for a system you already use.",
+      "purpose": "Get elevated or admin access for a defined task and time period.",
+      "when_to_use": [
+        "Your work requires higher permissions",
+        "You need temporary admin access"
+      ],
+      "when_not_to_use": [
+        "Standard access is enough"
+      ],
+      "required_inputs": [
+        "System name",
+        "Access level needed",
+        "Duration",
+        "Business reason"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000030",
+      "slug": "software-license-upgrade",
+      "service_name": "Software License Upgrade",
+      "display_name": "Upgrade software license",
+      "short_description": "Change or renew a software license.",
+      "purpose": "Upgrade, add seats, or renew a software license.",
+      "when_to_use": [
+        "You need more seats or a higher tier",
+        "A renewal needs action"
+      ],
+      "when_not_to_use": [
+        "You need entirely new software — use New software or tool"
+      ],
+      "required_inputs": [
+        "Product name",
+        "Current and requested license",
+        "Number of users",
+        "Effective or renewal date"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000031",
+      "slug": "hardware-device-request",
+      "service_name": "Hardware / Device Request",
+      "display_name": "Laptop or device",
+      "short_description": "Request a laptop, monitor, phone, or other device.",
+      "purpose": "Get hardware for a new role, replacement, or upgrade.",
+      "when_to_use": [
+        "You need new or replacement equipment",
+        "Your device is faulty or end of life"
+      ],
+      "when_not_to_use": [
+        "You only need a password reset"
+      ],
+      "required_inputs": [
+        "Device type",
+        "Reason",
+        "Preferred specification",
+        "Delivery location"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000032",
+      "slug": "account-password-reset",
+      "service_name": "Account / Password Reset",
+      "display_name": "Reset password",
+      "short_description": "Unlock your account or reset a forgotten password.",
+      "purpose": "Regain access when self-service reset does not work or your account is locked.",
+      "when_to_use": [
+        "You cannot sign in",
+        "Self-service reset failed or account is locked"
+      ],
+      "when_not_to_use": [
+        "You never had access to this system — request new access instead"
+      ],
+      "required_inputs": [
+        "System name",
+        "Your username or email",
+        "Contact number"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000033",
+      "slug": "vpn-remote-access",
+      "service_name": "VPN / Remote Access",
+      "display_name": "Remote network access",
+      "short_description": "Set up secure access to work systems from outside the office.",
+      "purpose": "Get VPN or remote access so you can work securely off-site.",
+      "when_to_use": [
+        "You need to connect to company networks from outside the office",
+        "Your remote access expired"
+      ],
+      "when_not_to_use": [
+        "You only need access to one application — request that app directly"
+      ],
+      "required_inputs": [
+        "Device you will use",
+        "Country or location",
+        "Duration needed",
+        "Manager name"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000034",
+      "slug": "access-deprovisioning-leaver",
+      "service_name": "Access Deprovisioning (leaver)",
+      "display_name": "Remove leaver access",
+      "short_description": "Turn off system access when someone leaves or changes role.",
+      "purpose": "Remove accounts and access for a leaver or role change on the agreed date.",
+      "when_to_use": [
+        "Someone is leaving or moving roles",
+        "Access must be removed on a set date"
+      ],
+      "when_not_to_use": [
+        "You need to change your own access"
+      ],
+      "required_inputs": [
+        "Person name",
+        "Last day or effective date",
+        "Systems to remove",
+        "Confirming manager"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000035",
+      "slug": "operational-reporting-request",
+      "service_name": "Operational Reporting Request",
+      "display_name": "Operations report",
+      "short_description": "Request a workforce or operations report.",
+      "purpose": "Get a report that is not available in self-service dashboards.",
+      "when_to_use": [
+        "You need data for a decision or audit",
+        "The report is not in existing dashboards"
+      ],
+      "when_not_to_use": [
+        "The data is already in a dashboard you can access"
+      ],
+      "required_inputs": [
+        "Report description",
+        "Period covered",
+        "Format needed",
+        "Required date"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000036",
+      "slug": "performance-review-setup",
+      "service_name": "Performance Review Setup",
+      "display_name": "Set up performance reviews",
+      "short_description": "Configure a review cycle for your team.",
+      "purpose": "Set up templates, timelines, and system settings for performance reviews.",
+      "when_to_use": [
+        "You are launching reviews for a team",
+        "You need HR to configure the cycle"
+      ],
+      "when_not_to_use": [
+        "You are asking about your own review date — ask your manager"
+      ],
+      "required_inputs": [
+        "Team or department",
+        "Review period",
+        "Template to use",
+        "Launch date"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000037",
+      "slug": "quality-audit-request",
+      "service_name": "Quality Audit Request",
+      "display_name": "Quality audit",
+      "short_description": "Independent quality check of a process or deliverable.",
+      "purpose": "Request a quality audit or review before a milestone or for evidence.",
+      "when_to_use": [
+        "You need an independent quality check",
+        "A customer or audit requires evidence"
+      ],
+      "when_not_to_use": [
+        "You need a single bug fixed — log an incident instead"
+      ],
+      "required_inputs": [
+        "Scope of audit",
+        "Standard or checklist to apply",
+        "Requested date",
+        "Sponsor"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000038",
+      "slug": "service-request-incident-logging",
+      "service_name": "Service Request / Incident Logging",
+      "display_name": "Log an incident",
+      "short_description": "Report something broken or blocked in day-to-day operations.",
+      "purpose": "Create a tracked ticket for an operational issue so it can be resolved.",
+      "when_to_use": [
+        "Something is not working in daily operations",
+        "You need a reference number for follow-up"
+      ],
+      "when_not_to_use": [
+        "You need customer delivery support — use Customer support case"
+      ],
+      "required_inputs": [
+        "What happened",
+        "Impact",
+        "When it started",
+        "System or process affected"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000039",
+      "slug": "procurement-purchase-request",
+      "service_name": "Procurement / Purchase Request",
+      "display_name": "Buy something",
+      "short_description": "Submit a purchase request for goods or services.",
+      "purpose": "Start procurement for an approved purchase within budget.",
+      "when_to_use": [
+        "You need to buy something with approved budget",
+        "You have a quote or supplier in mind"
+      ],
+      "when_not_to_use": [
+        "Spend exceeds your approval limit — confirm with finance first"
+      ],
+      "required_inputs": [
+        "What you are buying",
+        "Supplier if known",
+        "Estimated cost",
+        "Cost centre",
+        "Required date"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000040",
+      "slug": "vendor-onboarding",
+      "service_name": "Vendor Onboarding",
+      "display_name": "Add a new supplier",
+      "short_description": "Register a new vendor in finance systems.",
+      "purpose": "Onboard a supplier so you can pay them and place orders.",
+      "when_to_use": [
+        "You selected a new supplier",
+        "Contract is signed or nearly ready"
+      ],
+      "when_not_to_use": [
+        "The supplier is already registered"
+      ],
+      "required_inputs": [
+        "Supplier legal name",
+        "Contact details",
+        "Services provided",
+        "Contract reference if any"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000041",
+      "slug": "contract-review-setup",
+      "service_name": "Contract Review / Setup",
+      "display_name": "Contract review",
+      "short_description": "Draft or review a commercial agreement.",
+      "purpose": "Get a contract reviewed, drafted, or set up in systems.",
+      "when_to_use": [
+        "A new agreement needs review",
+        "Terms changed from the standard template"
+      ],
+      "when_not_to_use": [
+        "You are using an unchanged standard template"
+      ],
+      "required_inputs": [
+        "Other party name",
+        "Contract type and value",
+        "Key terms",
+        "Target signature date"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000042",
+      "slug": "legal-review-request",
+      "service_name": "Legal Review Request",
+      "display_name": "Legal review",
+      "short_description": "Legal sign-off on a document or question.",
+      "purpose": "Ask legal to review a document or advise on legal risk.",
+      "when_to_use": [
+        "A document needs legal approval before you commit",
+        "You are unsure about legal risk"
+      ],
+      "when_not_to_use": [
+        "The question is purely about payment timing — use Invoice query"
+      ],
+      "required_inputs": [
+        "Document type and link",
+        "Your question or concern",
+        "Decision deadline",
+        "Business owner"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000043",
+      "slug": "expense-reimbursement",
+      "service_name": "Expense Reimbursement",
+      "display_name": "Expense claim",
+      "short_description": "Claim back money you spent on approved business costs.",
+      "purpose": "Submit expenses for reimbursement with receipts.",
+      "when_to_use": [
+        "You paid business costs yourself",
+        "You have receipts and policy-compliant spend"
+      ],
+      "when_not_to_use": [
+        "The expense should go on a company card"
+      ],
+      "required_inputs": [
+        "Dates and amounts",
+        "Category",
+        "Receipts",
+        "Cost centre or project"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000044",
+      "slug": "petty-cash-request",
+      "service_name": "Petty Cash Request",
+      "display_name": "Petty cash",
+      "short_description": "Petty cash advance or top-up for small office purchases.",
+      "purpose": "Request petty cash for immediate small purchases within limits.",
+      "when_to_use": [
+        "Your team uses a petty cash float",
+        "You need cash for small urgent buys"
+      ],
+      "when_not_to_use": [
+        "The amount exceeds petty cash limits — use Buy something"
+      ],
+      "required_inputs": [
+        "Amount",
+        "Purpose",
+        "Cost centre",
+        "Custodian name"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000045",
+      "slug": "invoice-payment-query",
+      "service_name": "Invoice / Payment Query",
+      "display_name": "Invoice or payment question",
+      "short_description": "Ask about invoice status or when payment will be made.",
+      "purpose": "Get an update on an invoice or payment timing.",
+      "when_to_use": [
+        "An invoice is overdue or status is unclear",
+        "A supplier is asking about payment"
+      ],
+      "when_not_to_use": [
+        "You need to submit a new invoice for payment"
+      ],
+      "required_inputs": [
+        "Invoice or PO number",
+        "Supplier name",
+        "Amount and date",
+        "Your question"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000046",
+      "slug": "tax-year-end-statement",
+      "service_name": "Tax / Year-End Statement",
+      "display_name": "Tax or year-end statement",
+      "short_description": "Request tax certificates or year-end financial documents.",
+      "purpose": "Get official tax or year-end statements for personal or compliance use.",
+      "when_to_use": [
+        "You need a tax certificate or year-end summary",
+        "An authority requires official documents"
+      ],
+      "when_not_to_use": [
+        "You need a salary letter — use Salary or employment letter"
+      ],
+      "required_inputs": [
+        "Document type",
+        "Tax year",
+        "Purpose",
+        "Required date"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000047",
+      "slug": "salary-advance-loan-request",
+      "service_name": "Salary Advance / Loan Request",
+      "display_name": "Salary advance or loan",
+      "short_description": "Request a salary advance or employee loan under company policy.",
+      "purpose": "Apply for an advance or loan with agreed repayment terms.",
+      "when_to_use": [
+        "You qualify under company policy",
+        "You understand repayment terms"
+      ],
+      "when_not_to_use": [
+        "You need a business expense reimbursed — use Expense claim"
+      ],
+      "required_inputs": [
+        "Amount",
+        "Reason",
+        "Repayment preference",
+        "Manager approval if required"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000048",
+      "slug": "desk-workspace-booking",
+      "service_name": "Desk / Workspace Booking",
+      "display_name": "Book a desk",
+      "short_description": "Reserve a desk or workspace at the office.",
+      "purpose": "Book a seat for yourself or a visitor on specific days.",
+      "when_to_use": [
+        "You need a desk on a particular day",
+        "A visitor needs workspace"
+      ],
+      "when_not_to_use": [
+        "You only need a meeting room"
+      ],
+      "required_inputs": [
+        "Office location",
+        "Date(s)",
+        "Number of people",
+        "Special requirements"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000049",
+      "slug": "travel-request",
+      "service_name": "Travel Request",
+      "display_name": "Business travel",
+      "short_description": "Request approval and booking for business travel.",
+      "purpose": "Arrange approved business travel including flights, hotels, or visas if needed.",
+      "when_to_use": [
+        "You need to travel for approved business",
+        "Bookings or visas may be required"
+      ],
+      "when_not_to_use": [
+        "You only need a local desk — use Book a desk"
+      ],
+      "required_inputs": [
+        "Destination and dates",
+        "Purpose",
+        "Estimated budget",
+        "Manager name"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000050",
+      "slug": "id-badge-access-card",
+      "service_name": "ID Badge / Access Card",
+      "display_name": "ID badge or access card",
+      "short_description": "Get a new or replacement building access card.",
+      "purpose": "Request an ID badge or update building access on your card.",
+      "when_to_use": [
+        "You are new or lost your card",
+        "Your access profile changed"
+      ],
+      "when_not_to_use": [
+        "You need digital system access only"
+      ],
+      "required_inputs": [
+        "Reason",
+        "Office location",
+        "Whether photo is on file",
+        "Required date"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000051",
+      "slug": "visa-work-permit-support",
+      "service_name": "Visa / Work Permit Support",
+      "display_name": "Visa and work permit",
+      "short_description": "Help with visas and work permits for Dubai or Nairobi.",
+      "purpose": "Get support for visa applications, renewals, or dependant permits.",
+      "when_to_use": [
+        "You need a new visa or renewal",
+        "Immigration deadlines are approaching"
+      ],
+      "when_not_to_use": [
+        "You only need business travel booking",
+        "Your question is answered in the immigration FAQ"
+      ],
+      "required_inputs": [
+        "Visa type",
+        "Nationality and passport details",
+        "Timeline",
+        "Supporting documents"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000052",
+      "slug": "business-cards-stationery",
+      "service_name": "Business Cards / Stationery",
+      "display_name": "Business cards and stationery",
+      "short_description": "Order business cards or standard office supplies.",
+      "purpose": "Order business cards, stationery, or standard office materials.",
+      "when_to_use": [
+        "You need new business cards or branded stationery",
+        "Standard supplies are not available locally"
+      ],
+      "when_not_to_use": [
+        "You need equipment or large purchases — use Buy something"
+      ],
+      "required_inputs": [
+        "Item type and quantity",
+        "Delivery location",
+        "Artwork approval if custom"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000053",
+      "slug": "market-research-request",
+      "service_name": "Market Research Request",
+      "display_name": "Market research",
+      "short_description": "Research a market, segment, or competitor to inform decisions.",
+      "purpose": "Commission research or intelligence you do not have in-house.",
+      "when_to_use": [
+        "You need insight before strategy or campaigns",
+        "You lack data on a market or competitor"
+      ],
+      "when_not_to_use": [
+        "You only need a presentation designed — use Content production"
+      ],
+      "required_inputs": [
+        "Research question",
+        "Market or segment",
+        "How you will use results",
+        "Deadline"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000054",
+      "slug": "brand-asset-request",
+      "service_name": "Brand Asset Request",
+      "display_name": "Brand assets",
+      "short_description": "Logos, templates, and on-brand materials.",
+      "purpose": "Get approved brand assets for events, decks, or campaigns.",
+      "when_to_use": [
+        "You need on-brand materials",
+        "Existing library assets do not fit"
+      ],
+      "when_not_to_use": [
+        "Suitable assets already exist in the brand library"
+      ],
+      "required_inputs": [
+        "Asset type",
+        "How you will use it",
+        "Format and size",
+        "Required date"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000055",
+      "slug": "campaign-request",
+      "service_name": "Campaign Request",
+      "display_name": "Marketing campaign",
+      "short_description": "Plan and run a marketing campaign with specialist support.",
+      "purpose": "Launch a coordinated campaign across channels with creative and execution help.",
+      "when_to_use": [
+        "You are running a multi-channel campaign",
+        "You need end-to-end campaign support"
+      ],
+      "when_not_to_use": [
+        "You only need one asset — use Brand assets or Content production"
+      ],
+      "required_inputs": [
+        "Campaign goal",
+        "Target audience",
+        "Channels",
+        "Timeline and budget range"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000056",
+      "slug": "content-story-production",
+      "service_name": "Content / Story Production",
+      "display_name": "Content production",
+      "short_description": "Articles, stories, and thought leadership content.",
+      "purpose": "Produce content for campaigns, accounts, or publications.",
+      "when_to_use": [
+        "You need written or multimedia content",
+        "Content supports a campaign or account plan"
+      ],
+      "when_not_to_use": [
+        "You need full campaign strategy — use Marketing campaign"
+      ],
+      "required_inputs": [
+        "Topic and audience",
+        "Format",
+        "Key messages",
+        "Publication date"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000057",
+      "slug": "lead-generation-request",
+      "service_name": "Lead Generation Request",
+      "display_name": "Lead generation",
+      "short_description": "Run a programme to bring in new sales leads.",
+      "purpose": "Launch lead generation for a product, region, or offer.",
+      "when_to_use": [
+        "You need new leads for pipeline",
+        "Targeting and offers are defined"
+      ],
+      "when_not_to_use": [
+        "You already have leads to qualify — use Qualify leads"
+      ],
+      "required_inputs": [
+        "Product or offer",
+        "Target segment",
+        "Volume or goal",
+        "Launch window"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000058",
+      "slug": "cx-improvement-request",
+      "service_name": "CX Improvement Request",
+      "display_name": "Customer experience improvement",
+      "short_description": "Improve how customers experience a journey or touchpoint.",
+      "purpose": "Get help redesigning or fixing a customer experience issue.",
+      "when_to_use": [
+        "Customers report friction in a journey",
+        "You want to improve a touchpoint"
+      ],
+      "when_not_to_use": [
+        "A customer reported a specific fault — use Customer support case"
+      ],
+      "required_inputs": [
+        "Customer segment or account",
+        "Journey or touchpoint",
+        "Known issues",
+        "How you will measure success"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000059",
+      "slug": "lead-qualification",
+      "service_name": "Lead Qualification",
+      "display_name": "Qualify leads",
+      "short_description": "Score and qualify leads before sales handoff.",
+      "purpose": "Have inbound or outbound leads reviewed against your criteria.",
+      "when_to_use": [
+        "Leads need scoring or qualification",
+        "You have a list ready to review"
+      ],
+      "when_not_to_use": [
+        "You need new leads generated — use Lead generation"
+      ],
+      "required_inputs": [
+        "Lead source",
+        "Number of leads",
+        "Qualification criteria",
+        "CRM reference if any"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000060",
+      "slug": "opportunity-registration",
+      "service_name": "Opportunity Registration",
+      "display_name": "Register sales opportunity",
+      "short_description": "Add a qualified opportunity to the sales pipeline.",
+      "purpose": "Register an opportunity with correct stage, value, and owner in CRM.",
+      "when_to_use": [
+        "A qualified deal is ready for the pipeline",
+        "CRM record needs to be created or corrected"
+      ],
+      "when_not_to_use": [
+        "Leads are not qualified yet — use Qualify leads"
+      ],
+      "required_inputs": [
+        "Account name",
+        "Estimated value and close date",
+        "Opportunity owner",
+        "Products or services"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000061",
+      "slug": "sales-support-proposal",
+      "service_name": "Sales Support / Proposal",
+      "display_name": "Proposal support",
+      "short_description": "Help building a sales proposal or bid.",
+      "purpose": "Get support with proposal content, pricing, or deal desk input.",
+      "when_to_use": [
+        "You are preparing a proposal with a deadline",
+        "You need specialist sales support"
+      ],
+      "when_not_to_use": [
+        "The opportunity is not registered — register it first"
+      ],
+      "required_inputs": [
+        "Opportunity name",
+        "Proposal due date",
+        "Scope summary",
+        "Known decision criteria"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000062",
+      "slug": "account-setup-review",
+      "service_name": "Account Setup / Review",
+      "display_name": "Customer account setup",
+      "short_description": "Set up or review a customer account plan.",
+      "purpose": "Configure a new customer account or run a structured account review.",
+      "when_to_use": [
+        "A new customer needs account setup",
+        "You want a formal account review"
+      ],
+      "when_not_to_use": [
+        "You are onboarding a partner — use Partner onboarding"
+      ],
+      "required_inputs": [
+        "Account name",
+        "Primary contacts",
+        "Services in scope",
+        "Review or setup date"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000063",
+      "slug": "partner-onboarding",
+      "service_name": "Partner Onboarding",
+      "display_name": "Partner onboarding",
+      "short_description": "Onboard a new partner or alliance.",
+      "purpose": "Register and enable a partner in systems and ways of working.",
+      "when_to_use": [
+        "A partner agreement is signed or near signature",
+        "Partner needs to be enabled to sell or deliver"
+      ],
+      "when_not_to_use": [
+        "The party is a customer — use Customer account setup"
+      ],
+      "required_inputs": [
+        "Partner name",
+        "Partnership type",
+        "Primary contact",
+        "Target go-live date"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000064",
+      "slug": "ecosystem-engagement-request",
+      "service_name": "Ecosystem Engagement Request",
+      "display_name": "Partnership engagement",
+      "short_description": "Engage platforms, alliances, or ecosystem partners.",
+      "purpose": "Coordinate a strategic engagement outside standard partner onboarding.",
+      "when_to_use": [
+        "You are pursuing a strategic alliance or ecosystem deal",
+        "Multiple teams need to coordinate"
+      ],
+      "when_not_to_use": [
+        "Standard partner onboarding covers your need"
+      ],
+      "required_inputs": [
+        "Organisation name",
+        "Engagement goal",
+        "Internal sponsor",
+        "Timeline"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000065",
+      "slug": "customer-onboarding-setup",
+      "service_name": "Customer Onboarding Setup",
+      "display_name": "Customer onboarding",
+      "short_description": "Prepare a new customer to receive service.",
+      "purpose": "Set up access, data, and runbooks so a new customer can go live.",
+      "when_to_use": [
+        "Contract is signed and kick-off is scheduled",
+        "Customer needs to be ready on go-live date"
+      ],
+      "when_not_to_use": [
+        "The sale is still in pipeline — complete account setup first"
+      ],
+      "required_inputs": [
+        "Customer name",
+        "Services purchased",
+        "Go-live date",
+        "Customer contact"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000066",
+      "slug": "order-fulfilment-request",
+      "service_name": "Order Fulfilment Request",
+      "display_name": "Fulfil customer order",
+      "short_description": "Deliver an approved customer order or contractual item.",
+      "purpose": "Execute and track fulfilment of a customer order to completion.",
+      "when_to_use": [
+        "An order is approved and ready to deliver",
+        "You need tracked fulfilment"
+      ],
+      "when_not_to_use": [
+        "The order is not approved or funded yet"
+      ],
+      "required_inputs": [
+        "Customer and order reference",
+        "Deliverable description",
+        "Due date",
+        "Delivery owner"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000067",
+      "slug": "customer-support-case",
+      "service_name": "Customer Support Case",
+      "display_name": "Customer support case",
+      "short_description": "Log an issue or request from a customer.",
+      "purpose": "Create a tracked support case with agreed response times.",
+      "when_to_use": [
+        "A customer reported a problem or needs help",
+        "The case needs formal tracking"
+      ],
+      "when_not_to_use": [
+        "The issue is internal only — use Log an incident"
+      ],
+      "required_inputs": [
+        "Customer name",
+        "Issue summary",
+        "Severity",
+        "Contact details"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000068",
+      "slug": "case-setup-routing",
+      "service_name": "Case Setup / Routing",
+      "display_name": "Set up case routing",
+      "short_description": "Configure how customer cases are routed and escalated.",
+      "purpose": "Set up queues and routing rules for a customer or product.",
+      "when_to_use": [
+        "A new product or team needs case management setup",
+        "Routing rules have changed"
+      ],
+      "when_not_to_use": [
+        "You are logging one customer issue — use Customer support case"
+      ],
+      "required_inputs": [
+        "Customer or product",
+        "Routing rules needed",
+        "Queues and owners",
+        "Effective date"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000069",
+      "slug": "incident-escalation",
+      "service_name": "Incident Escalation",
+      "display_name": "Escalate incident",
+      "short_description": "Escalate a urgent customer or production incident.",
+      "purpose": "Bring urgent incidents to the right people when impact is high or SLA is at risk.",
+      "when_to_use": [
+        "Impact is high or SLA is at risk",
+        "Normal support path is not enough"
+      ],
+      "when_not_to_use": [
+        "Low-priority query — use Customer support case"
+      ],
+      "required_inputs": [
+        "Incident reference if any",
+        "Customer impact",
+        "What was tried",
+        "Response needed by"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000070",
+      "slug": "lifecycle-renewal-request",
+      "service_name": "Lifecycle / Renewal Request",
+      "display_name": "Renewal or lifecycle change",
+      "short_description": "Manage renewals, upgrades, or contract changes for a customer.",
+      "purpose": "Coordinate lifecycle events such as renewals or contract changes.",
+      "when_to_use": [
+        "A renewal or expansion window is open",
+        "Customer lifecycle stage needs action"
+      ],
+      "when_not_to_use": [
+        "You are onboarding a brand-new customer — use Customer onboarding"
+      ],
+      "required_inputs": [
+        "Customer name",
+        "Event type",
+        "Contract end or renewal date",
+        "Commercial owner"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000071",
+      "slug": "product-build-request",
+      "service_name": "Product Build Request",
+      "display_name": "Build product feature",
+      "short_description": "Request development or enhancement of a product capability.",
+      "purpose": "Start build work for an approved product feature or enhancement.",
+      "when_to_use": [
+        "A backlog item is approved for build",
+        "Requirements and acceptance criteria exist"
+      ],
+      "when_not_to_use": [
+        "You need a custom customer solution — use Solution delivery"
+      ],
+      "required_inputs": [
+        "Product name",
+        "Feature description",
+        "Priority",
+        "Target release"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000072",
+      "slug": "solution-delivery-engagement",
+      "service_name": "Solution Delivery Engagement",
+      "display_name": "Solution delivery",
+      "short_description": "Engage a team to design and deliver a customer solution.",
+      "purpose": "Run a multi-step solution engagement for a customer programme.",
+      "when_to_use": [
+        "You need a tailored solution for a customer",
+        "Design and delivery phases are in scope"
+      ],
+      "when_not_to_use": [
+        "A small product change is enough — use Build product feature"
+      ],
+      "required_inputs": [
+        "Customer name",
+        "Problem statement",
+        "Scope boundaries",
+        "Target milestones"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000073",
+      "slug": "project-setup-request",
+      "service_name": "Project Setup Request",
+      "display_name": "Set up delivery project",
+      "short_description": "Stand up a new delivery project with governance and team.",
+      "purpose": "Create project structure, resourcing, and controls for approved work.",
+      "when_to_use": [
+        "Funding or statement of work is approved",
+        "You need a project formally set up"
+      ],
+      "when_not_to_use": [
+        "Ongoing managed operations cover the need — use Managed services"
+      ],
+      "required_inputs": [
+        "Project name",
+        "Sponsor",
+        "Start date",
+        "Scope and budget summary"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000074",
+      "slug": "managed-services-request",
+      "service_name": "Managed Services Request",
+      "display_name": "Managed services",
+      "short_description": "Request ongoing managed operations for a customer or platform.",
+      "purpose": "Start a managed service with defined scope and service levels.",
+      "when_to_use": [
+        "You need ongoing run support with SLAs",
+        "Scope and service levels are defined"
+      ],
+      "when_not_to_use": [
+        "Fixed-scope project delivery is enough — use Set up delivery project"
+      ],
+      "required_inputs": [
+        "Service scope",
+        "SLA targets",
+        "Customer or platform",
+        "Contract reference"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000075",
+      "slug": "production-operations-support",
+      "service_name": "Production Operations Support",
+      "display_name": "Production support",
+      "short_description": "Help with live systems and production operations.",
+      "purpose": "Get support for production issues, deployments, or platform operations.",
+      "when_to_use": [
+        "Production needs urgent or specialist support",
+        "You need deployment or monitoring help"
+      ],
+      "when_not_to_use": [
+        "Work is still in build phase — use Build product feature or Set up project"
+      ],
+      "required_inputs": [
+        "Environment",
+        "System or service name",
+        "Issue or change description",
+        "Urgency"
+      ],
+      "primary_action_label": "Request Service"
+    },
+    {
+      "listing_id": "c0000000-0000-4000-8000-000000000076",
+      "slug": "delivery-performance-review",
+      "service_name": "Delivery Performance Review",
+      "display_name": "Delivery performance review",
+      "short_description": "Review delivery KPIs and improvement actions.",
+      "purpose": "Assess how well delivery is performing against targets and agree next steps.",
+      "when_to_use": [
+        "A review or QBR needs performance evidence",
+        "You want an independent read on delivery health"
+      ],
+      "when_not_to_use": [
+        "You need a one-off incident report — use Escalate incident"
+      ],
+      "required_inputs": [
+        "Programme or team name",
+        "Period under review",
+        "KPIs or scorecard",
+        "Review date"
+      ],
+      "primary_action_label": "Request Service"
+    }
+  ]
+}
