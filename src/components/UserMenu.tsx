@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { useNavigate } from 'react-router-dom';
-import { ChevronDown, HelpCircle, LogOut, Mail } from 'lucide-react';
+import { ChevronDown, LogOut, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';
 import { getInitials } from '../utils/getInitials';
@@ -11,7 +10,6 @@ export function UserMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -31,7 +29,6 @@ export function UserMenu() {
   const initials = getInitials(user?.name, user?.email);
   const segment = user?.workspaceSegment || 'Associate';
   const dwsRoles = user?.roles ?? [];
-  const scopeParts = [user?.unit, user?.team].filter(Boolean) as string[];
 
   const handleSignOut = () => {
     setIsOpen(false);
@@ -79,19 +76,6 @@ export function UserMenu() {
             <dd className="mt-0.5 text-text-secondary">{user?.team || '—'}</dd>
           </div>
         </dl>
-      </div>
-
-      <div className="px-3 py-3 border-b border-border-subtle">
-        <button
-          className="w-full text-left px-3 py-2.5 text-sm text-text-secondary hover:bg-surface hover:text-primary rounded-xl flex items-center gap-3"
-          onClick={() => {
-            setIsOpen(false);
-            navigate('/stage-0/operating-guide');
-          }}
-        >
-          <HelpCircle size={16} />
-          Help & Support
-        </button>
       </div>
 
       <div className="px-3 py-3">

@@ -273,7 +273,7 @@ export function StandardSidebar() {
 
       <div className="border-t border-border-subtle px-3 py-3">
         {filteredUtility
-          .filter((item) => item.id !== 'logout')
+          .filter((item) => item.id !== 'logout' && item.id !== 'help-support')
           .map((item) => (
             <SidebarLink key={item.id} item={item} />
           ))}
