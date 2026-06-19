@@ -51,6 +51,17 @@ schema:
 psql "$DATABASE_URL" -f src/db/schema.sql
 ```
 
+The MVP Services + Knowledge launch schema uses the migration runner in
+`src/db`:
+
+```bash
+npm run db:migrate
+npm run db:seed
+npm run db:validate:mvp
+```
+
+See `src/db/README.md` for the migration and seed scope.
+
 ## Offline development
 
 Set `AUTH_DEV_MOCK_ENABLED=true` to bypass Entra and create a local mock session

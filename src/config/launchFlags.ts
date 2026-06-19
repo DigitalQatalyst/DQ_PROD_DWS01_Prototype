@@ -13,9 +13,9 @@ export const launchFlags = {
     enabled: true,
     catalogue: true,
     discern: true,
-    design: true,
+    design: false,
     deploy: true,
-    drive: true,
+    drive: false,
 
     serviceMarketplace: true,
     knowledgeGuidelinesMarketplace: true,

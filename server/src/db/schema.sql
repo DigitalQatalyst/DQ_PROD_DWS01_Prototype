@@ -33,9 +33,11 @@ create table if not exists iam_user_roles (
 create table if not exists iam_user_scope (
   user_id uuid not null references iam_users(id) on delete cascade,
   unit    text,
-  team    text,
-  primary key (user_id, coalesce(unit, ''), coalesce(team, ''))
+  team    text
 );
+
+create unique index if not exists iam_user_scope_user_unit_team_uk
+  on iam_user_scope (user_id, coalesce(unit, ''), coalesce(team, ''));
 
 -- ---------------------------------------------------------------------------
 -- Permission exceptions and delegations (governed, time-bound)
