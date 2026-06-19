@@ -1,41 +1,12 @@
-import express from 'express';
-import helmet from 'helmet';
-import cors from 'cors';
+import app from './app.js';
 import { config } from './config.js';
-import { createSessionMiddleware } from './session/session.js';
-import { authRouter } from './auth/routes.js';
-import { sessionRouter } from './session/routes.js';
 import { getPool, closePool } from './db/pool.js';
 
-const app = express();
-
-app.set('trust proxy', 1);
-app.use(helmet());
-app.use(express.json());
-
-// The frontend dev server proxies /api and /auth, so requests are same-origin.
-// CORS with credentials is enabled as a fallback for direct cross-origin calls.
-app.use(
-  cors({
-    origin: config.frontendOrigin,
-    credentials: true,
-  }),
-);
-
-app.use(createSessionMiddleware());
-
-app.get('/healthz', (_req, res) => {
-  res.json({
-    ok: true,
-    entraConfigured: Boolean(config.entra.clientId),
-    devMock: config.auth.devMockEnabled,
-    database: config.database.enabled ? 'postgres' : 'in-memory-seed',
-  });
-});
-
-app.use('/auth', authRouter);
-app.use('/api/session', sessionRouter);
-
+/**
+ * Long-running entrypoint (local dev or a traditional Node host). The Vercel
+ * serverless deployment never runs this file — it imports the app from
+ * `app.ts` directly. Keep all process/port lifecycle concerns here only.
+ */
 const server = app.listen(config.bffPort, () => {
   console.log(`[bff] DWS.01 BFF listening on http://localhost:${config.bffPort}`);
   console.log(`[bff] frontend origin: ${config.frontendOrigin}`);
