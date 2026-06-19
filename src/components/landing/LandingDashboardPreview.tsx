@@ -12,7 +12,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { useViewingMode } from "../../context/ViewingModeContext";
-import { useWorkspaceRole } from "../../context/WorkspaceRoleContext";
+import { useAuth } from "../../context/AuthContext";
 import { setupJourneyCards } from "../../mocks/stage0Home.mock";
 import type { SetupCardStatus } from "../../mocks/stage0Home.mock";
 
@@ -23,8 +23,13 @@ function getTimeGreeting() {
   return "Good evening";
 }
 
-function getFirstName(displayName: string) {
-  return displayName.trim().split(/\s+/)[0] || "there";
+function getFirstName(displayName?: string | null, email?: string | null) {
+  // Ignore parenthetical suffixes like "(Dev Mock)" before taking the first word.
+  const cleaned = (displayName ?? "").replace(/\(.*?\)/g, "").trim();
+  const first = cleaned.split(/\s+/).filter(Boolean)[0];
+  if (first) return first;
+  if (email) return email.split("@")[0];
+  return "there";
 }
 
 const returningQuickAccess = [
@@ -139,9 +144,9 @@ const setupStatusTones: Record<SetupCardStatus, keyof typeof statusStyles> = {
 
 export function LandingDashboardPreview() {
   const { mode } = useViewingMode();
-  const { activeSegment } = useWorkspaceRole();
+  const { user } = useAuth();
   const isNewJoiner = mode === "first-time";
-  const firstName = getFirstName(activeSegment.profileName);
+  const firstName = getFirstName(user?.name, user?.email);
   const greeting = getTimeGreeting();
 
   const quickAccess = isNewJoiner ? newJoinerQuickAccess : returningQuickAccess;

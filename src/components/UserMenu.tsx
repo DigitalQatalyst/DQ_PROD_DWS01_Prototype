@@ -1,16 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { Check, ChevronDown, HelpCircle, LogOut, Mail, Settings, SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, HelpCircle, LogOut, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';
-import { useWorkspaceRole } from '../context/WorkspaceRoleContext';
-import { getDefaultRouteForRole } from '../config/navigation';
 import { getInitials } from '../utils/getInitials';
 
 export function UserMenu() {
   const { user, signOut } = useAuth();
-  const { activeRole, setActiveRole, roles } = useWorkspaceRole();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -42,13 +39,6 @@ export function UserMenu() {
     // BFF logout is a full-page redirect that clears the session cookie and
     // ends the Entra session, returning the browser to /login.
     signOut();
-  };
-
-  const handleRoleChange = (role: typeof activeRole) => {
-    setActiveRole(role);
-    setIsOpen(false);
-    navigate(getDefaultRouteForRole(role));
-    toast.success(`Viewing as ${role}.`);
   };
 
   const dropdownPanel = (
@@ -91,48 +81,7 @@ export function UserMenu() {
         </dl>
       </div>
 
-      <div className="px-3 py-4 border-b border-border-subtle">
-        <div className="px-2 pb-2 text-[11px] font-semibold uppercase tracking-wider text-text-muted">
-          Viewing role
-        </div>
-        <div className="space-y-1">
-          {roles.map((role) => {
-            const isActive = activeRole === role;
-            return (
-              <button
-                key={role}
-                onClick={() => handleRoleChange(role)}
-                className={`w-full flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors ${isActive ? 'bg-navy-50 text-primary font-semibold' : 'text-text-secondary hover:bg-surface hover:text-primary'}`}
-              >
-                <span>{role}</span>
-                {isActive && <Check size={16} className="text-success" />}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
       <div className="px-3 py-3 border-b border-border-subtle">
-        <button
-          className="w-full text-left px-3 py-2.5 text-sm text-text-secondary hover:bg-surface hover:text-primary rounded-xl flex items-center gap-3"
-          onClick={() => {
-            setIsOpen(false);
-            toast.info(`Profile settings opened for ${displayName}.`);
-          }}
-        >
-          <Settings size={16} />
-          Profile Settings
-        </button>
-        <button
-          className="w-full text-left px-3 py-2.5 text-sm text-text-secondary hover:bg-surface hover:text-primary rounded-xl flex items-center gap-3"
-          onClick={() => {
-            setIsOpen(false);
-            toast.info('Workspace preferences opened.');
-          }}
-        >
-          <SlidersHorizontal size={16} />
-          Workspace Preferences
-        </button>
         <button
           className="w-full text-left px-3 py-2.5 text-sm text-text-secondary hover:bg-surface hover:text-primary rounded-xl flex items-center gap-3"
           onClick={() => {

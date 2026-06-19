@@ -5,6 +5,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '../context/AuthContext';
 import { useWorkspaceRole } from '../context/WorkspaceRoleContext';
 import {
   orientationFeatureArea,
@@ -87,6 +88,7 @@ function FeatureItemLink({ label, route }: { label: string; route: string }) {
 export function StandardSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { signOut } = useAuth();
   const { activeDwsRole, getDefaultRoute, activeRole } = useWorkspaceRole();
 
   const filteredOrientationArea = useMemo(() => {
@@ -277,8 +279,10 @@ export function StandardSidebar() {
           ))}
         <button
           onClick={() => {
-            toast.info('Logout recorded for this prototype session.');
-            navigate('/home');
+            toast.info('Signing you out…');
+            // Full-page redirect to the BFF: clears the session cookie, ends the
+            // Entra session, and returns the browser to /login.
+            signOut();
           }}
           className="mt-0.5 flex min-h-9 w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-text-muted hover:bg-surface hover:text-primary">
           <LogOut size={17} strokeWidth={1.5} />
